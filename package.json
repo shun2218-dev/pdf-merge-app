@@ -62,7 +62,7 @@
     "next-themes": "latest",
     "path": "latest",
     "pdf-lib": "latest",
-    "pdfjs-dist": "3.11.174",
+    "pdfjs-dist": "^3.0.279",
     "react": "19.2.0",
     "react-day-picker": "latest",
     "react-dom": "19.2.0",

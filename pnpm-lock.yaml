@@ -159,7 +159,7 @@ importers:
         specifier: latest
         version: 1.17.1
       pdfjs-dist:
-        specifier: 3.11.174
+        specifier: ^3.0.279
         version: 3.11.174
       react:
         specifier: 19.2.0
