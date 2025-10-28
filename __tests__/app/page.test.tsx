@@ -271,9 +271,16 @@ describe("PdfMergerPage", () => {
       style: {},
     } as unknown as HTMLAnchorElement
 
-    const createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(mockLink)
-    const appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation(() => mockLink)
-    const removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation(() => mockLink)
+    const originalCreateElement = document.createElement.bind(document)
+    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+      if (tagName === "a") {
+        return mockLink
+      }
+      return originalCreateElement(tagName)
+    })
+
+    const appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation((node) => node)
+    const removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation((node) => node)
 
     render(<PdfMergerPage />)
 
