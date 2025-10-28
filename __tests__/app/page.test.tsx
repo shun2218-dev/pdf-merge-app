@@ -264,23 +264,16 @@ describe("PdfMergerPage", () => {
       blob: async () => mockBlob,
     } as Response)
 
-    const mockLink = {
-      href: "",
-      download: "",
-      click: vi.fn(),
-      style: {},
-    } as unknown as HTMLAnchorElement
+    const mockClick = vi.fn()
+    const mockLink = document.createElement("a")
+    mockLink.click = mockClick
 
-    const originalCreateElement = document.createElement.bind(document)
-    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
-      if (tagName === "a") {
+    vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+      if (tagName.toLowerCase() === "a") {
         return mockLink
       }
-      return originalCreateElement(tagName)
+      return document.createElement(tagName)
     })
-
-    const appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation((node) => node)
-    const removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation((node) => node)
 
     render(<PdfMergerPage />)
 
@@ -297,13 +290,11 @@ describe("PdfMergerPage", () => {
     const downloadButton = screen.getByRole("button", { name: /ダウンロード/i })
     await user.click(downloadButton)
 
-    expect(mockLink.click).toHaveBeenCalled()
-    expect(mockLink.download).toBe("merged.pdf")
-    expect(mockLink.href).toBe("blob:mock-url")
-
-    createElementSpy.mockRestore()
-    appendChildSpy.mockRestore()
-    removeChildSpy.mockRestore()
+    await waitFor(() => {
+      expect(mockClick).toHaveBeenCalled()
+      expect(mockLink.download).toBe("merged.pdf")
+      expect(mockLink.href).toBe("blob:mock-url")
+    })
   })
 
   it("ファイルの順番を変更するとプレビューがリセットされる", async () => {
