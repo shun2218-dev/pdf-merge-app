@@ -264,9 +264,16 @@ describe("PdfMergerPage", () => {
       blob: async () => mockBlob,
     } as Response)
 
-    const mockLink = document.createElement("a")
-    mockLink.click = vi.fn()
+    const mockLink = {
+      href: "",
+      download: "",
+      click: vi.fn(),
+      style: {},
+    } as unknown as HTMLAnchorElement
+
     const createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(mockLink)
+    const appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation(() => mockLink)
+    const removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation(() => mockLink)
 
     render(<PdfMergerPage />)
 
@@ -288,6 +295,8 @@ describe("PdfMergerPage", () => {
     expect(mockLink.href).toBe("blob:mock-url")
 
     createElementSpy.mockRestore()
+    appendChildSpy.mockRestore()
+    removeChildSpy.mockRestore()
   })
 
   it("ファイルの順番を変更するとプレビューがリセットされる", async () => {

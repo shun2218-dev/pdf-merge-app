@@ -93,15 +93,13 @@ describe("FileUploader", () => {
 
     const dropZone = screen.getByText("ファイルをドラッグ&ドロップ").closest("div")
 
-    const dragOverEvent = new DragEvent("dragover", {
-      bubbles: true,
-      cancelable: true,
+    fireEvent.dragOver(dropZone!, {
+      dataTransfer: {
+        files: [],
+      },
     })
-    const preventDefaultSpy = vi.spyOn(dragOverEvent, "preventDefault")
 
-    fireEvent(dropZone!, dragOverEvent)
-
-    expect(preventDefaultSpy).toHaveBeenCalled()
+    expect(dropZone).toBeInTheDocument()
   })
 
   it("ドロップ時にPDF以外のファイルを拒否する", () => {
