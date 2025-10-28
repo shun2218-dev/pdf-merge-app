@@ -1,12 +1,21 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { FileUploader } from "@/components/file-uploader"
 import { FileList } from "@/components/file-list"
-import { PdfPreview } from "@/components/pdf-preview"
 import { Header } from "@/components/header"
+
+const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) => mod.PdfPreview), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[800px] w-full items-center justify-center rounded-lg border border-border bg-background">
+      <p className="text-muted-foreground">プレビューを読み込み中...</p>
+    </div>
+  ),
+})
 
 export default function PdfMergerPage() {
   const [files, setFiles] = useState<File[]>([])
