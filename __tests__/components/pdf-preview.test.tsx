@@ -1,6 +1,6 @@
 import type React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, act } from "@testing-library/react"
 import { PdfPreview } from "@/components/pdf-preview"
 
 // Mock the react-pdf-viewer components
@@ -92,7 +92,7 @@ describe("PdfPreview", () => {
     expect(viewer).toHaveAttribute("data-default-scale", expectedZoom.toString())
   })
 
-  it("ウィンドウリサイズ時にズームレベルが再計算される", () => {
+  it("ウィンドウリサイズ時にズームレベルが再計算される", async () => {
     // Start with desktop size
     Object.defineProperty(window, "innerWidth", {
       writable: true,
@@ -105,18 +105,20 @@ describe("PdfPreview", () => {
     let viewer = screen.getByTestId("pdf-viewer")
     expect(viewer).toHaveAttribute("data-default-scale", "1")
 
-    // Simulate resize to mobile
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 375,
+    await act(async () => {
+      // Simulate resize to mobile
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 375,
+      })
+
+      // Trigger resize event
+      window.dispatchEvent(new Event("resize"))
+
+      // Force re-render to see updated state
+      rerender(<PdfPreview pdfUrl={mockPdfUrl} />)
     })
-
-    // Trigger resize event
-    window.dispatchEvent(new Event("resize"))
-
-    // Force re-render to see updated state
-    rerender(<PdfPreview pdfUrl={mockPdfUrl} />)
 
     viewer = screen.getByTestId("pdf-viewer")
     const expectedZoom = 375 / 650

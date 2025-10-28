@@ -58,7 +58,11 @@ describe("FileUploader", () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement
     const txtFile = new File(["content"], "test.txt", { type: "text/plain" })
 
-    await userEvent.upload(input, txtFile)
+    Object.defineProperty(input, "files", {
+      value: [txtFile],
+      writable: false,
+    })
+    fireEvent.change(input)
 
     expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください")
     expect(mockOnFilesSelected).not.toHaveBeenCalled()
@@ -88,12 +92,16 @@ describe("FileUploader", () => {
     render(<FileUploader onFilesSelected={mockOnFilesSelected} />)
 
     const dropZone = screen.getByText("ファイルをドラッグ&ドロップ").closest("div")
-    const dragOverEvent = new Event("dragover", { bubbles: true }) as any
-    dragOverEvent.preventDefault = vi.fn()
 
-    fireEvent.dragOver(dropZone!, dragOverEvent)
+    const dragOverEvent = new DragEvent("dragover", {
+      bubbles: true,
+      cancelable: true,
+    })
+    const preventDefaultSpy = vi.spyOn(dragOverEvent, "preventDefault")
 
-    expect(dragOverEvent.preventDefault).toHaveBeenCalled()
+    fireEvent(dropZone!, dragOverEvent)
+
+    expect(preventDefaultSpy).toHaveBeenCalled()
   })
 
   it("ドロップ時にPDF以外のファイルを拒否する", () => {

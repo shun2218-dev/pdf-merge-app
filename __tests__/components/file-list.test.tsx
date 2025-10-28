@@ -4,13 +4,19 @@ import { FileList } from "@/components/file-list"
 
 describe("FileList", () => {
   const createMockFile = (name: string, size: number): File => {
-    return new File(["content"], name, { type: "application/pdf" })
+    const file = new File(["content"], name, { type: "application/pdf" })
+    // Use Object.defineProperty to set the read-only size property
+    Object.defineProperty(file, "size", {
+      value: size,
+      writable: false,
+    })
+    return file
   }
 
   const mockFiles = [
-    Object.assign(createMockFile("test1.pdf", 1024), { size: 1024 }),
-    Object.assign(createMockFile("test2.pdf", 2048), { size: 2048 }),
-    Object.assign(createMockFile("test3.pdf", 1048576), { size: 1048576 }),
+    createMockFile("test1.pdf", 1024),
+    createMockFile("test2.pdf", 2048),
+    createMockFile("test3.pdf", 1048576),
   ]
 
   it("ファイルリストが正しくレンダリングされる", () => {
@@ -43,9 +49,9 @@ describe("FileList", () => {
     const mockOnRemove = vi.fn()
 
     const testFiles = [
-      Object.assign(createMockFile("small.pdf", 512), { size: 512 }),
-      Object.assign(createMockFile("medium.pdf", 2048), { size: 2048 }),
-      Object.assign(createMockFile("large.pdf", 2097152), { size: 2097152 }),
+      createMockFile("small.pdf", 512),
+      createMockFile("medium.pdf", 2048),
+      createMockFile("large.pdf", 2097152),
     ]
 
     render(<FileList files={testFiles} onReorder={mockOnReorder} onRemove={mockOnRemove} />)

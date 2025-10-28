@@ -69,7 +69,6 @@ export default function PdfMergerPage() {
       setMergedPdfUrl(url)
       setShowPreview(true)
     } catch (error) {
-      console.error("[v0] Error merging PDFs:", error)
       alert("PDFの結合中にエラーが発生しました")
     } finally {
       setIsProcessing(false)

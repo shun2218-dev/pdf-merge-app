@@ -264,13 +264,9 @@ describe("PdfMergerPage", () => {
       blob: async () => mockBlob,
     } as Response)
 
-    // Mock document.createElement
-    const mockLink = {
-      href: "",
-      download: "",
-      click: vi.fn(),
-    }
-    const createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(mockLink as any)
+    const mockLink = document.createElement("a")
+    mockLink.click = vi.fn()
+    const createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(mockLink)
 
     render(<PdfMergerPage />)
 
