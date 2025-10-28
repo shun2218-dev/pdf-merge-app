@@ -122,6 +122,12 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Added responsive overflow prevention */
+  html,
+  body {
+    @apply overflow-x-hidden;
+    max-width: 100vw;
+  }
   /* Added dark mode styles for react-pdf-viewer */
   .rpv-core__viewer {
     @apply bg-background;
