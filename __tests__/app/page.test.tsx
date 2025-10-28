@@ -264,15 +264,16 @@ describe("PdfMergerPage", () => {
       blob: async () => mockBlob,
     } as Response)
 
+    const originalCreateElement = document.createElement.bind(document)
     const mockClick = vi.fn()
-    const mockLink = document.createElement("a")
+    const mockLink = originalCreateElement("a") as HTMLAnchorElement
     mockLink.click = mockClick
 
     vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
       if (tagName.toLowerCase() === "a") {
         return mockLink
       }
-      return document.createElement(tagName)
+      return originalCreateElement(tagName)
     })
 
     render(<PdfMergerPage />)
