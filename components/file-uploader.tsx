@@ -2,12 +2,21 @@
 
 import { useRef } from "react"
 import { Button } from "@/components/ui/button"
+import { useSentry } from "@/hooks/use-sentry"
 
 interface FileUploaderProps {
   onFilesSelected: (files: File[]) => void
 }
 
+class SentryFrontendError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = "SentryFrontendError";
+  }
+}
+
 export function FileUploader({ onFilesSelected }: FileUploaderProps) {
+  const { setHasSentError } = useSentry()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,6 +25,8 @@ export function FileUploader({ onFilesSelected }: FileUploaderProps) {
 
     if (pdfFiles.length !== selectedFiles.length) {
       alert("PDFファイルのみ選択してください")
+      setHasSentError(true)
+      throw new SentryFrontendError("SentryFrontendError:FileUploader:handleFileChange:PDFファイルのみ選択してください");
     }
 
     if (pdfFiles.length > 0) {
@@ -34,6 +45,8 @@ export function FileUploader({ onFilesSelected }: FileUploaderProps) {
 
     if (pdfFiles.length !== droppedFiles.length) {
       alert("PDFファイルのみ選択してください")
+      setHasSentError(true)
+      throw new SentryFrontendError("SentryFrontendError:FileUploader:handleDrop:PDFファイルのみ選択してください");
     }
 
     if (pdfFiles.length > 0) {
