@@ -2,17 +2,10 @@
 
 import { useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { useSentry } from "@/hooks/use-sentry"
+import { SentryFrontendError, useSentry } from "@/hooks/use-sentry"
 
 interface FileUploaderProps {
   onFilesSelected: (files: File[]) => void
-}
-
-class SentryFrontendError extends Error {
-  constructor(message: string | undefined) {
-    super(message);
-    this.name = "SentryFrontendError";
-  }
 }
 
 export function FileUploader({ onFilesSelected }: FileUploaderProps) {

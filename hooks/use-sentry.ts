@@ -20,3 +20,10 @@ export const useSentry = () => {
         setIsConnected,
       }
 }
+
+export class SentryFrontendError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = "SentryFrontendError";
+  }
+}
