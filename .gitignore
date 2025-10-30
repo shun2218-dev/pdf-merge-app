@@ -27,3 +27,7 @@ yarn-error.log*
 
 # vitest
 /coverage
+
+
+*storybook.log
+storybook-static

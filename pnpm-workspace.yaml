@@ -1,0 +1,6 @@
+onlyBuiltDependencies:
+  - canvas
+  - edgedriver
+  - esbuild
+  - geckodriver
+  - sharp
