@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
@@ -29,7 +29,7 @@
     }
   },
   "files": [
-    "types/styles.d.ts" 
+    "types/styles.d.ts"
   ],
   "include": [
     "next-env.d.ts",
