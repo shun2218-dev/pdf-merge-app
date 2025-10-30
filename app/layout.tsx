@@ -20,7 +20,13 @@ export const metadata: Metadata = {
     title,
     description,
   },
-  keywords: "PDF結合, PDF merge, PDFツール, オンラインPDF, 無料PDFツール"
+  keywords: "PDF結合, PDF merge, PDFツール, オンラインPDF, 無料PDFツール",
+  appleWebApp: {
+    title: "PDF Merge App",
+    capable: true,
+    statusBarStyle: "black-translucent",
+    startupImage: "/opengraph-image.png",
+  }
 }
 
 export const viewport: Viewport = {
