@@ -50,6 +50,7 @@ export function FileUploader({ onFilesSelected }: FileUploaderProps) {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       className="rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center transition-colors hover:border-primary/50 hover:bg-muted/50"
+      data-testid="dropzone"
     >
       <div className="flex flex-col items-center gap-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -84,6 +85,7 @@ export function FileUploader({ onFilesSelected }: FileUploaderProps) {
           multiple
           onChange={handleFileChange}
           className="hidden"
+          data-testid="file-input"
         />
       </div>
     </div>

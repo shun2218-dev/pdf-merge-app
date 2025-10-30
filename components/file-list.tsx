@@ -100,6 +100,7 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
               size="icon"
               onClick={() => onRemove(index)}
               className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              aria-label="削除する"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -110,7 +111,7 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinejoin="round"                
               >
                 <path d="M18 6 6 18" />
                 <path d="m6 6 12 12" />

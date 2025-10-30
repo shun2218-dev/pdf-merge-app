@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { FileList } from "./file-list"
-import { fn } from "storybook/test"
+import { fn, userEvent, within, fireEvent, expect } from "storybook/test";
 
 const meta = {
   title: "Components/FileList",
@@ -12,7 +12,7 @@ const meta = {
   args: {
     onReorder: fn(),
     onRemove: fn(),
-  },
+  }
 } satisfies Meta<typeof FileList>
 
 export default meta
@@ -58,3 +58,48 @@ export const InCard: Story = {
     ),
   ],
 }
+
+export const TestRemoveFile: Story = {
+  args: {
+    files: mockFiles,
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    
+    // "削除する" ボタンをすべて検索
+    const removeButtons = await canvas.findAllByLabelText("削除する");
+    
+    // 2番目のファイル（document2.pdf）の削除ボタンをクリック
+    await userEvent.click(removeButtons[1]);
+    
+    // onRemove が正しいインデックス（1）で呼ばれたことを確認
+    await expect(args.onRemove).toHaveBeenCalledWith(1);
+  },
+};
+
+export const TestReorderFiles: Story = {
+  args: {
+    files: mockFiles,
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+
+    // ドラッグするアイテム（document1.pdf）を取得
+    const itemToDrag = canvas.getByText("document1.pdf");
+    
+    // ドロップ先のアイテム（document2.pdf）を取得
+    const dropTarget = canvas.getByText("document2.pdf");
+
+    // ドラッグ開始 (document1.pdf)
+    await fireEvent.dragStart(itemToDrag);
+    
+    // document2.pdf の上にドラッグ
+    await fireEvent.dragOver(dropTarget);
+
+    // ドロップ（ドラッグ終了）
+    await fireEvent.dragEnd(itemToDrag);
+
+    // onReorder が (index 0 を index 1 へ) で呼ばれたことを確認
+    await expect(args.onReorder).toHaveBeenCalledWith(0, 1);
+  },
+};

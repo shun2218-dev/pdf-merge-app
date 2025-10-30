@@ -8,7 +8,7 @@ const preview: Preview = {
        color: /(background|color)$/i,
        date: /Date$/i,
       },
-    },
+    },    
 
     a11y: {
       // 'todo' - show a11y violations in the test UI only
@@ -16,7 +16,7 @@ const preview: Preview = {
       // 'off' - skip a11y checks entirely
       test: 'todo'
     }
-  },
+  }
 };
 
 export default preview;
