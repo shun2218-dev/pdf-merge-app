@@ -1,7 +1,8 @@
 {
-  "name": "my-v0-project",
+  "name": "pdf-merge-app",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
@@ -46,9 +47,6 @@
     "@testing-library/dom": "latest",
     "@types/debug": "latest",
     "@vercel/analytics": "latest",
-    "@vitest/browser-playwright": "latest",
-    "@vitest/browser-preview": "latest",
-    "@vitest/browser-webdriverio": "latest",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -83,15 +81,19 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/browser": "^2.1.8",
-    "@vitest/ui": "^2.1.8",
+    "@vitejs/plugin-react": "^5.1.0",
+    "@vitest/browser": "^4.0.5",
+    "@vitest/browser-playwright": "^4.0.5",
+    "@vitest/browser-preview": "^4.0.5",
+    "@vitest/browser-webdriverio": "^4.0.5",
+    "@vitest/coverage-v8": "^4.0.5",
+    "@vitest/ui": "^4.0.5",
     "jsdom": "^25.0.1",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5",
     "vite": "^6.0.7",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.5"
   }
 }
