@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { FileUploader } from "@/components/file-uploader"
 import { FileList } from "@/components/file-list"
 import { Header } from "@/components/header"
+import { SentryFrontendError, useSentry } from "@/hooks/use-sentry"
 
 const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) => mod.PdfPreview), {
   ssr: false,
@@ -22,6 +23,7 @@ export default function PdfMergerPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [mergedPdfUrl, setMergedPdfUrl] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  useSentry()
 
   const handleFilesSelected = (newFiles: File[]) => {
     setFiles((prev) => [...prev, ...newFiles])
@@ -60,7 +62,7 @@ export default function PdfMergerPage() {
       })
 
       if (!response.ok) {
-        throw new Error("PDFの結合に失敗しました")
+        throw new SentryFrontendError("SentryFrontendError:PdfMergerPage:handlePreview:PDFの結合中にエラーが発生しました")
       }
 
       const blob = await response.blob()
