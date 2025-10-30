@@ -46,6 +46,7 @@
     "@radix-ui/react-tooltip": "latest",
     "@react-pdf-viewer/core": "latest",
     "@react-pdf-viewer/default-layout": "latest",
+    "@sentry/nextjs": "^10.22.0",
     "@vercel/analytics": "latest",
     "@vitest/runner": "latest",
     "autoprefixer": "^10.4.20",
