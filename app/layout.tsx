@@ -1,15 +1,33 @@
+import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "@/styles/globals.css"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const title = "PDF Merge App - 複数のPDFファイルを簡単に結合"
+const description = "ブラウザ上で複数のPDFファイルを簡単に結合できる無料ツール。ドラッグ&ドロップで順序を変更し、プレビューを確認しながら1つのPDFにまとめられます。"
+
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title,
+  description,  
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    url: "https://vercel.com/shun2218devs-projects/pdf-merge-app"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+  keywords: "PDF結合, PDF merge, PDFツール, オンラインPDF, 無料PDFツール",
+  appleWebApp: {
+    title: "PDF Merge App",
+    capable: true,
+    statusBarStyle: "black-translucent",
+    startupImage: "/opengraph-image.png",
+  }
 }
 
 export const viewport: Viewport = {
