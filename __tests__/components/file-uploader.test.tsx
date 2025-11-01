@@ -22,8 +22,8 @@ vi.mock("@/hooks/use-sentry", () => {
 });
 
 describe("FileUploader", () => {
-  let consoleErrorSpy: Mock<() => Console['error']>;
-  let alertSpy: Mock<() => Window['alert']>;
+  let consoleErrorSpy: Mock<Console['error']>;
+  let alertSpy: Mock<Window['alert']>;
 
   beforeEach(() => {    
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
