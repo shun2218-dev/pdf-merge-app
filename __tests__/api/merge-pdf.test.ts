@@ -45,9 +45,14 @@ describe("POST /api/merge-pdf", () => {
       value: vi.fn().mockResolvedValue(buffer2.buffer as ArrayBuffer),
     });
 
-    const mockFormData = new FormData();
-    mockFormData.append("files", mockPdfFile1);
-    mockFormData.append("files", mockPdfFile2);
+    const mockFormData = {
+      getAll: vi.fn((key: string) => {
+        if (key === 'files') {          
+          return [mockPdfFile1, mockPdfFile2];
+        }
+        return [];
+      }),
+    };
     const request = {
       formData: vi.fn().mockResolvedValue(mockFormData)
     } as unknown as NextRequest;
@@ -66,7 +71,9 @@ describe("POST /api/merge-pdf", () => {
   });
 
   it("ファイルが0個の場合に400エラーを返す", async () => {
-    const mockFormData = new FormData();
+    const mockFormData = {
+      getAll: vi.fn(() => []),
+    };
     const request = {
       formData: vi.fn().mockResolvedValue(mockFormData)
     } as unknown as NextRequest;
@@ -86,8 +93,14 @@ describe("POST /api/merge-pdf", () => {
     Object.defineProperty(mockPdfFile1, 'arrayBuffer', {
       value: vi.fn().mockResolvedValue(buffer1.buffer as ArrayBuffer),
     });
-    const mockFormData = new FormData();
-    mockFormData.append("files", mockPdfFile1);
+    const mockFormData = {
+      getAll: vi.fn((key: string) => {
+        if (key === 'files') {
+          return [mockPdfFile1];
+        }
+        return [];
+      }),
+    };    
     const request = {
       formData: vi.fn().mockResolvedValue(mockFormData)
     } as unknown as NextRequest;
