@@ -1,9 +1,41 @@
-import { describe, it, expect, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, Mock, afterEach } from "vitest"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { FileUploader } from "@/components/file-uploader"
+import { SentryFrontendError } from "@/hooks/use-sentry";
+
+
+vi.mock("@/hooks/use-sentry", () => {
+  class MockSentryError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "MockSentryError";
+    }
+  }
+
+  return {
+    useSentry: () => ({
+      setHasSentError: vi.fn(),
+    }),
+    SentryFrontendError: MockSentryError, 
+  }
+});
 
 describe("FileUploader", () => {
+  let consoleErrorSpy: Mock<() => Console['error']>;
+  let alertSpy: Mock<() => Window['alert']>;
+
+  beforeEach(() => {    
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    alertSpy.mockRestore();
+    vi.clearAllMocks();
+  });
+
   it("ファイル選択ボタンが表示される", () => {
     const mockOnFilesSelected = vi.fn()
     render(<FileUploader onFilesSelected={mockOnFilesSelected} />)
@@ -16,7 +48,6 @@ describe("FileUploader", () => {
     const mockOnFilesSelected = vi.fn()
     render(<FileUploader onFilesSelected={mockOnFilesSelected} />)
 
-    const button = screen.getByText("ファイルを選択")
     const input = document.querySelector('input[type="file"]') as HTMLInputElement
 
     expect(input).toBeInTheDocument()
@@ -51,7 +82,6 @@ describe("FileUploader", () => {
 
   it("PDF以外のファイルを選択するとアラートが表示される", async () => {
     const mockOnFilesSelected = vi.fn()
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
     render(<FileUploader onFilesSelected={mockOnFilesSelected} />)
 
@@ -62,12 +92,11 @@ describe("FileUploader", () => {
       value: [txtFile],
       writable: false,
     })
-    fireEvent.change(input)
-
-    expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください")
+    fireEvent.change(input);
+    
+    expect(consoleErrorSpy).toHaveBeenCalledWith(new SentryFrontendError("SentryFrontendError:FileUploader:handleFileChange:PDFファイルのみ選択してください"));
+    expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
     expect(mockOnFilesSelected).not.toHaveBeenCalled()
-
-    alertSpy.mockRestore()
   })
 
   it("ドラッグ&ドロップでPDFファイルを追加できる", () => {
@@ -102,9 +131,8 @@ describe("FileUploader", () => {
     expect(dropZone).toBeInTheDocument()
   })
 
-  it("ドロップ時にPDF以外のファイルを拒否する", () => {
+  it("ドロップ時にPDF以外のファイルを拒否する", async () => {
     const mockOnFilesSelected = vi.fn()
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
     render(<FileUploader onFilesSelected={mockOnFilesSelected} />)
 
@@ -117,11 +145,10 @@ describe("FileUploader", () => {
     }
     dropEvent.preventDefault = vi.fn()
 
-    fireEvent.drop(dropZone!, dropEvent)
+    fireEvent.drop(dropZone!, dropEvent);
 
-    expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください")
+    expect(consoleErrorSpy).toHaveBeenCalledWith(new SentryFrontendError("SentryFrontendError:FileUploader:handleDrop:PDFファイルのみ選択してください"));
+    expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
     expect(mockOnFilesSelected).not.toHaveBeenCalled()
-
-    alertSpy.mockRestore()
   })
 })

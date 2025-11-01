@@ -24,6 +24,22 @@ vi.mock("@/components/file-uploader", () => ({
   ),
 }))
 
+vi.mock("@/hooks/use-sentry", () => {
+  class MockSentryError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "MockSentryError";
+    }
+  }
+
+  return {
+    useSentry: () => ({
+      setHasSentError: vi.fn(),
+    }),
+    SentryFrontendError: MockSentryError, 
+  }
+});
+
 vi.mock("@/components/file-list", () => ({
   FileList: ({ files, onReorder, onRemove }: any) => (
     <div data-testid="file-list">
