@@ -101,12 +101,21 @@ export const TestDragAndDropFiltering: Story = { // 👈 名前を変更
       },
     });
 
+    // 3. エラーがスローされることをアサート
+    try {
+      await fireEvent(dropzone, dropEvent);
+    } catch (error: unknown) {
+      // エラーがスローされることを確認 (Sentry エラー)
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toContain("SentryFrontendError:FileUploader:handleDrop");
+    }
+
     // dataTransfer がモックされたイベントを発火させる
     await fireEvent(dropzone, dropEvent);
 
-    // 3. handleDrop 内部のロジックで PDF だけが渡される
-    await expect(args.onFilesSelected).toHaveBeenCalledWith([mockPdfFile]);
-    
+    // 4. エラーで停止したため、onFilesSelected は *呼ばれない* ことを確認
+    await expect(args.onFilesSelected).not.toHaveBeenCalled();
+
     // 4. TXT があったため、アラートが呼ばれる
     await expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
 

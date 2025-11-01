@@ -7,8 +7,13 @@ export const useSentry = () => {
       
       useEffect(() => {
         async function checkConnectivity() {
-          const result = await Sentry.diagnoseSdkConnectivity();
-          setIsConnected(result !== 'sentry-unreachable');
+            try {                
+                const result = await Sentry.diagnoseSdkConnectivity();
+                setIsConnected(result !== 'sentry-unreachable');
+            } catch(e: unknown) {
+                setHasSentError(true);
+                console.error(e);
+            }
         }
         checkConnectivity();
       }, []);
