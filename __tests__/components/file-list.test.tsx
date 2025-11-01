@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
-import { FileList } from "@/components/file-list"
+import { FileList } from "../../components/file-list"
 
 describe("FileList", () => {
   const createMockFile = (name: string, size: number): File => {

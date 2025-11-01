@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { FileList } from "./file-list"
 import { fn, userEvent, within, fireEvent, expect } from "storybook/test";
+import { useArgs } from "storybook/internal/preview-api";
 
 const meta = {
   title: "Components/FileList",
@@ -18,16 +19,34 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const mockFiles = [
+const mockFiles: File[]= [
   new File(["content1"], "document1.pdf", { type: "application/pdf" }),
   new File(["content2"], "document2.pdf", { type: "application/pdf" }),
   new File(["content3"], "document3.pdf", { type: "application/pdf" }),
 ]
 
-export const Default: Story = {
+export const IntractionDefault: Story = {
   args: {
     files: mockFiles,
   },
+  render: (args) => {
+    const [currentArgs, updateArgs] = useArgs<{files: File[]}>();
+    const handleReorder = (fromIndex: number, toIndex: number) => {
+      const newFiles = [...currentArgs.files]
+      const [removed] = newFiles.splice(fromIndex, 1)
+      newFiles.splice(toIndex, 0, removed)
+      updateArgs({ files: newFiles })
+      args.onReorder(fromIndex, toIndex)   
+    }
+
+    const handleRemove = (index: number) => {
+      const newFIles = currentArgs.files.filter((_, i) => i !== index)
+      updateArgs({ files: newFIles })
+      args.onRemove(index)
+    }
+
+    return <FileList {...args} files={currentArgs.files} onReorder={handleReorder} onRemove={handleRemove} />
+  }
 }
 
 export const SingleFile: Story = {
