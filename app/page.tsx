@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useState } from "react";
+import { FileList } from "@/components/file-list";
+import { FileUploader } from "@/components/file-uploader";
+import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FileUploader } from "@/components/file-uploader";
-import { FileList } from "@/components/file-list";
-import { Header } from "@/components/header";
 import { SentryFrontendError, useSentry } from "@/hooks/use-sentry";
 
 const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) => mod.PdfPreview), {
@@ -72,7 +72,7 @@ export default function PdfMergerPage() {
 
 			setMergedPdfUrl(url);
 			setShowPreview(true);
-		} catch (error) {
+		} catch (_: unknown) {
 			alert("PDFの結合中にエラーが発生しました");
 		} finally {
 			setIsProcessing(false);
@@ -151,7 +151,7 @@ export default function PdfMergerPage() {
 												strokeLinejoin="round"
 												className="mr-2"
 											>
-												<title>{isProcessing ? "処理中..." : "プレビュー"}</title>
+												<title>{isProcessing ? "Loading..." : "Preview"}</title>
 												<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
 												<circle cx="12" cy="12" r="3" />
 											</svg>
@@ -170,7 +170,7 @@ export default function PdfMergerPage() {
 												strokeLinejoin="round"
 												className="mr-2"
 											>
-												<title>ダウンロード</title>
+												<title>Download</title>
 												<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
 												<polyline points="8 10 12 14 16 10" />
 												<line x1="12" x2="12" y1="14" y2="3" />

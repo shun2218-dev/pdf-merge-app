@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, Mock, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { FileUploader } from "@/components/file-uploader";
 import { SentryFrontendError } from "@/hooks/use-sentry";
 
@@ -115,12 +115,12 @@ describe("FileUploader", () => {
 			type: "application/pdf",
 		});
 
-		const dropEvent = new Event("drop", { bubbles: true }) as any;
-		dropEvent.dataTransfer = {
-			files: [pdfFile],
-		};
-
-		fireEvent.drop(dropZone!, dropEvent);
+		// biome-ignore lint/style/noNonNullAssertion: There is dropZone
+		fireEvent.drop(dropZone!, {
+			dataTransfer: {
+				files: [pdfFile],
+			},
+		});
 
 		expect(mockOnFilesSelected).toHaveBeenCalledWith([pdfFile]);
 	});
@@ -131,6 +131,7 @@ describe("FileUploader", () => {
 
 		const dropZone = screen.getByText("ファイルをドラッグ&ドロップ").closest("div");
 
+		// biome-ignore lint/style/noNonNullAssertion: There is dropZone
 		fireEvent.dragOver(dropZone!, {
 			dataTransfer: {
 				files: [],
@@ -148,13 +149,12 @@ describe("FileUploader", () => {
 		const dropZone = screen.getByText("ファイルをドラッグ&ドロップ").closest("div");
 		const txtFile = new File(["content"], "test.txt", { type: "text/plain" });
 
-		const dropEvent = new Event("drop", { bubbles: true }) as any;
-		dropEvent.dataTransfer = {
-			files: [txtFile],
-		};
-		dropEvent.preventDefault = vi.fn();
-
-		fireEvent.drop(dropZone!, dropEvent);
+		// biome-ignore lint/style/noNonNullAssertion: There is dropZone
+		fireEvent.drop(dropZone!, {
+			dataTransfer: {
+				files: [txtFile],
+			},
+		});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			new SentryFrontendError("SentryFrontendError:FileUploader:handleDrop:PDFファイルのみ選択してください"),

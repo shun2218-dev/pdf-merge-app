@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { createEvent, expect, fireEvent, fn, spyOn, userEvent, within } from "storybook/test";
 import { FileUploader } from "./file-uploader";
-import { fn, userEvent, within, fireEvent, expect, spyOn, createEvent } from "storybook/test";
 
 const meta = {
 	title: "Components/FileUploader",

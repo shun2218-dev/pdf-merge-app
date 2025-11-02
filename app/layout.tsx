@@ -1,6 +1,6 @@
-import type React from "react";
-import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import type { Metadata, Viewport } from "next";
+import type React from "react";
 import "@/styles/globals.css";
 
 const title = "PDF Merge App - 複数のPDFファイルを簡単に結合";

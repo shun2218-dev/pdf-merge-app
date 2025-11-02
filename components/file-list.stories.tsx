@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { FileList } from "./file-list";
-import { fn, userEvent, within, fireEvent, expect } from "storybook/test";
 import { useArgs } from "storybook/internal/preview-api";
+import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
+import { FileList } from "./file-list";
 
 const meta = {
 	title: "Components/FileList",

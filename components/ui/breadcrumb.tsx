@@ -1,6 +1,6 @@
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -41,9 +41,11 @@ function BreadcrumbLink({
 
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: Created by shadcn/ui
 		<span
 			data-slot="breadcrumb-page"
 			role="link"
+			tabIndex={-1}
 			aria-disabled="true"
 			aria-current="page"
 			className={cn("text-foreground font-normal", className)}

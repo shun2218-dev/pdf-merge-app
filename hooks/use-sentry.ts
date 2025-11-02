@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { useEffect, useState } from "react";
 
 export const useSentry = () => {
 	const [hasSentError, setHasSentError] = useState(false);

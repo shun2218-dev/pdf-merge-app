@@ -1,11 +1,10 @@
 "use client";
 
-import * as React from "react";
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -115,6 +114,7 @@ function Carousel({
 				canScrollNext,
 			}}
 		>
+			{/** biome-ignore lint/a11y/useSemanticElements: Created by shadcn/ui */}
 			<div
 				onKeyDownCapture={handleKeyDown}
 				className={cn("relative", className)}
@@ -143,6 +143,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
 	const { orientation } = useCarousel();
 
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: Created by shadcn/ui
 		<div
 			role="group"
 			aria-roledescription="slide"

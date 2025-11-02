@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
 				"Content-Disposition": 'attachment; filename="merged.pdf"',
 			},
 		});
-	} catch (error) {
-		console.error("[v0] Error merging PDFs:", error);
+	} catch (error: unknown) {
+		console.error("Error merging PDFs:", error);
 		return NextResponse.json({ error: "PDFの結合中にエラーが発生しました" }, { status: 500 });
 	}
 }

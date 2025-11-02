@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { POST } from "@/app/api/merge-pdf/route";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { POST } from "@/app/api/merge-pdf/route";
 
 let mockPdfBytes: Uint8Array;
-let mockMergedPdf: any;
+let mockMergedPdf: PDFDocument;
 
 vi.mock("pdf-lib", () => ({
 	PDFDocument: {
@@ -21,7 +21,7 @@ describe("POST /api/merge-pdf", () => {
 			copyPages: vi.fn().mockResolvedValue([{ id: "mockPage" }]),
 			addPage: vi.fn(),
 			save: vi.fn().mockResolvedValue(mockPdfBytes),
-		};
+		} as unknown as PDFDocument;
 
 		vi.mocked(PDFDocument.create).mockResolvedValue(mockMergedPdf);
 

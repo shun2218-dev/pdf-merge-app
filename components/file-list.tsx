@@ -29,9 +29,9 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 	};
 
 	const formatFileSize = (bytes: number) => {
-		if (bytes < 1024) return bytes + " B";
-		if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-		return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+		if (bytes < 1024) return `${bytes} B`;
+		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 	};
 
 	return (
@@ -60,7 +60,7 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 							strokeLinecap="round"
 							strokeLinejoin="round"
 						>
-							<title>ファイルの順番を調整</title>
+							<title>Reorder File</title>
 							<circle cx="9" cy="12" r="1" />
 							<circle cx="9" cy="5" r="1" />
 							<circle cx="9" cy="19" r="1" />
@@ -82,7 +82,7 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 							strokeLinejoin="round"
 							className="text-primary"
 						>
-							<title>PDFファイル</title>
+							<title>PDF File</title>
 							<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
 							<polyline points="14 2 14 8 20 8" />
 							<line x1="16" x2="8" y1="13" y2="13" />
@@ -116,7 +116,7 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 								strokeLinecap="round"
 								strokeLinejoin="round"
 							>
-								<title>削除する</title>
+								<title>Delete</title>
 								<path d="M18 6 6 18" />
 								<path d="m6 6 12 12" />
 							</svg>

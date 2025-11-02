@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { MinusIcon } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -59,7 +59,9 @@ function InputOTPSlot({
 
 function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
 	return (
-		<div data-slot="input-otp-separator" role="separator" {...props}>
+		// biome-ignore lint/a11y/useSemanticElements: Created by shadcn/ui
+		// biome-ignore lint/a11y/useAriaPropsForRole: Created by shadcn/ui
+		<div data-slot="input-otp-separator" role="separator" tabIndex={-1} {...props}>
 			<MinusIcon />
 		</div>
 	);
