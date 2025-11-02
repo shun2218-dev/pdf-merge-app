@@ -23,4 +23,4 @@ jobs:
       - name: Install Playwright
         run: pnpm exec playwright install
       - name: Run unit tests
-        run: pnpm run test:ui
+        run: pnpm run test:unit
