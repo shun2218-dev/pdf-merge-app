@@ -1,30 +1,80 @@
-# PDF merge app
+# PDF Merge App
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+ブラウザ上で複数のPDFファイルを簡単に結合できるWebアプリケーションです。ドラッグ＆ドロップによる直感的な操作で、ファイルのアップロードや並び替えが可能です。
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/shun2218devs-projects/v0-pdf-merge-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/P8lSIF1nK7e)
+**デモURL:** <https://pdf-merge-app-nine.vercel.app/>
 
-## Overview
+## 概要
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+このプロジェクトは、Next.js 15 (App Router) と `pdf-lib` ライブラリを使用して構築したPDF結合ツールです。モダンなフロントエンド技術とサーバーレスアーキテクチャ（Vercel Edge Functions）の実践的な活用を目的として開発しました。
 
-## Deployment
+## 主な機能
 
-Your project is live at:
+* **ドラッグ＆ドロップによるファイルアップロード:**
+  * `.pdf` ファイルのみを受け付けるフィルタリング機能
+  * Sentry と連携したエラーハンドリング
+* **ファイルの並び替え:**
+  * アップロードしたファイルをドラッグ＆ドロップで直感的に並び替え可能
+* **リアルタイムプレビュー:**
+  * 結合後のPDFをサーバーサイド（Edge）で生成し、`@react-pdf-viewer` を使ってクライアントでプレビュー表示
+* **ファイルのダウンロード:**
+  * 結合されたPDFを `merged.pdf` としてダウンロード
 
-**[https://vercel.com/shun2218devs-projects/v0-pdf-merge-app](https://vercel.com/shun2218devs-projects/v0-pdf-merge-app)**
+## アーキテクチャと技術スタック
 
-## Build your app
+### Edge Runtime によるPDF処理
 
-Continue building your app on:
+従来のサーバーレス（Node.js）ではなく、**Vercel Edge Runtime** 上でPDFの結合処理（`/api/merge-pdf`）を実行
 
-**[https://v0.app/chat/projects/P8lSIF1nK7e](https://v0.app/chat/projects/P8lSIF1nK7e)**
+* **高速な API 応答:** ユーザーに近いエッジサーバーで動作するため、コールドブートがほぼ発生せず、高速なレスポンスを実現
+* **バイナリデータの取り扱い:** Edge Runtime 上で `pdf-lib` を動作させ、`File` オブジェクトの `arrayBuffer()` を処理し、結合後のPDFバイナリデータをストリーミングで返却
 
-## How It Works
+### モダンなフロントエンド構成
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+* **Next.js 15 (App Router):** `page.tsx` に `"use client"` を明記し、React Server Components (RSC) のアーキテクチャを意識したクライアントコンポーネントとして構築
+* **React 19:** 最新のReactの機能を採用
+* **TypeScript:** 型安全な開発を徹底
+* **Tailwind CSS & shadcn/ui:** モダンでレスポンシブなUIを効率的に構築
+
+### 堅牢なテストスイート
+
+* **Vitest:** `__tests__` ディレクトリで、コンポーネントのロジックやAPIルートのユニットテストを管理。`vi.mock` を活用し、`pdf-lib` や Sentry などの外部依存を分離したテストを実行
+* **Storybook:** `play` 関数を用いたインタラクションテスト（ドラッグ＆ドロップ、ファイル削除など）を実装し、UIコンポーネントの分離とカバレッジ向上を実現
+* **GitHub Actions:** プルリクエストごとに `pnpm run test:unit` を実行し、コードの品質を自動で担保
+
+### 使用技術一覧
+
+* **フレームワーク:** Next.js 15 (App Router)
+* **言語:** TypeScript
+* **スタイリング:** Tailwind CSS, shadcn/ui
+* **PDF処理:** `pdf-lib`
+* **テスト:** Vitest, Storybook (v10), Testing Library
+* **リンター/フォーマッター:** Biome.js
+* **デプロイ:** Vercel (Edge Functions)
+* **パッケージ管理:** pnpm
+
+## ローカル開発環境セットアップ
+
+1. リポジトリをクローン
+```bash
+git clone [https://github.com/shun2218-dev/pdf-merge-app.git](https://github.com/shun2218-dev/pdf-merge-app.git)
+cd pdf-merge-app
+```
+2. 依存関係をインストール
+```bash
+pnpm install
+```
+3. 開発サーバーを起動
+```bash
+pnpm dev
+```
+ブラウザで `http://localhost:3000` を開く
+### テストの実行
+* **ユニットテスト (Vitest):**
+```bash
+pnpm run test:unit
+```
+* **コンポーネントテスト (Storybook):**
+```bash
+pnpm storybook
+```

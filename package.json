@@ -12,7 +12,7 @@
 		"lint": "biome lint --write .",
 		"check": "biome check --write .",
 		"storybook": "storybook dev -p 6006",
-		"test": "vitest",
+		"test:unit": "vitest",
 		"test:coverage": "vitest --coverage",
 		"test:ui": "vitest --ui"
 	},
