@@ -45,11 +45,21 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Find Previous Comment
+      id: fc
+      uses: peter-evans/find-comment@v3
+      if: always() && github.event_name == 'pull_request'
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+        body-includes: '### 🤖 E2E テスト (Playwright) が完了しました'
     - name: Post E2E Test Comment
       uses: peter-evans/create-or-update-comment@v4
       if: always() && github.event_name == 'pull_request'
       with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
+        edit-mode: replace
         body: |
           ### 🤖 E2E テスト (Playwright) が完了しました
 
