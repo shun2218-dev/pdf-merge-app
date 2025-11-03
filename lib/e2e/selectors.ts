@@ -1,44 +1,44 @@
 export const SELECTORS = {
-  // --- FileUploader (from file-uploader.tsx) ---
-  /** FileUploader のドラッグ＆ドロップ領域 */
-  FILE_UPLOADER_DROPZONE: '[data-testid="dropzone"]',
-  /** FileUploader の <input type="file"> (hidden) */
-  FILE_INPUT: '[data-testid="file-input"]',
-  
-  // --- FileList (from file-list.tsx) ---
-  /** FileList 全体のコンテナ */
-  FILE_LIST_CONTAINER: '[data-testid="file-list"]',
-  
-  /**
-   * file-list.tsx 内の特定のファイル名を持つアイテムコンテナ <div>
-   * @param name ファイル名 (e.g., "dummy1.pdf")
-   */
-  fileItemContainer: (name: string) => `[data-testid="file-item-container-${name}"]`,
-  
-  /**
-   * file-list.tsx 内の特定のファイル名を持つ <p> タグ
-   * @param name ファイル名 (e.g., "dummy1.pdf")
-   */
-  fileName: (name: string) => `[data-testid="file-item-container-${name}"] >> [data-testid="file-name"]`,
-  
-  /**
-   * file-list.tsx 内の特定のファイルに対応する「削除する」ボタン
-   * @param name ファイル名 (e.g., "dummy1.pdf")
-   */
-  removeButton: (name: string) => `[data-testid="file-item-container-${name}"] >> [aria-label="削除する"]`,
+	// --- FileUploader (from file-uploader.tsx) ---
+	/** FileUploader のドラッグ＆ドロップ領域 */
+	FILE_UPLOADER_DROPZONE: '[data-testid="dropzone"]',
+	/** FileUploader の <input type="file"> (hidden) */
+	FILE_INPUT: '[data-testid="file-input"]',
 
-  /**
-   * file-list.tsx 内の特定のファイルに対応する「ドラッグハンドル」
-   * @param name ファイル名 (e.g., "dummy1.pdf")
-   */
-  dragHandle: (name: string) => `[data-testid="file-item-container-${name}"] >> [data-testid="drag-handle"]`,
+	// --- FileList (from file-list.tsx) ---
+	/** FileList 全体のコンテナ */
+	FILE_LIST_CONTAINER: '[data-testid="file-list"]',
 
-  // --- Buttons (from page.tsx) ---
-  PREVIEW_BUTTON: 'button:has-text("プレビュー")',
-  DOWNLOAD_BUTTON: 'button:has-text("ダウンロード")',
-  PROCESSING_BUTTON: 'button:has-text("処理中...")',
+	/**
+	 * file-list.tsx 内の特定のファイル名を持つアイテムコンテナ <div>
+	 * @param name ファイル名 (e.g., "dummy1.pdf")
+	 */
+	fileItemContainer: (name: string) => `[data-testid="file-item-container-${name}"]`,
 
-  // --- Preview (from pdf-preview.tsx) ---
-  /** PdfPreview コンポーネントのルート <div> */
-  PDF_PREVIEW: 'div.h-\\[800px\\].w-full.rounded-lg.border',
+	/**
+	 * file-list.tsx 内の特定のファイル名を持つ <p> タグ
+	 * @param name ファイル名 (e.g., "dummy1.pdf")
+	 */
+	fileName: (name: string) => `[data-testid="file-item-container-${name}"] >> [data-testid="file-name"]`,
+
+	/**
+	 * file-list.tsx 内の特定のファイルに対応する「削除する」ボタン
+	 * @param name ファイル名 (e.g., "dummy1.pdf")
+	 */
+	removeButton: (name: string) => `[data-testid="file-item-container-${name}"] >> [aria-label="削除する"]`,
+
+	/**
+	 * file-list.tsx 内の特定のファイルに対応する「ドラッグハンドル」
+	 * @param name ファイル名 (e.g., "dummy1.pdf")
+	 */
+	dragHandle: (name: string) => `[data-testid="file-item-container-${name}"] >> [data-testid="drag-handle"]`,
+
+	// --- Buttons (from page.tsx) ---
+	PREVIEW_BUTTON: 'button:has-text("プレビュー")',
+	DOWNLOAD_BUTTON: 'button:has-text("ダウンロード")',
+	PROCESSING_BUTTON: 'button:has-text("処理中...")',
+
+	// --- Preview (from pdf-preview.tsx) ---
+	/** PdfPreview コンポーネントのルート <div> */
+	PDF_PREVIEW: "div.h-\\[800px\\].w-full.rounded-lg.border",
 };
