@@ -3,11 +3,11 @@ name: Unit Tests
 on:
   pull_request:
     branches: [ main ]
-  permissions:
-      pull-requests: write
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
