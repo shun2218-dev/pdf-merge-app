@@ -1,9 +1,11 @@
 name: Playwright Tests
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  permissions:
+      pull-requests: write
 jobs:
   test:
     timeout-minutes: 60
@@ -33,3 +35,15 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Post E2E Test Comment
+      uses: peter-evans/create-or-update-comment@v4
+      if: always() && github.event_name == 'pull_request'
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ### 🤖 E2E テスト (Playwright) が完了しました
+
+          - **結果:** ${{ steps.playwright-test.outcome == 'success' && '✅ 成功' || '❌ 失敗' }}
+
+          [詳細なHTMLレポートはこちら (要ログイン)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)
+          *(上記リンク先の "playwright-report" をダウンロードしてください)*
