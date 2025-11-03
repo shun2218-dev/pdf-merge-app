@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html lang="ja" className="dark">
 			<body className={`font-sans antialiased`}>
 				{children}
-				<Analytics />
+				{process.env.NODE_ENV === "production" && <Analytics />}
 			</body>
 		</html>
 	);
