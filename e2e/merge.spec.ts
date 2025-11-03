@@ -28,7 +28,7 @@ test.describe("PDF Merger E2E Test", () => {
 
 	test("ファイルをアップロード(TXTファイル)", async ({ page }) => {
 		page.on("dialog", async (dialog) => {
-			expect(dialog.message()).toBe("PDFファイルのみ選択してください")
+			expect(dialog.message()).toBe("PDFファイルのみ選択してください");
 			await dialog.accept();
 		});
 
@@ -48,7 +48,7 @@ test.describe("PDF Merger E2E Test", () => {
 		// ステップ2が表示されていることを確認
 		await expect(page.getByText("ステップ 2: ファイルの順番を調整")).toBeVisible();
 
-		// 1. dummy1.pdf の削除ボタンをクリック		
+		// 1. dummy1.pdf の削除ボタンをクリック
 		await page.locator(SELECTORS.removeButton("dummy1.pdf")).click();
 
 		// 2. dummy1.pdf がリストから消えることを確認
@@ -70,10 +70,11 @@ test.describe("PDF Merger E2E Test", () => {
 		await dragHandle.dispatchEvent("dragstart");
 		await dropTargetContainer.dispatchEvent("dragover");
 		await dragHandle.dispatchEvent("dropend");
-		
 
 		// 2. 順序が入れ替わったことを確認（DOMの順序で確認）
-		const orderedFileNames = await page.locator(`${SELECTORS.FILE_LIST_CONTAINER} [data-testid='file-name']`).allTextContents();
+		const orderedFileNames = await page
+			.locator(`${SELECTORS.FILE_LIST_CONTAINER} [data-testid='file-name']`)
+			.allTextContents();
 
 		// 順序が dummy2 -> dummy1 になっているはず
 		expect(orderedFileNames).toEqual(["dummy2.pdf", "dummy1.pdf"]);
