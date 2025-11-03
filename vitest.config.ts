@@ -1,11 +1,9 @@
-import { dirname as _dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import react from "@vitejs/plugin-react";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
-
-const dirname = typeof __dirname !== "undefined" ? __dirname : _dirname(fileURLToPath(import.meta.url));
+import { dirname } from "./utils";
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
@@ -16,6 +14,10 @@ export default defineConfig({
 		setupFiles: ["./vitest.setup.ts"],
 		coverage: {
 			enabled: true,
+      reporter: [        
+        "html",
+        "json-summary"
+      ],
 			exclude: [
 				"node_modules/",
 				"dist/",
@@ -31,7 +33,7 @@ export default defineConfig({
 				"**/*.test.tsx",
 				"**/*.stories.tsx",
 				".storybook/",
-			],
+			],      
 		},
 		alias: {
 			"@": resolve(__dirname, "./"),
@@ -58,7 +60,7 @@ export default defineConfig({
 							},
 						],
 					},
-					setupFiles: [".storybook/vitest.setup.ts"],
+					setupFiles: [".storybook/vitest.setup.ts"]
 				},
 			},
 			{
