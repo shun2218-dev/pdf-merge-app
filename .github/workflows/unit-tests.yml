@@ -21,6 +21,13 @@ jobs:
         with:
           node-version: "24.11.0"
           cache: 'pnpm'
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - name: Install dependencies
         run: pnpm install
       - name: Install Playwright Browsers
@@ -41,11 +48,21 @@ jobs:
           name: vitest-coverage-report
           path: coverage/
           retention-days: 30
+      - name: Find Previous Comment
+        id: fc
+        uses: peter-evans/find-comment@v3
+        if: always() && github.event_name == 'pull_request'
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]' # ボット自身のコメントを探す
+          body-includes: '### 🤖 ユニットテスト (Vitest) が完了しました'
       - name: Post Unit Test Comment
         uses: peter-evans/create-or-update-comment@v4
         if: always() && github.event_name == 'pull_request'
         with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
           body: |
             ### 🤖 ユニットテスト (Vitest) が完了しました
 
