@@ -40,7 +40,7 @@
 
 * **Vitest:** `__tests__` ディレクトリで、コンポーネントのロジックやAPIルートのユニットテストを管理。`vi.mock` を活用し、`pdf-lib` や Sentry などの外部依存を分離したテストを実行
 * **Storybook:** `play` 関数を用いたインタラクションテスト（ドラッグ＆ドロップ、ファイル削除など）を実装し、UIコンポーネントの分離とカバレッジ向上を実現
-* **GitHub Actions:** プルリクエストごとに `pnpm run test:unit` を実行し、コードの品質を自動で担保
+* **GitHub Actions:** プルリクエストごとにユニットテスト (`test:unit`) とE2Eテスト (`test:e2e`) を実行し、コードの品質を自動で担保
 
 ### 使用技術一覧
 
@@ -48,7 +48,7 @@
 * **言語:** TypeScript
 * **スタイリング:** Tailwind CSS, shadcn/ui
 * **PDF処理:** `pdf-lib`
-* **テスト:** Vitest, Storybook (v10), Testing Library
+* **テスト:** Vitest, Storybook (v10), Playwright, Testing Library
 * **リンター/フォーマッター:** Biome.js
 * **デプロイ:** Vercel (Edge Functions)
 * **パッケージ管理:** pnpm
@@ -76,5 +76,9 @@ pnpm run test:unit
 ```
 * **コンポーネントテスト (Storybook):**
 ```bash
-pnpm storybook
+pnpm run storybook
+```
+* **E2Eテスト (Playwright):**
+```bash
+pnpm run test:e2e
 ```
