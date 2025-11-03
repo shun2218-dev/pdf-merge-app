@@ -3,7 +3,7 @@ import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import react from "@vitejs/plugin-react";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
-import { dirname } from "./lib/tests/utils";
+import { dirname } from "./utils";
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
@@ -14,6 +14,10 @@ export default defineConfig({
 		setupFiles: ["./vitest.setup.ts"],
 		coverage: {
 			enabled: true,
+      reporter: [        
+        "html",
+        "json-summary"
+      ],
 			exclude: [
 				"node_modules/",
 				"dist/",
@@ -29,7 +33,7 @@ export default defineConfig({
 				"**/*.test.tsx",
 				"**/*.stories.tsx",
 				".storybook/",
-			],
+			],      
 		},
 		alias: {
 			"@": resolve(__dirname, "./"),
@@ -56,7 +60,7 @@ export default defineConfig({
 							},
 						],
 					},
-					setupFiles: [".storybook/vitest.setup.ts"],
+					setupFiles: [".storybook/vitest.setup.ts"]
 				},
 			},
 			{

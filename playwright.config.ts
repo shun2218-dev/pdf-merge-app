@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
-import { dirname } from "./lib/tests/utils";
+import { dirname } from "./utils";
 
 dotenv.config({ path: resolve(dirname, ".env") });
 
