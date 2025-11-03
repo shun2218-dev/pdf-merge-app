@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { SELECTORS } from "@/lib/e2e/selectors";
-import { dirname } from "@/playwright.config";
+import { SELECTORS } from "@/lib/tests/e2e/selectors";
+import { dirname } from "@/lib/tests/utils";
 
 // テスト用のダミーPDFファイルへのパス
 // プロジェクトのルートに `e2e/fixtures` フォルダを作成し、ダミーPDFを入れてください
