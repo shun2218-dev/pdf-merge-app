@@ -40,7 +40,12 @@ jobs:
         id: coverage-summary
         if: always()
         run: |
-          echo "COVERAGE_PERCENT=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)" >> $GITHUB_OUTPUT
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "COVERAGE_PERCENT=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)" >> $GITHUB_OUTPUT
+          else
+            echo "coverage-summary.json not found, setting coverage to N/A."
+            echo "COVERAGE_PERCENT=N/A" >> $GITHUB_OUTPUT
+          fi
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
