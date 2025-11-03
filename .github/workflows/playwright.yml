@@ -23,6 +23,8 @@ jobs:
       run: pnpm install
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
+    - name: Build Next.js App
+      run: pnpm run build
     - name: Run Playwright tests
       run: pnpm run test:e2e
     - uses: actions/upload-artifact@v4
