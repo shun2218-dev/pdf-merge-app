@@ -35,9 +35,10 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 	};
 
 	return (
-		<div className="space-y-2">
+		<div className="space-y-2" data-testid="file-list">
 			{files.map((file, index) => (
 				// biome-ignore lint/a11y/noStaticElementInteractions: This div is intentionally kept static because an alternative method for keyboard operation is provided separately.
+				// biome-ignore lint/a11y/useAriaPropsSupportedByRole: Because of need to add it
 				<div
 					key={`${file.name}-${index}`}
 					draggable
@@ -47,8 +48,10 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 					className={`flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-all ${
 						draggedIndex === index ? "opacity-50" : "opacity-100"
 					} hover:border-primary/50 hover:bg-accent/50`}
+					aria-label="File List"
+					data-testid={`file-item-container-${file.name}`}
 				>
-					<div className="cursor-grab text-muted-foreground hover:text-foreground">
+					<div className="cursor-grab text-muted-foreground hover:text-foreground" data-testid="drag-handle">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="20"
@@ -91,7 +94,9 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 						</svg>
 					</div>
 					<div className="min-w-0 flex-1">
-						<p className="truncate text-sm font-medium text-foreground">{file.name}</p>
+						<p className="truncate text-sm font-medium text-foreground" data-testid="file-name">
+							{file.name}
+						</p>
 						<p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
 					</div>
 					<div className="flex items-center gap-2">
