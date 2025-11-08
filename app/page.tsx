@@ -7,6 +7,7 @@ import { FileUploader } from "@/components/file-uploader";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DOWNLOAD_FILE_NAME } from "@/constants";
 import { SentryFrontendError, useSentry } from "@/hooks/use-sentry";
 
 const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) => mod.PdfPreview), {
@@ -83,7 +84,7 @@ export default function PdfMergerPage() {
 		if (mergedPdfUrl) {
 			const link = document.createElement("a");
 			link.href = mergedPdfUrl;
-			link.download = "merged.pdf";
+			link.download = DOWNLOAD_FILE_NAME;
 			link.click();
 		} else {
 			await handlePreview();
@@ -91,7 +92,7 @@ export default function PdfMergerPage() {
 				if (mergedPdfUrl) {
 					const link = document.createElement("a");
 					link.href = mergedPdfUrl;
-					link.download = "merged.pdf";
+					link.download = DOWNLOAD_FILE_NAME;
 					link.click();
 				}
 			}, 1000);
