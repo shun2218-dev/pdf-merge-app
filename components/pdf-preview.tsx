@@ -49,7 +49,7 @@ export function PdfPreview({ pdfUrl }: PdfPreviewProps) {
 
 	return (
 		<div className="h-[800px] w-full rounded-lg border border-border bg-background">
-			<Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+			<Worker workerUrl="/lib/pdf.worker.min.js">
 				<Viewer fileUrl={pdfUrl} plugins={[defaultLayoutPluginInstance]} defaultScale={initialZoom} theme="dark" />
 			</Worker>
 		</div>
