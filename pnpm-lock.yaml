@@ -96,10 +96,10 @@ importers:
         specifier: latest
         version: 1.2.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-pdf-viewer/core':
-        specifier: latest
+        specifier: ^3.12.0
         version: 3.12.0(pdfjs-dist@3.11.174)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-pdf-viewer/default-layout':
-        specifier: latest
+        specifier: ^3.12.0
         version: 3.12.0(pdfjs-dist@3.11.174)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@sentry/nextjs':
         specifier: ^10.22.0

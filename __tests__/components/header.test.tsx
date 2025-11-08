@@ -1,8 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { STORAGE_KEY } from "@/components/disclaimer-modal";
 import { Header } from "@/components/header";
 
 describe("Header", () => {
+	beforeEach(() => {
+		sessionStorage.setItem(STORAGE_KEY, "true");
+	});
+
 	it("ヘッダーが正しくレンダリングされる", () => {
 		render(<Header />);
 

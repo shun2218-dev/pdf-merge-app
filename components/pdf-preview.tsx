@@ -4,6 +4,7 @@ import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { useEffect, useState } from "react";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { DOWNLOAD_FILE_NAME } from "@/constants";
 
 interface PdfPreviewProps {
 	pdfUrl: string;
@@ -39,6 +40,9 @@ export function PdfPreview({ pdfUrl }: PdfPreviewProps) {
 				onEnterFullScreen: (zoom) => {
 					zoom(1);
 				},
+			},
+			getFilePlugin: {
+				fileNameGenerator: () => DOWNLOAD_FILE_NAME,
 			},
 		},
 	});
