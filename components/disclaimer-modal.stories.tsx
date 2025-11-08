@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { expect, fn, screen, userEvent, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { PrivacyModal, STORAGE_KEY } from "./privacy-modal";
+import { DisclaimerModal, STORAGE_KEY } from "./disclaimer-modal";
 
 const meta = {
-	title: "Components/PrivacyModal",
-	component: PrivacyModal,
+	title: "Components/DisclaimerModal",
+	component: DisclaimerModal,
 	parameters: {
 		layout: "centered",
 	},
@@ -28,14 +28,14 @@ const meta = {
 						モーダルを開く (Story)
 					</Button>
 				</DialogTrigger>
-				<PrivacyModal />
+				<DisclaimerModal />
 			</Dialog>
 		);
 	},
 	beforeEach: () => {
 		sessionStorage.removeItem(STORAGE_KEY);
 	},
-} satisfies Meta<typeof PrivacyModal>;
+} satisfies Meta<typeof DisclaimerModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

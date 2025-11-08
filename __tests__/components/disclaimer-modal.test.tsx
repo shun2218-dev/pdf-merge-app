@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { PrivacyModal } from "@/components/privacy-modal";
+import { DisclaimerModal } from "@/components/disclaimer-modal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
-describe("PrivacyModal", () => {
+describe("DisclaimerModal", () => {
 	it("初期状態でボタンが無効化されている", async () => {
 		const user = userEvent.setup();
 		render(
@@ -15,7 +15,7 @@ describe("PrivacyModal", () => {
 						ご利用上の注意
 					</Button>
 				</DialogTrigger>
-				<PrivacyModal />
+				<DisclaimerModal />
 			</Dialog>,
 		);
 		const openButton = screen.getByRole("button", { name: "ご利用上の注意" });
@@ -33,7 +33,7 @@ describe("PrivacyModal", () => {
 						ご利用上の注意
 					</Button>
 				</DialogTrigger>
-				<PrivacyModal />
+				<DisclaimerModal />
 			</Dialog>,
 		);
 
@@ -56,7 +56,7 @@ describe("PrivacyModal", () => {
 						ご利用上の注意
 					</Button>
 				</DialogTrigger>
-				<PrivacyModal />
+				<DisclaimerModal />
 			</Dialog>,
 		);
 
@@ -76,7 +76,7 @@ describe("PrivacyModal", () => {
 						ご利用上の注意
 					</Button>
 				</DialogTrigger>
-				<PrivacyModal />
+				<DisclaimerModal />
 			</Dialog>,
 		);
 
