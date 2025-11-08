@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { expect, screen, userEvent, within } from "storybook/test";
+import { STORAGE_KEY } from "./disclaimer-modal";
 import { Header } from "./header";
-import { STORAGE_KEY } from "./privacy-modal";
 
 const meta = {
 	title: "Components/Header",

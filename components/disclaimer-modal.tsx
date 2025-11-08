@@ -15,7 +15,7 @@ import { Label } from "./ui/label";
 
 export const STORAGE_KEY = "disclaimerAgreed";
 
-export function PrivacyModal() {
+export function DisclaimerModal() {
 	const [isChecked, setIsChecked] = useState(false);
 
 	useEffect(() => {
@@ -49,9 +49,9 @@ export function PrivacyModal() {
 			</div>
 			<DialogFooter className="sm:justify-end flex-col sm:flex-row">
 				<div className="flex justify-center items-center gap-2 flex-1">
-					<Label htmlFor="privacy-checkbox">上記の内容を理解しました</Label>
+					<Label htmlFor="disclaimer-checkbox">上記の内容を理解しました</Label>
 					<Checkbox
-						id="privacy-checkbox"
+						id="disclaimer-checkbox"
 						className="ml-2"
 						checked={isChecked}
 						onCheckedChange={(checked) => setIsChecked(!!checked)}

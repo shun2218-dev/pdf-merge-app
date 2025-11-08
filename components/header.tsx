@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PrivacyModal, STORAGE_KEY } from "./privacy-modal";
+import { DisclaimerModal, STORAGE_KEY } from "./disclaimer-modal";
 import { Button } from "./ui/button";
 import { Dialog, DialogTrigger } from "./ui/dialog";
 
@@ -61,7 +61,7 @@ export function Header() {
 					</DialogTrigger>
 				</div>
 			</header>
-			<PrivacyModal />
+			<DisclaimerModal />
 		</Dialog>
 	);
 }
