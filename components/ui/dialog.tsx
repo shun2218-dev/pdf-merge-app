@@ -45,7 +45,7 @@ function DialogContent({
 }) {
 	return (
 		<DialogPortal data-slot="dialog-portal">
-			<DialogOverlay />
+			<DialogOverlay data-testid="dialog-overlay" />
 			<DialogPrimitive.Content
 				data-slot="dialog-content"
 				className={cn(
