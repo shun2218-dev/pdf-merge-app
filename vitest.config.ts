@@ -14,10 +14,7 @@ export default defineConfig({
 		setupFiles: ["./vitest.setup.ts"],
 		coverage: {
 			enabled: true,
-      reporter: [        
-        "html",
-        "json-summary"
-      ],
+			reporter: ["html", "json-summary"],
 			exclude: [
 				"node_modules/",
 				"dist/",
@@ -33,7 +30,7 @@ export default defineConfig({
 				"**/*.test.tsx",
 				"**/*.stories.tsx",
 				".storybook/",
-			],      
+			],
 		},
 		alias: {
 			"@": resolve(__dirname, "./"),
@@ -60,7 +57,7 @@ export default defineConfig({
 							},
 						],
 					},
-					setupFiles: [".storybook/vitest.setup.ts"]
+					setupFiles: [".storybook/vitest.setup.ts"],
 				},
 			},
 			{

@@ -1,8 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { Header } from "@/components/header";
+import { STORAGE_KEY } from "@/components/privacy-modal";
 
 describe("Header", () => {
+	beforeEach(() => {
+		sessionStorage.removeItem(STORAGE_KEY);
+	});
+
 	it("ヘッダーが正しくレンダリングされる", () => {
 		render(<Header />);
 
