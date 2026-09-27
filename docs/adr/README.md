@@ -31,7 +31,7 @@
 | [0015](0015-nextjs-16-upgrade.md) | Next.js 16 に上げる | 採用 | 2 |
 | [0016](0016-seo-and-metadata.md) | SEO とメタデータ（metadataBase・robots・sitemap・構造化データ） | 採用 | 5 |
 | [0017](0017-security-headers.md) | セキュリティヘッダと CSP | 採用 | 3 |
-| [0018](0018-cloudflare-waf-in-front-of-vercel.md) | Cloudflare を WAF として Vercel の前に置く（現状の記録と、ほかの ADR との取り決め） | 提案 | 1（設定）/ 5（国のブロックの見直し） |
+| [0018](0018-cloudflare-waf-in-front-of-vercel.md) | Cloudflare を WAF として Vercel の前に置く（現状の記録と、ほかの ADR との取り決め） | 採用 | 1（設定）/ 5（国のブロックの見直し） |
 
 ## テンプレート
 
