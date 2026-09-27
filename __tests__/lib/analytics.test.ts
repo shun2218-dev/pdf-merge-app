@@ -106,6 +106,25 @@ describe("createAnalytics", () => {
 		expect(load).toHaveBeenCalledTimes(1);
 	});
 
+	it("ページの読み込みごとの ID を distinct_id として SDK に渡す（ADR 0021 決定 6）", async () => {
+		const posthog = fakePostHog();
+		const { track } = createAnalytics({
+			enabled: true,
+			apiKey: "phc_test",
+			apiHost: "https://h",
+			distinctId: () => "page-view-id",
+			load: () => Promise.resolve(posthog),
+		});
+
+		track("preview_opened", {});
+
+		await vi.waitFor(() => expect(posthog.init).toHaveBeenCalled());
+		expect(posthog.init).toHaveBeenCalledWith(
+			"phc_test",
+			expect.objectContaining({ bootstrap: { distinctID: "page-view-id" } }),
+		);
+	});
+
 	it("SDK を読み込めなくても例外を投げない", async () => {
 		const load = vi.fn(() => Promise.reject(new Error("blocked")));
 		const { track } = createAnalytics({ enabled: true, apiKey: "phc_test", apiHost: "https://h", load });

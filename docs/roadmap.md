@@ -95,6 +95,7 @@ Phase 6  効果の検証と次の計画
 - ADR 0018: Cloudflare の設定（スクリプトを差し込む機能の無効化・SSL/TLS・HSTS）を整え、WAF のルールを記録する
 - ADR 0019: PostHog の自動の収集（ヒートマップ・Web Vitals・デッドクリックなど）を使うかを決める
 - ADR 0020: PostHog の位置情報を国だけにする（管理画面の Property Filter）
+- ADR 0021: 実利用者の Web Vitals（LCP / INP / CLS）を測って PostHog に送る（Speed Insights は Hobby では指標ごとの値が見られないため）
 
 **DoD**
 - [ ] 本番で、プレビューせずに「ダウンロード」を 1 回押すとダウンロードされる（PR #50 で修正を本番に出した。本番での手動の確認が残り）

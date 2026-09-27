@@ -6,6 +6,7 @@ import { useState } from "react";
 import { FileList } from "@/components/file-list";
 import { FileUploader } from "@/components/file-uploader";
 import { Header } from "@/components/header";
+import { WebVitals } from "@/components/web-vitals";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
@@ -119,6 +120,7 @@ export default function PdfMergerPage() {
 	return (
 		<div className="min-h-screen bg-background">
 			<Header />
+			<WebVitals />
 
 			<main className="container mx-auto px-4 py-8">
 				<div className="mx-auto max-w-5xl space-y-6">
