@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { FileList } from "@/components/file-list";
@@ -8,7 +9,7 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
-import { SentryFrontendError, useSentry } from "@/hooks/use-sentry";
+import { countBucket, durationBucket, sizeBucket, totalSize, track } from "@/lib/analytics";
 
 const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) => mod.PdfPreview), {
 	ssr: false,
@@ -24,7 +25,6 @@ export default function PdfMergerPage() {
 	const [showPreview, setShowPreview] = useState(false);
 	const [mergedPdfUrl, setMergedPdfUrl] = useState<string | null>(null);
 	const [isProcessing, setIsProcessing] = useState(false);
-	useSentry();
 
 	const handleFilesSelected = (newFiles: File[]) => {
 		setFiles((prev) => [...prev, ...newFiles]);
@@ -42,6 +42,7 @@ export default function PdfMergerPage() {
 	};
 
 	const handleRemove = (index: number) => {
+		track("file_removed", { remaining_bucket: countBucket(files.length - 1) });
 		setFiles((prev) => prev.filter((_, i) => i !== index));
 		setShowPreview(false);
 		setMergedPdfUrl(null);
@@ -51,6 +52,10 @@ export default function PdfMergerPage() {
 	// （setState の直後に state を読んでも、その時点のレンダーの古い値しか読めないため）
 	const handlePreview = async (): Promise<string | null> => {
 		if (files.length === 0) return null;
+
+		const mergeProperties = { count_bucket: countBucket(files.length), size_bucket: sizeBucket(totalSize(files)) };
+		const startedAt = performance.now();
+		track("merge_started", mergeProperties);
 
 		setIsProcessing(true);
 		try {
@@ -64,19 +69,25 @@ export default function PdfMergerPage() {
 				body: formData,
 			});
 
+			// サーバーが返した失敗（500 など）は、サーバー側の Sentry が記録するので、ここでは送らない。
+			// 大きすぎるファイル（413）のように利用者の操作が原因のものも、エラーとしては送らない（ADR 0007 決定 4）
 			if (!response.ok) {
-				throw new SentryFrontendError(
-					"SentryFrontendError:PdfMergerPage:handlePreview:PDFの結合中にエラーが発生しました",
-				);
+				track("merge_failed", { reason: response.status === 413 ? "payload_too_large" : "server_error" });
+				alert("PDFの結合中にエラーが発生しました");
+				return null;
 			}
 
 			const blob = await response.blob();
 			const url = URL.createObjectURL(blob);
+			track("merge_succeeded", { ...mergeProperties, duration_bucket: durationBucket(performance.now() - startedAt) });
 
 			setMergedPdfUrl(url);
 			setShowPreview(true);
 			return url;
-		} catch (_: unknown) {
+		} catch (error: unknown) {
+			// 通信の失敗や想定外の例外は、コードの前提が崩れたものとして送る（ADR 0007 決定 4）
+			track("merge_failed", { reason: "network_error" });
+			Sentry.captureException(error);
 			alert("PDFの結合中にエラーが発生しました");
 			return null;
 		} finally {
@@ -84,9 +95,20 @@ export default function PdfMergerPage() {
 		}
 	};
 
+	const handleOpenPreview = async () => {
+		const url = await handlePreview();
+		if (url) {
+			track("preview_opened", {});
+		}
+	};
+
 	const handleDownload = async () => {
+		// 押した時点でプレビューを見ていたか。プレビューなしで押すと、結合の結果としてプレビューも開くため、先に読む
+		const previewed = showPreview;
 		const url = mergedPdfUrl ?? (await handlePreview());
 		if (!url) return;
+
+		track("download_clicked", { renamed: false, previewed });
 
 		const link = document.createElement("a");
 		link.href = url;
@@ -118,7 +140,12 @@ export default function PdfMergerPage() {
 										<h2 className="text-lg font-semibold text-foreground">ステップ 2: ファイルの順番を調整</h2>
 										<p className="text-sm text-muted-foreground">ドラッグ&ドロップで順番を変更できます</p>
 									</div>
-									<FileList files={files} onReorder={handleReorder} onRemove={handleRemove} />
+									<FileList
+										files={files}
+										onReorder={handleReorder}
+										onRemove={handleRemove}
+										onReorderEnd={() => track("files_reordered", { method: "pointer" })}
+									/>
 								</div>
 							</Card>
 
@@ -130,7 +157,7 @@ export default function PdfMergerPage() {
 									</div>
 									<div className="flex gap-3">
 										<Button
-											onClick={handlePreview}
+											onClick={handleOpenPreview}
 											disabled={isProcessing}
 											variant="outline"
 											className="flex-1 bg-transparent"

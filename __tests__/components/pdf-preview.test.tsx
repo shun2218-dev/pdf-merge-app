@@ -3,12 +3,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PdfPreview } from "@/components/pdf-preview";
 
 // Mock the react-pdf-viewer components
+// Viewer に渡された props を、テストから確かめられるように取っておく
+const viewerProps = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
+
 vi.mock("@react-pdf-viewer/core", () => ({
-	Viewer: ({ fileUrl, defaultScale }: { fileUrl: string; defaultScale: number }) => (
-		<div data-testid="pdf-viewer" data-file-url={fileUrl} data-default-scale={defaultScale}>
-			PDF Viewer Mock
-		</div>
-	),
+	Viewer: (props: { fileUrl: string; defaultScale: number }) => {
+		viewerProps.current = props;
+		return (
+			<div data-testid="pdf-viewer" data-file-url={props.fileUrl} data-default-scale={props.defaultScale}>
+				PDF Viewer Mock
+			</div>
+		);
+	},
 	Worker: ({ children }: { children: React.ReactNode }) => <div data-testid="pdf-worker">{children}</div>,
 }));
 
@@ -31,6 +37,19 @@ describe("PdfPreview", () => {
 			configurable: true,
 			value: originalInnerWidth,
 		});
+	});
+
+	it("PDF.js に isEvalSupported: false を渡す（CVE-2024-4367 の回避策。ADR 0003 決定 1）", () => {
+		render(<PdfPreview pdfUrl={mockPdfUrl} />);
+
+		const transform = viewerProps.current.transformGetDocumentParams as
+			| ((params: Record<string, unknown>) => Record<string, unknown>)
+			| undefined;
+		expect(transform).toBeTypeOf("function");
+
+		// ほかの引数はそのまま残し、isEvalSupported だけを false にする
+		const params = transform?.({ url: mockPdfUrl, withCredentials: false });
+		expect(params).toEqual({ url: mockPdfUrl, withCredentials: false, isEvalSupported: false });
 	});
 
 	it("PDFビューアーが正しくレンダリングされる", () => {

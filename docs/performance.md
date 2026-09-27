@@ -1,0 +1,103 @@
+# パフォーマンス
+
+パフォーマンスの計測と予算の正本。決めごとの理由は [ADR 0012](adr/0012-performance-budget.md)。
+
+## 計測の方法
+
+| 種類 | 道具 | どこで | 実行 |
+|---|---|---|---|
+| 実利用（RUM） | Vercel Speed Insights | 本番（Vercel の上だけで配信される） | 自動。Vercel のダッシュボードで見る |
+| 合成（ラボ） | Lighthouse CI（モバイルの設定・3 回の中央値） | CI の `lighthouse` ジョブ（PR ごと） | `pnpm build && pnpm lhci` |
+| バンドル | `@next/bundle-analyzer` | ローカル | `pnpm analyze` |
+| 結合の時間 | Playwright（`perf/merge-timing.spec.ts`） | ローカル（時間がかかるので CI には入れない） | `pnpm build && pnpm test:perf` |
+
+### 結合の時間の固定のファイルの組
+
+`perf/merge-timing.spec.ts` がテストの中で作る。変えるときはテストも直す。
+
+| 組 | 内容 |
+|---|---|
+| A | 10 ファイル × 1MB |
+| B | 5 ファイル × 20MB |
+| C | 100 ファイル × 100KB |
+
+- 1 ページの PDF の内容のストリームに、PDF のコメント行を詰めて大きさを合わせる（描画はされないが、結合ではページと一緒にコピーされる）。
+- 計るのは「プレビュー」を押してから、結合した PDF を受け取り終えるまで。各組 3 回の中央値。
+
+## 予算
+
+`lighthouserc.json` と CI で守る。RUM の値は週に 1 回 Speed Insights を見る。
+
+| 指標 | 予算 | 測る場所 | 状態 |
+|---|---|---|---|
+| Lighthouse Performance（モバイル） | 0.90 以上（仮） | Lighthouse CI | CI での値を 10 回ほど集めてから、ベースラインに締める（ADR 0012 の追記） |
+| Lighthouse Accessibility | 1.00 | Lighthouse CI | ベースラインに締めた |
+| Lighthouse Best Practices | 1.00 | Lighthouse CI | ベースラインに締めた（目標は 0.95） |
+| Lighthouse SEO | 1.00 | Lighthouse CI | ベースラインに締めた（目標は 0.95） |
+| CLS（ラボ） | 0.1 以下 | Lighthouse CI | |
+| JS の転送量（ラボ、`resource-summary:script:size`） | 250,000 バイト以下 | Lighthouse CI | 増えていないことの見張り。20% 減の予算は ADR 0004 の後に決める |
+| LCP | 2.5 秒以下（RUM の p75） | Speed Insights | |
+| INP | 200ms 以下（RUM の p75） | Speed Insights | |
+| CLS | 0.1 以下（RUM の p75） | Speed Insights | |
+| `/` の First Load JS | ベースラインから 20% 減 | ビルドの出力 | ADR 0004 の後に確定 |
+| 結合（組 B） | ベースラインの値 | Playwright | ADR 0002 の後に確定 |
+
+## ベースライン（2026-09-27）
+
+`develop`（ADR 0011 のアナリティクスまで入ったもの）に Speed Insights を足した状態。
+
+### Lighthouse（ローカル、MacBook、モバイルの設定・3 回）
+
+| 指標 | 3 回の値 | 中央値 |
+|---|---|---|
+| Performance | 0.97 / 0.97 / 0.96 | 0.97 |
+| Accessibility | 1 / 1 / 1 | 1.00 |
+| Best Practices | 1 / 1 / 1 | 1.00 |
+| SEO | 1 / 1 / 1 | 1.00 |
+| LCP | 2,673 / 2,653 / 2,678 ms | 2,673 ms |
+| TBT | 63 / 46 / 71 ms | 63 ms |
+| CLS | 0 / 0 / 0 | 0 |
+| JS の転送量 | 244,546 バイト | 244,546 バイト |
+
+- Performance はローカルの別の回で 0.94 も出た。点数は実行のたびに揺れる。
+- LCP はラボの値（遅い回線と CPU を模擬したもの）で、予算の 2.5 秒（RUM の p75）とは比べない。
+- CI（GitHub Actions）での値は下の表に集める。
+
+### Lighthouse（CI、GitHub Actions の ubuntu-latest、モバイルの設定・3 回）
+
+Performance の予算を締めるために、10 回ほど集める（ADR 0012 の DoD）。締める値は、集めた中央値の最小値。
+
+| # | 日付 | PR | Performance（3 回） | 中央値 | LCP の中央値 | TBT の中央値 |
+|---|---|---|---|---|---|---|
+| 1 | 2026-09-27 | #57 | 0.90 / 0.95 / 0.97 | 0.95 | 1,815 ms | 253 ms |
+| 2 | 2026-09-27 | #61 | 0.89 / 0.97 / 0.97 | 0.97 | 1,819 ms | 187 ms |
+| 3 | 2026-09-27 | #62 | 0.81 / 0.97 / 0.97 | 0.97 | 1,825 ms | 199 ms |
+
+- どの回も 1 回目だけが遅い（起動したばかりのサーバーが温まっていないため）。判定は 3 回の中央値なので、予算の判定には影響しない。
+
+### ビルド
+
+| 指標 | 値 |
+|---|---|
+| `/` の First Load JS | 238 kB（ページ 27.2 kB + 共有 211 kB） |
+
+### 結合の時間（ローカル、`next start`、3 回）
+
+| 組 | 3 回の値 | 中央値 |
+|---|---|---|
+| A: 10 ファイル × 1MB | 113 / 80 / 71 ms | 80 ms |
+| B: 5 ファイル × 20MB | 450 / 331 / 335 ms | 335 ms |
+| C: 100 ファイル × 100KB | 122 / 100 / 102 ms | 102 ms |
+
+- いまはサーバーで結合しているので、ローカルの値にはネットワークの往復が入っていない。本番では、組 B（合計 100MB）は Vercel のリクエストの上限（4.5MB）を超えるので失敗する（B-2）。
+- ADR 0002 でブラウザ内の結合に移したら、同じ組で測り直し、組 B を予算にする。
+
+### 実利用（RUM）
+
+本番で Speed Insights を有効にしてから 1 週間分を取って書く。
+
+| 指標 | p75 | 期間 |
+|---|---|---|
+| LCP | （未計測） | |
+| INP | （未計測） | |
+| CLS | （未計測） | |

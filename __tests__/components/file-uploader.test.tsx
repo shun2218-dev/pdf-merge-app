@@ -1,24 +1,21 @@
+import * as Sentry from "@sentry/nextjs";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { FileUploader } from "@/components/file-uploader";
-import { SentryFrontendError } from "@/hooks/use-sentry";
+import { track } from "@/lib/analytics";
 
-vi.mock("@/hooks/use-sentry", () => {
-	class MockSentryError extends Error {
-		constructor(message: string) {
-			super(message);
-			this.name = "MockSentryError";
-		}
-	}
+vi.mock("@sentry/nextjs", () => ({
+	captureException: vi.fn(),
+}));
 
-	return {
-		useSentry: () => ({
-			setHasSentError: vi.fn(),
-		}),
-		SentryFrontendError: MockSentryError,
-	};
-});
+vi.mock("@/lib/analytics", async (importOriginal) => ({
+	...(await importOriginal<typeof import("@/lib/analytics")>()),
+	track: vi.fn(),
+}));
+
+// ファイル名にしか現れない文字列。アナリティクスに送る値に含まれていないことを確かめる（ADR 0011）
+const SECRET = "山田太郎_源泉徴収票";
 
 describe("FileUploader", () => {
 	let consoleErrorSpy: Mock<Console["error"]>;
@@ -99,9 +96,9 @@ describe("FileUploader", () => {
 		});
 		fireEvent.change(input);
 
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			new SentryFrontendError("SentryFrontendError:FileUploader:handleFileChange:PDFファイルのみ選択してください"),
-		);
+		// 利用者の操作の結果なので、Sentry にもコンソールにもエラーとして出さない（ADR 0007 決定 4）
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+		expect(consoleErrorSpy).not.toHaveBeenCalled();
 		expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
 		expect(mockOnFilesSelected).not.toHaveBeenCalled();
 	});
@@ -141,6 +138,54 @@ describe("FileUploader", () => {
 		expect(dropZone).toBeInTheDocument();
 	});
 
+	describe("アナリティクス", () => {
+		const selectFiles = (files: File[]) => {
+			const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+			Object.defineProperty(input, "files", { value: files, writable: false });
+			fireEvent.change(input);
+		};
+
+		it("ファイルを選んで追加したら files_added を 1 回送る", () => {
+			render(<FileUploader onFilesSelected={vi.fn()} />);
+
+			selectFiles([
+				new File(["a"], `${SECRET}_1.pdf`, { type: "application/pdf" }),
+				new File(["b"], `${SECRET}_2.pdf`, { type: "application/pdf" }),
+			]);
+
+			expect(track).toHaveBeenCalledTimes(1);
+			expect(track).toHaveBeenCalledWith("files_added", {
+				source: "picker",
+				count_bucket: "2",
+				size_bucket: "<1MB",
+			});
+			expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain(SECRET);
+		});
+
+		it("ドロップで追加したら source が drop になる", () => {
+			render(<FileUploader onFilesSelected={vi.fn()} />);
+
+			fireEvent.drop(screen.getByTestId("dropzone"), {
+				dataTransfer: { files: [new File(["a"], `${SECRET}.pdf`, { type: "application/pdf" })] },
+			});
+
+			expect(track).toHaveBeenCalledWith("files_added", expect.objectContaining({ source: "drop", count_bucket: "1" }));
+		});
+
+		it("PDF 以外が混ざっていたら files_rejected を送り、files_added は送らない", () => {
+			render(<FileUploader onFilesSelected={vi.fn()} />);
+
+			selectFiles([
+				new File(["a"], `${SECRET}.pdf`, { type: "application/pdf" }),
+				new File(["b"], `${SECRET}.docx`, { type: "application/msword" }),
+			]);
+
+			expect(track).toHaveBeenCalledTimes(1);
+			expect(track).toHaveBeenCalledWith("files_rejected", { reason: "not_pdf", count_bucket: "1" });
+			expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain(SECRET);
+		});
+	});
+
 	it("ドロップ時にPDF以外のファイルを拒否する", async () => {
 		const mockOnFilesSelected = vi.fn();
 
@@ -156,9 +201,8 @@ describe("FileUploader", () => {
 			},
 		});
 
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			new SentryFrontendError("SentryFrontendError:FileUploader:handleDrop:PDFファイルのみ選択してください"),
-		);
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+		expect(consoleErrorSpy).not.toHaveBeenCalled();
 		expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
 		expect(mockOnFilesSelected).not.toHaveBeenCalled();
 	});

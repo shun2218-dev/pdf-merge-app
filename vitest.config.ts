@@ -15,6 +15,13 @@ export default defineConfig({
 		coverage: {
 			enabled: true,
 			reporter: ["html", "json-summary"],
+			// 下限はいまの値（2026-09-27、unit プロジェクトのみ）。下げない（ADR 0006 決定 6）
+			thresholds: {
+				lines: 88,
+				statements: 89,
+				functions: 77,
+				branches: 80,
+			},
 			exclude: [
 				"node_modules/",
 				"dist/",

@@ -142,6 +142,41 @@ describe("FileList", () => {
 		expect(mockOnReorder).not.toHaveBeenCalled();
 	});
 
+	it("ドラッグで並びが変わったら、ドラッグ終了時に onReorderEnd が 1 回だけ呼ばれる", () => {
+		const mockOnReorderEnd = vi.fn();
+
+		const { container } = render(
+			<FileList files={mockFiles} onReorder={vi.fn()} onRemove={vi.fn()} onReorderEnd={mockOnReorderEnd} />,
+		);
+
+		const items = container.querySelectorAll('[draggable="true"]');
+
+		fireEvent.dragStart(items[0]);
+		// dragover はドラッグ中に何度も起きる
+		fireEvent.dragOver(items[1]);
+		fireEvent.dragOver(items[2]);
+		expect(mockOnReorderEnd).not.toHaveBeenCalled();
+
+		fireEvent.dragEnd(items[0]);
+		expect(mockOnReorderEnd).toHaveBeenCalledTimes(1);
+	});
+
+	it("並びが変わらなかったドラッグでは onReorderEnd が呼ばれない", () => {
+		const mockOnReorderEnd = vi.fn();
+
+		const { container } = render(
+			<FileList files={mockFiles} onReorder={vi.fn()} onRemove={vi.fn()} onReorderEnd={mockOnReorderEnd} />,
+		);
+
+		const firstItem = container.querySelector('[draggable="true"]') as HTMLElement;
+
+		fireEvent.dragStart(firstItem);
+		fireEvent.dragOver(firstItem);
+		fireEvent.dragEnd(firstItem);
+
+		expect(mockOnReorderEnd).not.toHaveBeenCalled();
+	});
+
 	it("空のファイルリストでも正しくレンダリングされる", () => {
 		const mockOnReorder = vi.fn();
 		const mockOnRemove = vi.fn();

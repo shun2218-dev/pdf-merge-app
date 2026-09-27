@@ -7,10 +7,14 @@ interface FileListProps {
 	files: File[];
 	onReorder: (fromIndex: number, toIndex: number) => void;
 	onRemove: (index: number) => void;
+	/** ドラッグを終えて、並びが変わっていたときに 1 回だけ呼ばれる（アナリティクス用。ADR 0011） */
+	onReorderEnd?: () => void;
 }
 
-export function FileList({ files, onReorder, onRemove }: FileListProps) {
+export function FileList({ files, onReorder, onRemove, onReorderEnd }: FileListProps) {
 	const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+	// ドラッグ中は dragover のたびに並びが変わるので、ドラッグ 1 回で並びが変わったかだけを覚えておく
+	const [hasReordered, setHasReordered] = useState(false);
 
 	const handleDragStart = (index: number) => {
 		setDraggedIndex(index);
@@ -22,10 +26,15 @@ export function FileList({ files, onReorder, onRemove }: FileListProps) {
 
 		onReorder(draggedIndex, index);
 		setDraggedIndex(index);
+		setHasReordered(true);
 	};
 
 	const handleDragEnd = () => {
+		if (hasReordered) {
+			onReorderEnd?.();
+		}
 		setDraggedIndex(null);
+		setHasReordered(false);
 	};
 
 	const formatFileSize = (bytes: number) => {
