@@ -1,31 +1,24 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
+// ブラウザでの Sentry の初期化。方針は ADR 0007
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { sharedSentryOptions } from "@/lib/sentry/options";
 
 Sentry.init({
-	dsn: "https://3538297fd027ceb7ee8ccfd4469d3531@o4510279307624448.ingest.us.sentry.io/4510279313260545",
+	...sharedSentryOptions(),
 
-	// Add optional integrations for additional features
-	integrations: [Sentry.replayIntegration()],
-
-	// Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-	tracesSampleRate: 1,
-	// Enable logs to be sent to Sentry
-	enableLogs: true,
-
-	// Define how likely Replay events are sampled.
-	// This sets the sample rate to be 10%. You may want this to be 100% while
-	// in development and sample at a lower rate in production
-	replaysSessionSampleRate: 0.1,
-
-	// Define how likely Replay events are sampled when an error occurs.
+	// Session Replay はエラーが起きたセッションだけ、画面の文字と画像をすべて隠して記録する（決定 2）。
+	// ファイル名は一覧の文字として、PDF の中身はプレビューの canvas として画面に出るため
+	integrations: [
+		Sentry.replayIntegration({
+			maskAllText: true,
+			maskAllInputs: true,
+			blockAllMedia: true,
+			block: ["canvas"],
+		}),
+	],
+	replaysSessionSampleRate: 0,
 	replaysOnErrorSampleRate: 1.0,
-
-	// Enable sending user PII (Personally Identifiable Information)
-	// https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
-	sendDefaultPii: true,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

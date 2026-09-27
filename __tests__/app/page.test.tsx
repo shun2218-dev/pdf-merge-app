@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -27,21 +28,9 @@ vi.mock("@/components/file-uploader", () => ({
 	),
 }));
 
-vi.mock("@/hooks/use-sentry", () => {
-	class MockSentryError extends Error {
-		constructor(message: string) {
-			super(message);
-			this.name = "MockSentryError";
-		}
-	}
-
-	return {
-		useSentry: () => ({
-			setHasSentError: vi.fn(),
-		}),
-		SentryFrontendError: MockSentryError,
-	};
-});
+vi.mock("@sentry/nextjs", () => ({
+	captureException: vi.fn(),
+}));
 
 vi.mock("@/components/file-list", () => ({
 	FileList: ({
@@ -401,6 +390,42 @@ describe("PdfMergerPage", () => {
 			expect(global.alert).toHaveBeenCalledWith("PDFの結合中にエラーが発生しました");
 		});
 		expect(mockClick).not.toHaveBeenCalled();
+	});
+
+	it("サーバーが失敗を返したときは、Sentry に送らない（サーバー側で記録されるため）", async () => {
+		const user = userEvent.setup();
+
+		vi.mocked(fetch).mockResolvedValueOnce({
+			ok: false,
+			status: 500,
+		} as Response);
+
+		render(<PdfMergerPage />);
+
+		await user.click(screen.getByTestId("file-uploader"));
+		await user.click(screen.getByRole("button", { name: /プレビュー/i }));
+
+		await waitFor(() => {
+			expect(global.alert).toHaveBeenCalledWith("PDFの結合中にエラーが発生しました");
+		});
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+	});
+
+	it("通信に失敗したときは、想定外のエラーとして Sentry に送る", async () => {
+		const user = userEvent.setup();
+		const networkError = new TypeError("Failed to fetch");
+
+		vi.mocked(fetch).mockRejectedValueOnce(networkError);
+
+		render(<PdfMergerPage />);
+
+		await user.click(screen.getByTestId("file-uploader"));
+		await user.click(screen.getByRole("button", { name: /プレビュー/i }));
+
+		await waitFor(() => {
+			expect(global.alert).toHaveBeenCalledWith("PDFの結合中にエラーが発生しました");
+		});
+		expect(Sentry.captureException).toHaveBeenCalledWith(networkError);
 	});
 
 	it("ファイルの順番を変更するとプレビューがリセットされる", async () => {

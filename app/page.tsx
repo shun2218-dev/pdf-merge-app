@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { FileList } from "@/components/file-list";
@@ -8,7 +9,6 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
-import { SentryFrontendError, useSentry } from "@/hooks/use-sentry";
 
 const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) => mod.PdfPreview), {
 	ssr: false,
@@ -24,7 +24,6 @@ export default function PdfMergerPage() {
 	const [showPreview, setShowPreview] = useState(false);
 	const [mergedPdfUrl, setMergedPdfUrl] = useState<string | null>(null);
 	const [isProcessing, setIsProcessing] = useState(false);
-	useSentry();
 
 	const handleFilesSelected = (newFiles: File[]) => {
 		setFiles((prev) => [...prev, ...newFiles]);
@@ -64,10 +63,11 @@ export default function PdfMergerPage() {
 				body: formData,
 			});
 
+			// サーバーが返した失敗（500 など）は、サーバー側の Sentry が記録するので、ここでは送らない。
+			// 大きすぎるファイル（413）のように利用者の操作が原因のものも、エラーとしては送らない（ADR 0007 決定 4）
 			if (!response.ok) {
-				throw new SentryFrontendError(
-					"SentryFrontendError:PdfMergerPage:handlePreview:PDFの結合中にエラーが発生しました",
-				);
+				alert("PDFの結合中にエラーが発生しました");
+				return null;
 			}
 
 			const blob = await response.blob();
@@ -76,7 +76,9 @@ export default function PdfMergerPage() {
 			setMergedPdfUrl(url);
 			setShowPreview(true);
 			return url;
-		} catch (_: unknown) {
+		} catch (error: unknown) {
+			// 通信の失敗や想定外の例外は、コードの前提が崩れたものとして送る（ADR 0007 決定 4）
+			Sentry.captureException(error);
 			alert("PDFの結合中にエラーが発生しました");
 			return null;
 		} finally {

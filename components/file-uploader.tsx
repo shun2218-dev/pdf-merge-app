@@ -2,58 +2,45 @@
 
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { SentryFrontendError, useSentry } from "@/hooks/use-sentry";
 
 interface FileUploaderProps {
 	onFilesSelected: (files: File[]) => void;
 }
 
 export function FileUploader({ onFilesSelected }: FileUploaderProps) {
-	const { setHasSentError } = useSentry();
 	const inputRef = useRef<HTMLInputElement>(null);
 
+	// PDF 以外を選んだのは利用者の操作の結果で、コードの不具合ではないので Sentry には送らない（ADR 0007 決定 4）
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		try {
-			const selectedFiles = Array.from(e.target.files || []);
-			const pdfFiles = selectedFiles.filter((file) => file.type === "application/pdf");
+		const selectedFiles = Array.from(e.target.files || []);
+		const pdfFiles = selectedFiles.filter((file) => file.type === "application/pdf");
 
-			if (pdfFiles.length !== selectedFiles.length) {
-				alert("PDFファイルのみ選択してください");
-				setHasSentError(true);
-				throw new SentryFrontendError(
-					"SentryFrontendError:FileUploader:handleFileChange:PDFファイルのみ選択してください",
-				);
-			}
+		if (pdfFiles.length !== selectedFiles.length) {
+			alert("PDFファイルのみ選択してください");
+			return;
+		}
 
-			if (pdfFiles.length > 0) {
-				onFilesSelected(pdfFiles);
-			}
+		if (pdfFiles.length > 0) {
+			onFilesSelected(pdfFiles);
+		}
 
-			if (inputRef.current) {
-				inputRef.current.value = "";
-			}
-		} catch (e: unknown) {
-			console.error(e);
+		if (inputRef.current) {
+			inputRef.current.value = "";
 		}
 	};
 
 	const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault();
-		try {
-			const droppedFiles = Array.from(e.dataTransfer.files);
-			const pdfFiles = droppedFiles.filter((file) => file.type === "application/pdf");
+		const droppedFiles = Array.from(e.dataTransfer.files);
+		const pdfFiles = droppedFiles.filter((file) => file.type === "application/pdf");
 
-			if (pdfFiles.length !== droppedFiles.length) {
-				alert("PDFファイルのみ選択してください");
-				setHasSentError(true);
-				throw new SentryFrontendError("SentryFrontendError:FileUploader:handleDrop:PDFファイルのみ選択してください");
-			}
+		if (pdfFiles.length !== droppedFiles.length) {
+			alert("PDFファイルのみ選択してください");
+			return;
+		}
 
-			if (pdfFiles.length > 0) {
-				onFilesSelected(pdfFiles);
-			}
-		} catch (e: unknown) {
-			console.error(e);
+		if (pdfFiles.length > 0) {
+			onFilesSelected(pdfFiles);
 		}
 	};
 

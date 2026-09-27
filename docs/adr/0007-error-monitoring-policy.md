@@ -40,14 +40,32 @@
 
 ## 完了条件（DoD）
 
-- [ ] 3 つの Sentry の設定で `sendDefaultPii` が `false`、DSN が環境変数から読まれている
-- [ ] `beforeSend` がファイル名を置き換えることをユニットテストで確かめた
-- [ ] Replay の設定が決定 2 のとおりで、Preview 環境でわざと例外を起こした Replay にファイル名と PDF の中身が映っていないことを目で確かめた
-- [ ] `SentryFrontendError` と `useSentry` がコードベースにない
-- [ ] PDF 以外を選んだときに Sentry へ何も送られない（ユニットテストで `captureException` が呼ばれないことを確認）
-- [ ] ローカルと CI では Sentry に送信されない
-- [ ] ロードマップの共通 DoD を満たした
+- [x] 3 つの Sentry の設定で `sendDefaultPii` が `false`、DSN が環境変数から読まれている
+- [x] `beforeSend` がファイル名を置き換えることをユニットテストで確かめた
+- [x] Replay の設定が決定 2 のとおりで、Preview 環境でわざと例外を起こした Replay にファイル名と PDF の中身が映っていないことを目で確かめた
+- [x] `SentryFrontendError` と `useSentry` がコードベースにない
+- [x] PDF 以外を選んだときに Sentry へ何も送られない（ユニットテストで `captureException` が呼ばれないことを確認）
+- [x] ローカルと CI では Sentry に送信されない
+- [x] ロードマップの共通 DoD を満たした
 
 ## 追記
 
-（なし）
+### 2026-09-27: 実装
+
+- 3 つの `Sentry.init`（`instrumentation-client.ts` / `sentry.server.config.ts` / `sentry.edge.config.ts`）の共通の設定を `lib/sentry/options.ts` の `sharedSentryOptions()` にまとめた。
+  - `enabled` は DSN があるときだけ `true`。CI とローカルには `NEXT_PUBLIC_SENTRY_DSN` を置かないので送信しない。
+  - 環境の名前は `NEXT_PUBLIC_VERCEL_ENV`（Vercel が Next.js のプロジェクトに自動で渡す）。サーバーでもクライアントと同じ変数を使い、名前を 1 つにした。
+  - これまでの `enableLogs: true` は、`Sentry.logger` を使っていないので外した。
+- ファイル名の除去は `lib/sentry/scrub.ts`。どこに紛れ込むかを追うより、イベントとパンくずの全体の文字列を走査して `*.pdf` で終わる語を `[file]` に置き換える（`beforeSend` と `beforeBreadcrumb`）。元のオブジェクトは書き換えない。
+- Session Replay は `maskAllText` / `maskAllInputs` / `blockAllMedia` に加えて `block: ["canvas"]`（PDF のプレビューは canvas に描かれるため）。
+- 「エラー」と「利用者の操作の結果」の分け方（決定 4）は次のようにした。
+  - PDF 以外を選んだ: `alert` だけ。Sentry にもコンソールにも出さない。`try` / `catch` もなくした（`onFilesSelected` の中で想定外の例外が起きたら、React のエラー境界（`global-error.tsx`）が Sentry に送る）。
+  - サーバーが失敗を返した（`!response.ok`）: クライアントからは送らない。500 はサーバー側の Sentry（`onRequestError`）が記録し、413（大きすぎる）は利用者の操作の結果のため。
+  - 通信の失敗などの想定外の例外: `Sentry.captureException` で送る。
+- ソースマップの設定（`withSentryConfig`）は変えていない。
+- **Vercel のプロジェクトに `NEXT_PUBLIC_SENTRY_DSN` を Production と Preview の両方で設定する必要がある。** 設定しないまま本番に出すと、Sentry が無効になる（送らない側に倒れる）。値はこれまで設定ファイルに直書きしていた DSN（公開してよい値）。
+
+### 2026-09-27: Vercel の設定と Preview での確認
+
+- オーナーが Vercel のプロジェクトに `NEXT_PUBLIC_SENTRY_DSN` を Production と Preview の両方で設定した。
+- オーナーが PR #55 の Preview で、DevTools で `/api/merge-pdf` への通信を止めて想定外の例外（`TypeError: Failed to fetch`）を起こし、Sentry の Issue の詳細と Replay にファイル名が出ず、画面の文字が伏せられていることを確かめた。
