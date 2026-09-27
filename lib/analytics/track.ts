@@ -1,5 +1,6 @@
 import type { PostHogConfig } from "posthog-js";
 import type { EventName, EventProperties } from "./events";
+import { getPageViewId } from "./page-view-id";
 
 // アナリティクスの送信の窓口（ADR 0011 決定 1）。コンポーネントは track() だけを呼び、送信先を知らない。
 //
@@ -15,6 +16,8 @@ type AnalyticsConfig = {
 	enabled: boolean;
 	apiKey?: string;
 	apiHost: string;
+	/** ページの読み込みごとの ID。Web Vitals のイベントと同じ distinct_id にする（ADR 0021 決定 6） */
+	distinctId?: () => string;
 	load: () => Promise<PostHogClient>;
 	debug?: (name: string, properties: Record<string, unknown>) => void;
 };
@@ -49,6 +52,7 @@ export function createAnalytics(config: AnalyticsConfig) {
 					disable_surveys: true,
 					// 匿名の利用者の人物プロファイルを作らない
 					person_profiles: "identified_only",
+					...(config.distinctId ? { bootstrap: { distinctID: config.distinctId() } } : {}),
 				});
 				client = posthog;
 				// ページビューは読み込んだ時点で 1 回だけ送る
@@ -89,6 +93,7 @@ const analytics = createAnalytics({
 	enabled: process.env.NEXT_PUBLIC_VERCEL_ENV === "production",
 	apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
 	apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+	distinctId: getPageViewId,
 	load: () => import("posthog-js").then((module) => module.default as unknown as PostHogClient),
 	debug:
 		process.env.NODE_ENV === "development"

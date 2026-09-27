@@ -13,6 +13,7 @@
   - PostHog はプロジェクトの設定（管理画面）でもこれらを有効にできるので、コードでも明示的に切っている。
   - 管理画面（Settings → Project）でも、Autocapture・Heatmaps・Web vitals autocapture・Session replay を Off にしておく。Web Vitals は Vercel Speed Insights で測る（ADR 0012）。エラーは Sentry で見る（ADR 0007）。
 - ページビューそのものは、引き続き Vercel Web Analytics でも数えている（PostHog のページビューは、何か操作をした人だけ）。
+- `web_vital` だけは SDK を使わず、ページを開いた時点から測って、自分のドメインの `/ingest` 経由で PostHog の受け口に直接送る（ADR 0021）。`distinct_id` はページの読み込みごとの ID で、SDK にも同じ ID を渡すので、同じページの読み込みの製品のイベントと結びつく。`/ingest` 経由なので、`web_vital` の国は正確でない。
 
 ## 送らないもの
 
@@ -40,6 +41,7 @@
 | `merge_failed` | 結合に失敗したとき | `reason`（`payload_too_large` / `server_error` / `network_error`） | 実装済み |
 | `preview_opened` | 「プレビュー」を押して、プレビューが開いたとき | — | 実装済み |
 | `download_clicked` | ダウンロードしたとき | `renamed`（いまは常に `false`）、`previewed`（押した時点でプレビューを見ていたか） | 実装済み |
+| `web_vital` | LCP / INP / CLS が決まったとき（1 回のページの読み込みで最大 3 件） | `metric`、`value`（生の値）、`rating`、`navigation_type`、`device_class`（`mobile` / `desktop`） | 実装済み（ADR 0021） |
 | `files_cleared` | すべて削除したとき | `remaining_bucket` | 未実装（ADR 0009 で UI ができたら） |
 | `size_warning_shown` | 大きさの警告を出したとき | `size_bucket` | 未実装（ADR 0002 / 0009） |
 | `theme_changed` / `locale_changed` | 切り替えたとき | `value` | 未実装（ADR 0008 / 0013） |

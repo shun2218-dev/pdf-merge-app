@@ -74,7 +74,7 @@
 
 ## 完了条件（DoD）
 
-- [ ] Speed Insights が本番で有効で、データが届いている
+- [x] Speed Insights が本番で有効で、データが届いている（まとめた点数だけ。指標ごとの値は ADR 0021 で PostHog に送る）
 - [x] Lighthouse CI が PR ごとに走り、予算を超えると失敗する
 - [x] バンドルアナライザを `pnpm analyze` で起動できる
 - [x] 結合の時間を計る Playwright のテストがあり、`docs/performance.md` に固定のファイルの組が書かれている
@@ -105,3 +105,9 @@
 - `.lighthouseci` はドットで始まる隠しフォルダなので、`actions/upload-artifact@v4` が既定で除外し、最初はレポートが artifact に残っていなかった。`include-hidden-files: true` を指定した。
 - CI（GitHub Actions の ubuntu-latest）での 1 回目の Performance は 0.90 / 0.95 / 0.97（中央値 0.95）。ローカル（0.94〜0.97）より揺れが大きく、予算をローカルの 0.97 に締めていたら落ちていた。仮の予算 0.90 のまま、CI の値を集め続ける（集めた値は `docs/performance.md`）。
 - PR #57 のマージ後、ブランチ保護のルールセット「protect」の必須チェックに `lighthouse` を加えた（`lint` / `unit` / `storybook` / `e2e` / `lighthouse`）。
+
+### 2026-09-27: 実利用の LCP / INP / CLS は PostHog で見る（ADR 0021）
+
+- v1.1.0 のリリース後、Vercel の Hobby プランでは Speed Insights の指標ごとの値（FCP / LCP / INP / CLS）が見られず、まとめた点数（Real Experience Score）だけが見られることが分かった。指標ごとの値は Speed Insights Plus（Pro プランが必要）で、オーナーの判断で選ばなかった。決定 1 は、Hobby で何が見られるかを確かめずに決めていた。
+- 実利用の LCP / INP / CLS は、ADR 0021 で `web-vitals` で測り、自分のドメイン経由で PostHog に送ることにした。決定 2 の RUM の予算（p75）は PostHog で見る。Speed Insights は、まとめた点数を見る用として残す。
+- ADR 0021 の実装で JS の転送量は 247,934 バイトになった（予算 250,000 バイトの範囲内）。
