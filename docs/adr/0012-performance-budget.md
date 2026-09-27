@@ -75,12 +75,27 @@
 ## 完了条件（DoD）
 
 - [ ] Speed Insights が本番で有効で、データが届いている
-- [ ] Lighthouse CI が PR ごとに走り、予算を超えると失敗する
-- [ ] バンドルアナライザを `pnpm analyze` で起動できる
-- [ ] 結合の時間を計る Playwright のテストがあり、`docs/performance.md` に固定のファイルの組が書かれている
+- [ ] Lighthouse CI が PR ごとに走り、予算を超えると失敗する（ジョブは追加済み。必須チェックへの登録はマージ後）
+- [x] バンドルアナライザを `pnpm analyze` で起動できる
+- [x] 結合の時間を計る Playwright のテストがあり、`docs/performance.md` に固定のファイルの組が書かれている
 - [ ] `docs/performance.md` にベースライン（Lighthouse・First Load JS・結合の時間・RUM の p75）と予算がある
+- [ ] CI での Lighthouse の Performance を 10 回ほど集め、その最小値に予算を締めた
 - [ ] ロードマップの共通 DoD を満たした
 
 ## 追記
 
-（なし）
+### 2026-09-27: 実装
+
+- Speed Insights は `app/layout.tsx` に `<SpeedInsights />` を置いた。Vercel Web Analytics の `<Analytics />` と一緒に、表示の条件を「本番ビルドのとき」（`NODE_ENV === "production"`）から「Vercel の上で動いているとき」（`VERCEL === "1"`）に変えた。
+  - どちらのスクリプト（`/_vercel/insights/script.js` と `/_vercel/speed-insights/script.js`）も Vercel の上でしか配信されず、ローカルや CI の `next start` では 404 になる。この 404 がコンソールのエラーになり、Lighthouse の Best Practices を 0.96 に下げていた。本番の動作は変わらない。
+  - Speed Insights は、Vercel のダッシュボードのプロジェクトの Speed Insights のタブで有効にしてから、データが届くようになる。
+- Lighthouse CI は `lighthouserc.json` に設定を書き、CI に `lighthouse` ジョブを足した（`next build` → `lhci autorun`。ubuntu-latest に入っている Google Chrome を使う）。予算は次のとおり。
+  - Accessibility / Best Practices / SEO は、ベースライン（すべて 1.00）に締めた。どれも点数が揺れない監査なので、そのまま予算にできる。
+  - **Performance は、ADR の目標値の 0.90 を仮の予算にした。** 決定 2 は「ベースライン（ローカルで 0.97）に締める」だが、点数は実行のたびに揺れ（ローカルで 0.94〜0.97）、CI のマシンでの値もまだ分からない。そのまま 0.97 にすると、コードと関係なく CI が落ちうる。CI での値を 10 回ほど集め、その最小値に締める（DoD に足した）。
+  - ラボの CLS は 0.1 以下、JS の転送量（`resource-summary:script:size`）は 250,000 バイト以下（ベースラインは 244,546 バイト）。後者は増えていないことの見張りで、20% 減の予算は ADR 0004 の後に決める。
+  - どれも 3 回の中央値（`aggregationMethod: "median-run"`）で判定する。
+- バンドルアナライザは `@next/bundle-analyzer`（Next.js 本体と同じ 15.1.9）。`ANALYZE=true` のときだけ有効にし、`pnpm analyze` で起動する。
+- 結合の時間は `perf/merge-timing.spec.ts` と `playwright.perf.config.ts`。大きな PDF はリポジトリに入れず、テストの中で `pdf-lib` を使って一時フォルダに作る（内容のストリームに PDF のコメント行を詰めて大きさを合わせる）。時間がかかるので CI には入れず、`pnpm test:perf` でローカルで実行する。
+  - 決定 1 は `performance.mark` / `measure` で計るとしていたが、計りたいのは「押してから結合した PDF を受け取り終えるまで」なので、Playwright の側で時刻を取った。ブラウザ内の結合（ADR 0002）に移したら、Worker の中の処理の時間を `performance.measure` で取ることを検討する。
+- 追加した依存は、どれも公開から 1 週間以上たった版（`@vercel/speed-insights@2.0.0`、`@lhci/cli@0.15.1`、`@next/bundle-analyzer@15.1.9`）。
+- ベースラインは `docs/performance.md`。

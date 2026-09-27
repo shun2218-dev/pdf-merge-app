@@ -1,4 +1,8 @@
+import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
+
+// `pnpm analyze` でチャンクの中身を見る（ADR 0012 決定 1）
+const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -19,7 +23,7 @@ const nextConfig = {
 	},
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
 	// For all available options, see:
 	// https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
