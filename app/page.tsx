@@ -6,9 +6,9 @@ import { useState } from "react";
 import { FileList } from "@/components/file-list";
 import { FileUploader } from "@/components/file-uploader";
 import { Header } from "@/components/header";
-import { WebVitals } from "@/components/web-vitals";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { WebVitals } from "@/components/web-vitals";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
 import { countBucket, durationBucket, sizeBucket, totalSize, track } from "@/lib/analytics";
 
