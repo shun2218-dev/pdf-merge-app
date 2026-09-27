@@ -1,0 +1,5 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"ignoreFiles": ["public/lib/pdf.worker.min.js"],
+	"ignoreExportsUsedInFile": true
+}
