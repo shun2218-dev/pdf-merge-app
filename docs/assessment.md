@@ -86,4 +86,4 @@
 | S-1 | 中 | `openGraph.url` に `VERCEL_URL`（プロトコルなし・デプロイごとの URL）を入れている。`metadataBase` がないので OGP 画像の URL が正しく作られない可能性がある | `app/layout.tsx:17` | 0016 |
 | S-2 | 低 | `robots.txt`、`sitemap.xml`、canonical、構造化データがない | — | 0016 |
 | S-3 | 中 | 旧 URL `pdf-merge-app-nine.vercel.app` が 404（`DEPLOYMENT_NOT_FOUND`）。README のデモ URL と、よそに貼られたリンクが切れている。`www.pdf-merge.app` は 307（一時的なリダイレクト）で `pdf-merge.app` に転送されている | `curl` の結果（2026-09-27） | 0016 |
-| S-4 | 低 | `pdf-merge.app` は Cloudflare のプロキシ経由で Vercel に届いている。ブラウザ以外のクライアントは 403 になり、Vercel 側からは実際のリクエストの情報が見えにくい | `curl` の結果（2026-09-27） | 0016 |
+| S-4 | 低 | `pdf-merge.app` は Cloudflare のプロキシ経由で Vercel に届いている。ブラウザ以外のクライアントは 403 になり、Vercel 側からは実際のリクエストの情報が見えにくい。→ Cloudflare は WAF として意図的に使っている（オーナーの回答 2026-09-27）。CSP・ヘッダ・計測との取り決めが要る | `curl` の結果（2026-09-27） | 0018 |

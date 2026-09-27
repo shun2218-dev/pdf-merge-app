@@ -75,3 +75,4 @@
   - Vercel の前にプロキシを置くと、Vercel のファイアウォール・キャッシュ・Speed Insights が実際の利用者の IP やリクエストを正しく扱えないことがある。Vercel は、Cloudflare を DNS のみ（灰色の雲）で使う構成を推奨している。プロキシを外すかどうかは S-4 としてオーナーに確認する（ADR 0012 の計測と ADR 0017 のヘッダにも関わる）。
 - Search Console の登録は済んでいる。sitemap の送信は、決定 3 の実装のあとに行う。
 - README と CLAUDE.md のデモ URL は `https://pdf-merge.app/` に直した（この追記と同じコミット）。
+- 同日、オーナーから「Cloudflare は WAF として使っている（国ごとのブロックを含む）」と回答があった。プロキシは外さず、CSP・ヘッダ・計測との取り決めを ADR 0018 に書いた。この ADR の DoD の「`curl` で確かめる」は、ADR 0018 決定 4 のとおりブラウザの User-Agent で行う。

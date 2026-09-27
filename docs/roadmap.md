@@ -92,6 +92,7 @@ Phase 6  効果の検証と次の計画
 - ADR 0011: アナリティクスの窓口とイベント（いまの UI に対して入れ、ベースラインを取る）
 - ADR 0012: Speed Insights・Lighthouse CI・バンドルアナライザ・ベースラインの記録
 - ADR 0014: 自動の検査（Storybook の `a11y.test: "error"`。既存の違反を直す）
+- ADR 0018: Cloudflare の設定（スクリプトを差し込む機能の無効化・SSL/TLS・HSTS）を整え、WAF のルールを記録する
 
 **DoD**
 - [ ] 本番で、プレビューせずに「ダウンロード」を 1 回押すとダウンロードされる
@@ -99,7 +100,7 @@ Phase 6  効果の検証と次の計画
 - [ ] テストが落ちた PR は CI が赤になり、`main` / `develop` にマージできない
 - [ ] 本番の Sentry に PII が送られていない
 - [ ] `docs/analytics.md` と `docs/performance.md` に、1 週間分のベースラインがある
-- [ ] ADR 0003（暫定策）/ 0006 / 0007 / 0011 / 0012 の完了条件を満たした。ADR 0014 は Phase 1 の分を満たした
+- [ ] ADR 0003（暫定策）/ 0006 / 0007 / 0011 / 0012 の完了条件を満たした。ADR 0014 / 0018 は Phase 1 の分を満たした
 - [ ] `release/*` を切って本番に出した
 
 ---
@@ -163,11 +164,13 @@ Phase 6  効果の検証と次の計画
 **やること**
 - ADR 0013: next-intl・`/en`・辞書・キーの検査
 - ADR 0016: metadataBase・hreflang・robots・sitemap・構造化データ・manifest
+- ADR 0018 決定 5: Cloudflare の国ごとのブロックを見直す（英語版と API の撤去を踏まえて）
 
 **DoD**
 - [ ] ADR 0013 / 0016 の完了条件を満たした
 - [ ] 日本語と英語の両方で、主要な流れの E2E と a11y の検査が通る
 - [ ] Search Console に sitemap を登録し、エラーがない
+- [ ] ADR 0018 の国ごとのブロックの見直しの結論が追記に書かれている
 
 ---
 
