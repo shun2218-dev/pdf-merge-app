@@ -3,6 +3,17 @@
 本番公開中のアプリを、全体にわたって改善するための計画。
 問題の一覧は [`docs/assessment.md`](assessment.md)、判断は [`docs/adr/`](adr/README.md)、ここは「どの順で・何をもって終わりとするか」を書く（ADR 0001 決定 5）。
 
+## 今の状況（2026-09-28 時点。セッションの引き継ぎ用）
+
+- **Phase 0 は完了、Phase 1 は大部分が完了。** 本番は v1.2.0（リリースの PR は #69 / #70）。
+- **Phase 1 で残っていること**
+  - v1.2.0 のリリース後の確認（ADR 0021 の DoD）: 本番で `/ingest/i/v0/e/` への POST が 200 か、PostHog に `web_vital` が届くか、`web_vital` と `files_added` の `distinct_id` が同じか。PostHog で LCP / INP / CLS の p75 を端末ごとに出す Insight を作る
+  - 1 週間後（2026-10-05 ごろ）: `docs/analytics.md` の KPI と、`docs/performance.md` の RUM の p75 にベースラインを書く（ADR 0011 / 0012 / 0021 の DoD）
+  - CI での Lighthouse の Performance を 10 回ほど集め（いま 4 回）、予算を締める（ADR 0012）
+  - 上が済んだら、Phase 1 の DoD にチェックを付ける
+- **次に進むフェーズ: Phase 2**（ADR 0004 → 0015 → 0005）。利用者から見た動きを変えないので、ベースラインの計測と並行して進めてよい。ADR 0004 では、Sentry のブラウザのトレースが `web-vitals` と重なっている件（ADR 0021 の追記）も見直す。
+- **棚卸しに残っている小さな問題**: S-3（旧 URL の 404）、S-5（ワイルドカードの DNS と期限切れの証明書。ADR 0016 で対応）、プレビューのたびに結合し直す無駄（ADR 0005 で対応）。
+
 作業はフェーズ単位で進める。フェーズが終わるたびに `git diff` を自分の目で読み、フェーズの完了条件（DoD）を確かめてから次へ進む。
 
 ```
