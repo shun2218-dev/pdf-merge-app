@@ -329,6 +329,80 @@ describe("PdfMergerPage", () => {
 		});
 	});
 
+	it("プレビューせずにダウンロードボタンを1回クリックすると、結合してダウンロードされる", async () => {
+		const user = userEvent.setup();
+		const mockBlob = new Blob(["pdf content"], { type: "application/pdf" });
+
+		vi.mocked(fetch).mockResolvedValueOnce({
+			ok: true,
+			blob: async () => mockBlob,
+		} as Response);
+
+		const originalCreateElement = document.createElement.bind(document);
+		const mockClick = vi.fn();
+		const mockLink = originalCreateElement("a") as HTMLAnchorElement;
+		mockLink.click = mockClick;
+
+		vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+			if (tagName.toLowerCase() === "a") {
+				return mockLink;
+			}
+			return originalCreateElement(tagName);
+		});
+
+		render(<PdfMergerPage />);
+
+		const uploader = screen.getByTestId("file-uploader");
+		await user.click(uploader);
+
+		const downloadButton = screen.getByRole("button", {
+			name: /ダウンロード/i,
+		});
+		await user.click(downloadButton);
+
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledTimes(1);
+			expect(mockClick).toHaveBeenCalledTimes(1);
+			expect(mockLink.download).toBe("merged.pdf");
+			expect(mockLink.href).toBe("blob:mock-url");
+		});
+	});
+
+	it("プレビューせずにダウンロードして結合に失敗したときは、ダウンロードしない", async () => {
+		const user = userEvent.setup();
+
+		vi.mocked(fetch).mockResolvedValueOnce({
+			ok: false,
+		} as Response);
+
+		const originalCreateElement = document.createElement.bind(document);
+		const mockClick = vi.fn();
+		const mockLink = originalCreateElement("a") as HTMLAnchorElement;
+		mockLink.click = mockClick;
+
+		vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+			if (tagName.toLowerCase() === "a") {
+				return mockLink;
+			}
+			return originalCreateElement(tagName);
+		});
+
+		render(<PdfMergerPage />);
+
+		const uploader = screen.getByTestId("file-uploader");
+		await user.click(uploader);
+
+		const downloadButton = screen.getByRole("button", {
+			name: /ダウンロード/i,
+		});
+		await user.click(downloadButton);
+
+		await waitFor(() => {
+			expect(global.alert).toHaveBeenCalledWith("PDFの結合中にエラーが発生しました");
+		});
+		expect(mockClick).not.toHaveBeenCalled();
+	});
+
 	it("ファイルの順番を変更するとプレビューがリセットされる", async () => {
 		const user = userEvent.setup();
 		const mockBlob = new Blob(["pdf content"], { type: "application/pdf" });
