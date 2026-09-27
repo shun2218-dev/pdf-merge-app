@@ -2,7 +2,7 @@
 
 ブラウザ上で複数のPDFファイルを簡単に結合できるWebアプリケーションです。ドラッグ＆ドロップによる直感的な操作で、ファイルのアップロードや並び替えが可能です。
 
-**デモURL:** <https://pdf-merge-app-nine.vercel.app/>
+**デモURL:** <https://pdf-merge.app/>
 
 ## 概要
 

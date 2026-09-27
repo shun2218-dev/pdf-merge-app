@@ -1,6 +1,6 @@
 # pdf-merge-app
 
-ブラウザで複数の PDF を 1 つに結合する Web アプリ。Next.js（App Router）で作り、Vercel で本番公開している（https://pdf-merge-app-nine.vercel.app/）。
+ブラウザで複数の PDF を 1 つに結合する Web アプリ。Next.js（App Router）で作り、Vercel で本番公開している（https://pdf-merge.app/）。
 
 ## 進め方の正本
 

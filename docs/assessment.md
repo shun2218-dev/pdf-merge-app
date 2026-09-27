@@ -85,3 +85,5 @@
 | A-2 | 低 | 各ファイルの行に `aria-label="File List"`（英語・全行同じ）。削除ボタンの名前が「削除する」だけで、どのファイルか分からない | `components/file-list.tsx:51` | 0014 |
 | S-1 | 中 | `openGraph.url` に `VERCEL_URL`（プロトコルなし・デプロイごとの URL）を入れている。`metadataBase` がないので OGP 画像の URL が正しく作られない可能性がある | `app/layout.tsx:17` | 0016 |
 | S-2 | 低 | `robots.txt`、`sitemap.xml`、canonical、構造化データがない | — | 0016 |
+| S-3 | 中 | 旧 URL `pdf-merge-app-nine.vercel.app` が 404（`DEPLOYMENT_NOT_FOUND`）。README のデモ URL と、よそに貼られたリンクが切れている。`www.pdf-merge.app` は 307（一時的なリダイレクト）で `pdf-merge.app` に転送されている | `curl` の結果（2026-09-27） | 0016 |
+| S-5 | 低 | `pdf-merge.app` は Cloudflare のプロキシ経由で Vercel に届いている。ブラウザ以外のクライアントは 403 になり、Vercel 側からは実際のリクエストの情報が見えにくい | `curl` の結果（2026-09-27） | 0016 |
