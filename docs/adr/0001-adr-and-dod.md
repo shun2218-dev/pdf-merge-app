@@ -74,5 +74,5 @@ hibari と同じ Git Flow にする。`develop` ブランチはすでにある�
 - [x] `docs/assessment.md` に現状の問題が ID 付きで並び、各問題に担当の ADR がある
 - [x] `docs/roadmap.md` に共通 DoD とフェーズごとの DoD がある
 - [x] `CLAUDE.md` から ADR・ロードマップ・DoD の運用をたどれる
-- [ ] GitHub のブランチ保護を `main` と `develop` に設定した（ADR 0006 で実施）
-- [ ] PR テンプレート（`.github/pull_request_template.md`）に DoD のチェックリストを入れた（ADR 0006 で実施）
+- [x] GitHub のブランチ保護を `main` と `develop` に設定した（ADR 0006 で実施）
+- [x] PR テンプレート（`.github/pull_request_template.md`）に DoD のチェックリストを入れた（ADR 0006 で実施）
