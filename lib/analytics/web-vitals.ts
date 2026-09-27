@@ -2,7 +2,10 @@ import { getPageViewId } from "./page-view-id";
 
 // 実利用者の Web Vitals を PostHog に送る（ADR 0021）。
 // PostHog の SDK は最初の操作のあとに読み込むので（ADR 0011）、それを待たずに受け口へ直接送る。
-// 送り先は自分のドメインの /ingest で、Next.js の rewrites で PostHog に転送する（広告ブロッカーで止められにくくするため）
+// 送り先は自分のドメインの /ingest で、vercel.json の rewrites で PostHog に転送する（広告ブロッカーで止められにくくするため）
+
+// PostHog の受け口（末尾が /）。vercel.json の rewrites で PostHog に転送する（決定 5）
+export const WEB_VITALS_ENDPOINT = "/ingest/i/v0/e/";
 
 // ADR 0012 の予算にある指標だけを送る（決定 2）
 const REPORTED_METRICS = new Set(["LCP", "INP", "CLS"]);
@@ -77,7 +80,7 @@ export function sendWithKeepalive(endpoint: string, body: string): void {
 export const reportWebVital = createWebVitalsReporter({
 	enabled: process.env.NEXT_PUBLIC_VERCEL_ENV === "production",
 	apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-	endpoint: "/ingest/i/v0/e/",
+	endpoint: WEB_VITALS_ENDPOINT,
 	distinctId: getPageViewId,
 	getContext: () => ({
 		origin: window.location.origin,

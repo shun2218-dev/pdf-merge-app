@@ -102,3 +102,10 @@
 - その結果、Vercel の期限切れのワイルドカード証明書（`*.pdf-merge.app`）を使っていた `www` が 526 になった。Cloudflare の Redirect Rule で `www` を `pdf-merge.app` に 301 で転送して直した（ADR 0016 の追記、S-5）。
 - 同日の時点で使っている Cloudflare のルール: カスタムルール 4 件（WAF）、Redirect Rule 1 件（`www` → `pdf-merge.app`）。
 - 教訓: Full (strict) に変えるなど、証明書の検証を強める変更の前に、すべてのホスト名（サブドメインを含む）で接続先の証明書が有効かを確かめる（`openssl s_client -connect <Vercel の IP>:443 -servername <ホスト名>`）。決定 3 では HSTS 以外のヘッダはアプリで付けるので、ADR 0017 でアプリから付けるときに、Cloudflare 側を Off にするか二重のままにするかを決める（同じヘッダが 2 つあっても害はない）。
+
+### 2026-09-28: Cloudflare Web Analytics のビーコンが差し込まれていた（P-5）
+
+- 2026-09-27 の「Rocket Loader・Web Analytics・Zaraz は HTML の上では無効と見られる」は誤りだった。確認に使った `curl` は `Accept: text/html` を付けておらず、Cloudflare はその応答にはビーコンを差し込んでいなかった。
+- ブラウザで本番を開くと（`curl` でも `Accept: text/html` を付けると）、HTML の末尾に `static.cloudflareinsights.com/beacon.min.js` が差し込まれ、`/cdn-cgi/rum` への送信が 2 回ある（読み込み時と離脱時）。決定 2 で「使わない」とした Cloudflare Web Analytics の自動設定が有効になっている。
+- オーナーに、Cloudflare のダッシュボードの Web Analytics（または Speed → Observatory の RUM）で、`pdf-merge.app` の自動の差し込みを Off にしてもらう。Off にしたあと、`Accept: text/html` を付けた `curl` とブラウザの両方で、ビーコンがないことを確かめて、ここに追記する。
+- 教訓: Cloudflare が HTML を書き換えるかの確認は、ブラウザと同じ `Accept` を付けた `curl` か、ブラウザそのもので行う。
