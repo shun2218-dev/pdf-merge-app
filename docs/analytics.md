@@ -9,7 +9,9 @@
 - 送るのは本番（`NEXT_PUBLIC_VERCEL_ENV === "production"`）で、`NEXT_PUBLIC_POSTHOG_KEY` があるときだけ。開発中はブラウザのコンソールに `[analytics]` として出す。
 - SDK は最初のイベントが起きてから読み込む。読み込んだ時点で `$pageview` を 1 回送り、それまでに起きたイベントを順に送る。
 - Cookie も localStorage も使わない（`persistence: "memory"`）。そのため **「セッション」は 1 回のページの読み込み**で、再読み込みや別のタブは別の人として数えられる。
-- 自動の収集（autocapture）・画面の録画・アンケート・ページ離脱の記録は使わない。
+- 自動の収集（autocapture）・ヒートマップ・Web Vitals・デッドクリック・例外の自動収集・画面の録画・アンケート・ページ離脱の記録は使わない。
+  - PostHog はプロジェクトの設定（管理画面）でもこれらを有効にできるので、コードでも明示的に切っている。
+  - 管理画面（Settings → Project）でも、Autocapture・Heatmaps・Web vitals autocapture・Session replay を Off にしておく。Web Vitals は Vercel Speed Insights で測る（ADR 0012）。エラーは Sentry で見る（ADR 0007）。
 - ページビューそのものは、引き続き Vercel Web Analytics でも数えている（PostHog のページビューは、何か操作をした人だけ）。
 
 ## 送らないもの

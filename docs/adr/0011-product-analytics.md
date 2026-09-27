@@ -101,3 +101,5 @@
   - `preview_opened` は「プレビュー」を押して開いたときだけ。プレビューせずに「ダウンロード」を押したときも結合の結果としてプレビューが開くが、利用者が求めたものではないので数えない。
 - 並び替えは、ドラッグ中に `dragover` のたびに並びが変わるので、`FileList` に `onReorderEnd` を足し、1 回のドラッグで並びが変わっていたときだけ `files_reordered` を送る。
 - Vercel Web Analytics（ページビュー）は並行して残している（決定 2）。
+- PostHog はプロジェクトの設定（管理画面）で autocapture・ヒートマップ・Web Vitals などを有効にでき、SDK は起動時にそれを読みに来る。管理画面の設定に左右されないよう、コードでも `capture_heatmaps` / `capture_performance` / `capture_dead_clicks` / `capture_exceptions` を `false` にした。`init` に渡す設定は `posthog-js` の `PostHogConfig` の型で書き、オプション名の打ち間違いを型チェックで見つけられるようにした。
+- オーナーが PostHog のプロジェクトを作った（2026-09-27）。オンボーディングでは Product Analytics だけを選び、SDK のウィザード（`npx @posthog/wizard@latest`）は使わず、Autocapture・Heatmaps・Web vitals autocapture を Off にした。

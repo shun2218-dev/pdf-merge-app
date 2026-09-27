@@ -1,3 +1,4 @@
+import type { PostHogConfig } from "posthog-js";
 import type { EventName, EventProperties } from "./events";
 
 // アナリティクスの送信の窓口（ADR 0011 決定 1）。コンポーネントは track() だけを呼び、送信先を知らない。
@@ -6,7 +7,7 @@ import type { EventName, EventProperties } from "./events";
 // 読み込みが終わるまでに起きたイベントは貯めておき、読み込んだあとに順に送る。
 
 type PostHogClient = {
-	init: (apiKey: string, config: Record<string, unknown>) => unknown;
+	init: (apiKey: string, config: Partial<PostHogConfig>) => unknown;
 	capture: (event: string, properties?: Record<string, unknown>) => unknown;
 };
 
@@ -34,10 +35,16 @@ export function createAnalytics(config: AnalyticsConfig) {
 					api_host: config.apiHost,
 					// Cookie も localStorage も使わない。そのため「セッション」は 1 回のページの読み込みになる
 					persistence: "memory",
-					// 決定 4 のイベントだけを送る。自動の収集・録画・アンケートは使わない
+					// 決定 4 のイベントだけを送る。自動の収集・録画・アンケートは使わない。
+					// PostHog はプロジェクトの設定（管理画面）でもこれらを有効にできるので、
+					// 管理画面の設定に左右されないよう、コードで明示的に切る
 					autocapture: false,
 					capture_pageview: false,
 					capture_pageleave: false,
+					capture_dead_clicks: false,
+					capture_heatmaps: false,
+					capture_performance: false,
+					capture_exceptions: false,
 					disable_session_recording: true,
 					disable_surveys: true,
 					// 匿名の利用者の人物プロファイルを作らない

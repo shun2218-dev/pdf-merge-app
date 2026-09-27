@@ -91,6 +91,10 @@ describe("createAnalytics", () => {
 				persistence: "memory",
 				autocapture: false,
 				capture_pageview: false,
+				capture_dead_clicks: false,
+				capture_heatmaps: false,
+				capture_performance: false,
+				capture_exceptions: false,
 				disable_session_recording: true,
 			}),
 		);
