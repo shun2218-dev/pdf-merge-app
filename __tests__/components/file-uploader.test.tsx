@@ -1,24 +1,12 @@
+import * as Sentry from "@sentry/nextjs";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { FileUploader } from "@/components/file-uploader";
-import { SentryFrontendError } from "@/hooks/use-sentry";
 
-vi.mock("@/hooks/use-sentry", () => {
-	class MockSentryError extends Error {
-		constructor(message: string) {
-			super(message);
-			this.name = "MockSentryError";
-		}
-	}
-
-	return {
-		useSentry: () => ({
-			setHasSentError: vi.fn(),
-		}),
-		SentryFrontendError: MockSentryError,
-	};
-});
+vi.mock("@sentry/nextjs", () => ({
+	captureException: vi.fn(),
+}));
 
 describe("FileUploader", () => {
 	let consoleErrorSpy: Mock<Console["error"]>;
@@ -99,9 +87,9 @@ describe("FileUploader", () => {
 		});
 		fireEvent.change(input);
 
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			new SentryFrontendError("SentryFrontendError:FileUploader:handleFileChange:PDFファイルのみ選択してください"),
-		);
+		// 利用者の操作の結果なので、Sentry にもコンソールにもエラーとして出さない（ADR 0007 決定 4）
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+		expect(consoleErrorSpy).not.toHaveBeenCalled();
 		expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
 		expect(mockOnFilesSelected).not.toHaveBeenCalled();
 	});
@@ -156,9 +144,8 @@ describe("FileUploader", () => {
 			},
 		});
 
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			new SentryFrontendError("SentryFrontendError:FileUploader:handleDrop:PDFファイルのみ選択してください"),
-		);
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+		expect(consoleErrorSpy).not.toHaveBeenCalled();
 		expect(alertSpy).toHaveBeenCalledWith("PDFファイルのみ選択してください");
 		expect(mockOnFilesSelected).not.toHaveBeenCalled();
 	});
