@@ -66,7 +66,7 @@
 - [ ] 決定 2 の「使わない」4 つがすべて無効になっている（Cloudflare のダッシュボードのスクリーンショットを追記に貼る）
 - [x] SSL/TLS のモードが Full (strict)
 - [x] 本番の HSTS のヘッダが 1 つだけで、値が決定 3 のとおり（ブラウザの User-Agent で確認。値は 2026-09-27 の追記で改めたもの）
-- [ ] 本番のページの HTML に、このリポジトリ由来ではないスクリプトが、Bot Fight Mode の JavaScript Detections 以外にない
+- [x] 本番のページの HTML に、このリポジトリ由来ではないスクリプトが、Bot Fight Mode の JavaScript Detections 以外にない（2026-09-28。ブラウザと `Accept: text/html` 付きの `curl` で確認）
 - [ ] （Phase 5 の終わり）国ごとのブロックを見直し、結論を追記に書いた
 - [ ] ロードマップの共通 DoD を満たした
 
@@ -109,3 +109,4 @@
 - ブラウザで本番を開くと（`curl` でも `Accept: text/html` を付けると）、HTML の末尾に `static.cloudflareinsights.com/beacon.min.js` が差し込まれ、`/cdn-cgi/rum` への送信が 2 回ある（読み込み時と離脱時）。決定 2 で「使わない」とした Cloudflare Web Analytics の自動設定が有効になっている。
 - オーナーに、Cloudflare のダッシュボードの Web Analytics（または Speed → Observatory の RUM）で、`pdf-merge.app` の自動の差し込みを Off にしてもらう。Off にしたあと、`Accept: text/html` を付けた `curl` とブラウザの両方で、ビーコンがないことを確かめて、ここに追記する。
 - 教訓: Cloudflare が HTML を書き換えるかの確認は、ブラウザと同じ `Accept` を付けた `curl` か、ブラウザそのもので行う。
+- オーナーが Cloudflare の設定で自動の差し込みを Off にした（2026-09-28）。そのあと、`Accept: text/html` を付けた `curl`（3 回）とブラウザの両方で、ビーコンの読み込みと `/cdn-cgi/rum` への送信がないことを確かめた。差し込まれているのは Bot Fight Mode の JavaScript Detections だけで、Email Address Obfuscation と Rocket Loader の痕跡もない。
