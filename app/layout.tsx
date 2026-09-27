@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 		description,
 		type: "website",
 		url: process.env.VERCEL_URL,
-		siteName: "PDF Merge App"
+		siteName: "PDF Merge App",
 	},
 	twitter: {
 		card: "summary_large_image",

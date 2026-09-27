@@ -1,0 +1,183 @@
+# 品質ゲート（ADR 0006）
+# - テストが落ちたらジョブを失敗にする（continue-on-error は使わない）
+# - main / develop 向けの PR と、両ブランチへの push で走らせる
+# - ジョブを分けて並列に走らせ、必須チェックに登録する
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24.11.0"
+  PNPM_VERSION: "10"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Biome
+        run: pnpm exec biome ci .
+      - name: Typecheck
+        run: pnpm typecheck
+
+  unit:
+    name: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      coverage: ${{ steps.coverage.outputs.lines }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Vitest (unit)
+        run: pnpm test:unit:ci
+      - name: Read coverage
+        id: coverage
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "lines=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "lines=N/A" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: vitest-coverage-report
+          path: coverage/
+          retention-days: 30
+
+  storybook:
+    name: storybook
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Vitest (storybook)
+        run: pnpm test:storybook
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # PR では Chromium と Mobile Safari（WebKit）だけ、push ではすべてのブラウザで走らせる（ADR 0006 決定 3）
+      - name: Select Playwright projects
+        id: projects
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "browsers=chromium webkit" >> "$GITHUB_OUTPUT"
+            echo "args=--project=chromium --project='Mobile Safari'" >> "$GITHUB_OUTPUT"
+          else
+            echo "browsers=" >> "$GITHUB_OUTPUT"
+            echo "args=" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ github.event_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm exec playwright install --with-deps ${{ steps.projects.outputs.browsers }}
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
+      - run: pnpm build
+      - name: Playwright
+        run: eval "pnpm test:e2e ${{ steps.projects.outputs.args }}"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # 結果を PR に 1 つのコメントとしてまとめる。失敗したときにも付ける
+  report:
+    name: report
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs: [lint, unit, storybook, e2e]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find previous comment
+        id: fc
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "### 🤖 CI の結果"
+      - name: Post comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ### 🤖 CI の結果
+
+            | ジョブ | 結果 |
+            |---|---|
+            | lint（Biome・型チェック） | ${{ needs.lint.result == 'success' && '✅ 成功' || format('❌ {0}', needs.lint.result) }} |
+            | unit（Vitest） | ${{ needs.unit.result == 'success' && '✅ 成功' || format('❌ {0}', needs.unit.result) }} |
+            | storybook（Vitest） | ${{ needs.storybook.result == 'success' && '✅ 成功' || format('❌ {0}', needs.storybook.result) }} |
+            | e2e（Playwright） | ${{ needs.e2e.result == 'success' && '✅ 成功' || format('❌ {0}', needs.e2e.result) }} |
+
+            - **カバレッジ（Lines、unit）:** `${{ needs.unit.outputs.coverage || 'N/A' }}%`
+
+            [レポート（Artifacts の vitest-coverage-report / playwright-report）](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)
