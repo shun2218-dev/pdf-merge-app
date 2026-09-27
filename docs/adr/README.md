@@ -15,7 +15,7 @@
 | # | タイトル | 状態 | フェーズ |
 |---|---|---|---|
 | [0001](0001-adr-and-dod.md) | 改善は ADR と DoD で進める（運用・Git Flow・共通 DoD） | 採用 | 0 |
-| [0002](0002-client-side-merge.md) | PDF の結合をブラウザ内で行い、サーバーへ送らない | 提案 | 3 |
+| [0002](0002-client-side-merge.md) | PDF の結合をブラウザ内で行い、サーバーへ送らない | 採用 | 3 |
 | [0003](0003-pdf-preview-renderer.md) | プレビューを @react-pdf-viewer から最新の pdfjs-dist（react-pdf）へ移す | 提案 | 1（暫定策）/ 3 |
 | [0004](0004-dependency-and-codebase-cleanup.md) | 依存とコードベースの整理（未使用の削除・版の固定・型チェックの有効化） | 提案 | 2 |
 | [0005](0005-merge-workflow-state.md) | 結合の状態管理を 1 つのフックにまとめ、画面を分割する | 提案 | 2 |
