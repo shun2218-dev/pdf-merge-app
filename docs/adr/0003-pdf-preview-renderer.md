@@ -53,7 +53,7 @@
 
 ## 完了条件（DoD）
 
-- [ ] （暫定策）本番の `getDocument` に `isEvalSupported: false` が渡っていることを、ユニットテストで確かめた
+- [x] （暫定策）本番の `getDocument` に `isEvalSupported: false` が渡っていることを、ユニットテストで確かめた
 - [ ] `pnpm why pdfjs-dist` の結果が 4.2.67 以上の 1 系統だけになった
 - [ ] `@react-pdf-viewer/*` と `public/lib/pdf.worker.min.js` を削除した
 - [ ] プレビューの JS が初回の読み込みに含まれない（`@next/bundle-analyzer` で確認。ADR 0012）
@@ -64,4 +64,9 @@
 
 ## 追記
 
-（なし）
+### 2026-09-27: 暫定策（決定 1）
+
+- `@react-pdf-viewer/core@3.12.0` の `Viewer` に `transformGetDocumentParams` があることを確かめ、ほかの引数はそのまま残して `isEvalSupported: false` だけを足す関数を渡した（`components/pdf-preview.tsx` の `disableEval`）。決定 2 を前倒しする必要はなかった。
+  - `@react-pdf-viewer` の型（`PdfJs.GetDocumentParams`）には `isEvalSupported` がないので型を合わせたが、渡した値は `core.js` の中でそのまま PDF.js の `getDocument` に渡る。
+  - ローカルの E2E（Chromium）で、実際にプレビューが表示されることを確かめた。
+- ロードマップでは `main` からの hotfix で出す予定だったが、`main` にはまだ新しい CI（`ci.yml`）がなく、ブランチ保護の必須チェックが報告されずにマージできなかった（PR #59 / #60 を閉じた）。`develop` の上に載せ直し、Phase 1 のリリースで本番に出す。

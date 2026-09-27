@@ -85,7 +85,7 @@ Phase 6  効果の検証と次の計画
 **やること**
 - **hotfix**（`main` から `hotfix/*`）
   - B-1: プレビュー前の「ダウンロード」が何もしない（ADR 0005 決定 4。バグ修正のため先行）
-  - B-3: `isEvalSupported: false` の暫定策（ADR 0003 決定 1）
+  - B-3: `isEvalSupported: false` の暫定策（ADR 0003 決定 1）。`main` に新しい CI がなく hotfix の PR がマージできなかったため、`develop` 経由で Phase 1 のリリースに含める
   - B-2: 4.5MB を超えたとき、「エラー」ではなく「合計 4.5MB までです」と分かる文言を出す（ADR 0002 が出るまでのつなぎ。413 を見分けるだけのバグ修正の扱い）
 - ADR 0006: CI の品質ゲート・ブランチ保護・PR テンプレート
 - ADR 0007: Sentry の方針（PII・Replay・サンプリング）
