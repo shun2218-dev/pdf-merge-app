@@ -61,7 +61,15 @@
 
 - Performance はローカルの別の回で 0.94 も出た。点数は実行のたびに揺れる。
 - LCP はラボの値（遅い回線と CPU を模擬したもの）で、予算の 2.5 秒（RUM の p75）とは比べない。
-- CI（GitHub Actions）での値は、この PR の CI から集めて追記する。
+- CI（GitHub Actions）での値は下の表に集める。
+
+### Lighthouse（CI、GitHub Actions の ubuntu-latest、モバイルの設定・3 回）
+
+Performance の予算を締めるために、10 回ほど集める（ADR 0012 の DoD）。締める値は、集めた中央値の最小値。
+
+| # | 日付 | PR | Performance（3 回） | 中央値 | LCP の中央値 | TBT の中央値 |
+|---|---|---|---|---|---|---|
+| 1 | 2026-09-27 | #57 | 0.90 / 0.95 / 0.97 | 0.95 | 1,815 ms | 253 ms |
 
 ### ビルド
 
