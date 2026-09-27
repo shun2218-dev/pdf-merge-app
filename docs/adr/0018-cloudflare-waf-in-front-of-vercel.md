@@ -57,7 +57,7 @@
 
 ## オーナーに確認したいこと
 
-1. 決定 2 の「使わない」4 つを無効にしてよいか。Rocket Loader・Web Analytics・Zaraz は HTML の上では無効と見られる。Email Address Obfuscation はダッシュボードで確かめてほしい。
+1. ~~決定 2 の「使わない」4 つを無効にしてよいか~~ → Email Address Obfuscation はオーナーが Off にした（2026-09-27）。Rocket Loader・Web Analytics・Zaraz は HTML の上では無効と見られる。
 2. 決定 5 のとおり、国ごとのブロックを Phase 5 の終わりに見直すことでよいか。
 3. ~~5 件目のカスタムルールの枠の予定~~ → 特になし（オーナーの回答 2026-09-27）。空けておく。
 
@@ -72,4 +72,8 @@
 
 ## 追記
 
-（なし）
+### 2026-09-27: Email Address Obfuscation を Off にした
+
+- オーナーが Cloudflare の Security → Settings で Email Address Obfuscation を Off にした（既定では On）。
+- 本番の HTML に `email-decode.min.js` がないことを確かめた（ページにメールアドレスがないため、Off にする前から差し込まれてはいなかった）。
+- 将来 `/about` に連絡先を載せるときは、メールアドレスではなく GitHub の Issues へのリンクにする。
