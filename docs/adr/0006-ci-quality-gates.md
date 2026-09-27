@@ -50,11 +50,22 @@
 - [ ] `develop` 向けの PR で CI が走る
 - [ ] lint / typecheck / unit / storybook / e2e がジョブとして分かれ、必須チェックに登録されている
 - [ ] `main` と `develop` のブランチ保護が有効（Settings のスクリーンショットか `gh api` の結果を PR に貼る）
-- [ ] PR テンプレートに共通 DoD のチェックリストがある
-- [ ] カバレッジのしきい値が `vitest.config.ts` に書かれている
+- [x] PR テンプレートに共通 DoD のチェックリストがある
+- [x] カバレッジのしきい値が `vitest.config.ts` に書かれている
 - [ ] PR 時の CI の所要時間が 10 分以内
 - [ ] ロードマップの共通 DoD を満たした
 
 ## 追記
 
-（なし）
+### 2026-09-27: 実装
+
+- ワークフローを `.github/workflows/ci.yml` の 1 つにまとめ、`unit-tests.yml` と `playwright.yml` を消した。ジョブは `lint` / `unit` / `storybook` / `e2e` と、結果を PR に 1 つのコメントでまとめる `report`。
+  - 型チェックは `lint` ジョブの中のステップにした（別のジョブにすると依存のインストールが 1 回増えるため）。必須チェックに登録するのはジョブ名の `lint` / `unit` / `storybook` / `e2e`。
+  - `knip` は ADR 0004 で入れるときに `lint` ジョブに足す。
+  - 同じブランチで新しい push があったら、古い実行を取り消す（`concurrency`）。
+- 型チェックを通すため、使っていない `components/ui/chart.tsx`（型エラー 8 件がすべてここだった）を消した。ADR 0004 決定 1 の先取り。
+- `app/layout.tsx` の書式の違反（末尾のカンマ）を直した。`biome ci` が通らなかったため。
+- `package.json` に `typecheck` / `test:unit:ci`（unit プロジェクトだけ・カバレッジつき）/ `test:storybook`（storybook プロジェクトだけ・カバレッジなし）を足した。
+- カバレッジの下限は unit プロジェクトだけで測った値（lines 88.88 / statements 89.36 / functions 77.35 / branches 80）の小数点以下を切り捨てた値にした。これまで PR のコメントに出ていた 93.46% は、Storybook のテストも含めた値。
+- `.storybook/main.ts` の `staticDirs` が Windows のパスの書き方（`..\public`）で、macOS と Linux では `public` を読めていなかったので `../public` に直した（バグ修正）。
+- ブランチ保護は、この PR のマージ後に、必須チェックの名前が GitHub に登録されてから設定する。
