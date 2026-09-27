@@ -1,0 +1,79 @@
+# 0018. Cloudflare を WAF として Vercel の前に置く（現状の記録と、ほかの ADR との取り決め）
+
+- 状態: 採用
+- オーナーの確認: 2026-09-27
+- 日付: 2026-09-27
+- 関連: S-4、ADR 0002 / 0011 / 0012 / 0013 / 0016 / 0017
+
+## 背景
+
+`pdf-merge.app` の DNS は Cloudflare にあり、プロキシ（オレンジの雲）を通して Vercel に届いている（ADR 0016 の追記）。
+オーナーに確かめたところ、**Cloudflare を WAF として意図的に使っている**。悪意のあるアクセスや特定の国からのアクセスが多く、ブロックしているため（2026-09-27）。
+
+いまのカスタムルール（4 / 5 件、すべて Block・有効）:
+
+| 順 | 名前 | 条件 |
+|---|---|---|
+| 1 | High Risk Countries | 国が BY / BR / CN / IR / KP / RU / TR / UA / VN / ID |
+| 2 | CMS & Script Scans | パスに `wp-` / `.php` / `composer.json` を含む |
+| 3 | Sensitive & Backup Files | パスに `.sql` / `.env` / `.git` / `.log` などを含む |
+| 4 | Bad User Agents & HTTP/1.0 | User-Agent が空、HTTP/1.0、User-Agent に `curl` を含む など |
+
+この構成は、これからの ADR のいくつかと関わる。
+
+- ADR 0017（CSP）: Cloudflare の機能の一部は、Vercel から返った HTML を書き換えてスクリプトを差し込む。CSP を強制すると、それらが動かなくなるか、違反として報告される。
+  2026-09-27 に本番の HTML を確かめたところ、差し込まれていたのは **Bot Fight Mode の JavaScript Detections**（インラインのスクリプトと `/cdn-cgi/challenge-platform/scripts/jsd/main.js`）だけだった。
+  Rocket Loader・Cloudflare Web Analytics・Zaraz の痕跡はなかった。Email Address Obfuscation は、ページにメールアドレスがないので有効かどうかを HTML からは判断できない。
+- ADR 0017（ヘッダ）: HSTS を Cloudflare（`max-age=15552000`）と Vercel（`max-age=63072000; includeSubDomains; preload`）の両方が付けうる。どちらが最終的に出るかが、設定によって変わる。
+- ADR 0016 / 0017 の DoD: 「`curl` で確かめる」と書いたが、ルール 4 とボット対策で `curl` は 403 になる。
+- ADR 0011 / 0012（計測）: Vercel から見える接続元は Cloudflare になる。Speed Insights は同じドメインへ送るので、国の判定がずれうる。PostHog はブラウザから直接送るので影響を受けない。
+- ADR 0013（英語版）: ルール 1 は、ブラジル・インドネシア・トルコ・ベトナム・ウクライナなど、利用者の多い国を含む。英語版で海外の利用者に届けることと、国ごとのブロックは衝突しうる。
+- ADR 0002（ブラウザ内で結合）: API がなくなると、サーバーで重い処理をさせる攻撃の対象がなくなる。静的なページとファイルだけになるので、ルール 1 の必要性が下がる。ルール 2〜4 は、もともと存在しないパスへのアクセスや機械的なアクセスを止めるだけなので、残しても利用者への影響はほとんどない。
+
+## 決定
+
+1. **Cloudflare のプロキシは外さない。** WAF の役目は Cloudflare に任せ、Vercel の Firewall は重ねて使わない。SSL/TLS のモードは「Full (strict)」にする。
+2. **ページにスクリプトを差し込む Cloudflare の機能は、Bot Fight Mode の JavaScript Detections だけを残し、ほかは使わない。**
+   - 使わない: Email Address Obfuscation（メールアドレスを隠す。`email-decode.min.js` を差し込む）、Rocket Loader（スクリプトの読み込みを書き換えて遅らせる。Next.js の hydration を壊しうる）、Cloudflare Web Analytics の自動設定（`static.cloudflareinsights.com` のビーコンを差し込む。PostHog と Speed Insights と重複する）、Zaraz（第三者のタグを差し込む）。
+   - 残す: Bot Fight Mode の JavaScript Detections。ボット対策そのものなので外さない。読み込むファイルは同じオリジン（`/cdn-cgi/`）なので CSP の `'self'` で許され、インラインの部分は ADR 0017 の `'unsafe-inline'` で許される。ADR 0017 で nonce の CSP に移すときは、このインラインのスクリプトが動くかを本番で確かめる（Preview の URL は Cloudflare を通らないので、そこでは確かめられない）。
+3. **セキュリティヘッダはアプリ側（`next.config.ts`。ADR 0017）で付け、Cloudflare の Transform Rules では付けない。** HSTS だけは例外で、Cloudflare の設定を正とする。Cloudflare の HSTS を `max-age=63072000; includeSubDomains; preload` に揃え、アプリでは付けない。
+4. **本番の応答の検査は、ブラウザの User-Agent で行う。** ADR 0016 / 0017 の DoD の「`curl` で確かめる」は、ブラウザの User-Agent を付けた `curl` か Playwright で行う。Cloudflare を通らない検査（Vercel の Preview の URL に対する E2E）と、通る検査（本番のドメイン）を分けて考える。
+5. **国ごとのブロック（ルール 1）は、ADR 0002 と 0013 を本番に出したあと（Phase 5 の終わり）に見直す。** それまではルール 1 をいまのまま残す（API がある間は、ブロックする理由があるため）。見直しは次の手順で行う。
+   1. **ブロックの中身を見る。** Security Events をルール 1 で絞り、直近 30 日の件数を国・パス・User-Agent で分ける。ブロックされたのが `wp-` や `.env` などのスキャンばかりか、`/`・`/en` のようなページの閲覧が混ざっているかを見る。
+   2. **ルール 1 の動作を Block から Managed Challenge に変えて 2 週間おく。** Managed Challenge は、人には確認の画面（たいていは自動で通る）を出し、ボットは止める。カスタムルールの一覧の「CSR」（Challenge Solve Rate: チャレンジを通過した割合）の列に数字が出る。
+      - ルール 2〜4 はそのまま Block にしておくので、スキャンや怪しい User-Agent は国に関係なく止まり続ける。
+   3. **CSR で決める。**
+      | CSR | 意味 | 結論 |
+      |---|---|---|
+      | ほぼ 0% | 来ているのは、チャレンジを通れない機械のアクセスだけ | Block に戻す |
+      | 数 % 以上 | チャレンジを通る人間が来ている | Managed Challenge のまま残すか、ルール 1 を外す。外すかどうかは、その期間に攻撃が増えたか（Security Events の総数、Vercel の転送量）で判断する |
+   4. 結論と、その根拠の数字を「追記」に書く（決定 6）。
+6. **WAF のルールを変えたら、この ADR の「追記」に日付と内容を書く。** Cloudflare のダッシュボードの設定は、コードのように履歴が残らないため。
+
+## 結果
+
+- 良い点: WAF の現状と理由が記録に残る。CSP・ヘッダ・計測と WAF の設定が食い違わなくなる。
+- 悪い点: Cloudflare とアプリの 2 箇所に設定があるので、変更するときに両方を見る必要がある（決定 3 と 6 で置き場所を分けて和らげる）。国ごとのブロックを残している間は、ブロックされた国の利用者を取りこぼす。
+
+## オーナーに確認したいこと
+
+1. ~~決定 2 の「使わない」4 つを無効にしてよいか~~ → Email Address Obfuscation はオーナーが Off にした（2026-09-27）。Rocket Loader・Web Analytics・Zaraz は HTML の上では無効と見られる。
+2. 決定 5 のとおり、国ごとのブロックを Phase 5 の終わりに見直すことでよいか。
+3. ~~5 件目のカスタムルールの枠の予定~~ → 特になし（オーナーの回答 2026-09-27）。空けておく。
+
+## 完了条件（DoD）
+
+- [ ] 決定 2 の「使わない」4 つがすべて無効になっている（Cloudflare のダッシュボードのスクリーンショットを追記に貼る）
+- [ ] SSL/TLS のモードが Full (strict)
+- [ ] 本番の HSTS のヘッダが 1 つだけで、値が決定 3 のとおり（ブラウザの User-Agent で確認）
+- [ ] 本番のページの HTML に、このリポジトリ由来ではないスクリプトが、Bot Fight Mode の JavaScript Detections 以外にない
+- [ ] （Phase 5 の終わり）国ごとのブロックを見直し、結論を追記に書いた
+- [ ] ロードマップの共通 DoD を満たした
+
+## 追記
+
+### 2026-09-27: Email Address Obfuscation を Off にした
+
+- オーナーが Cloudflare の Security → Settings で Email Address Obfuscation を Off にした（既定では On）。
+- 本番の HTML に `email-decode.min.js` がないことを確かめた（ページにメールアドレスがないため、Off にする前から差し込まれてはいなかった）。
+- 将来 `/about` に連絡先を載せるときは、メールアドレスではなく GitHub の Issues へのリンクにする。
