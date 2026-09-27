@@ -32,7 +32,7 @@
 | [0016](0016-seo-and-metadata.md) | SEO とメタデータ（metadataBase・robots・sitemap・構造化データ） | 採用 | 5 |
 | [0017](0017-security-headers.md) | セキュリティヘッダと CSP | 採用 | 3 |
 | [0018](0018-cloudflare-waf-in-front-of-vercel.md) | Cloudflare を WAF として Vercel の前に置く（現状の記録と、ほかの ADR との取り決め） | 採用 | 1（設定）/ 5（国のブロックの見直し） |
-| [0019](0019-posthog-auto-capture-features.md) | PostHog の自動の収集（ヒートマップ・Web Vitals・デッドクリックなど）を使うか | 提案 | 1（決定）/ 4（試し） |
+| [0019](0019-posthog-auto-capture-features.md) | PostHog の自動の収集（ヒートマップ・Web Vitals・デッドクリックなど）を使うか | 採用 | 1（決定）/ 4（試し） |
 
 ## テンプレート
 

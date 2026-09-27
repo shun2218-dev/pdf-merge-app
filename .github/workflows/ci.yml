@@ -176,6 +176,8 @@ jobs:
         with:
           name: lighthouse-report
           path: .lighthouseci/
+          # .lighthouseci はドットで始まるので、明示しないと upload-artifact@v4 が除外する
+          include-hidden-files: true
           retention-days: 30
 
   # 結果を PR に 1 つのコメントとしてまとめる。失敗したときにも付ける

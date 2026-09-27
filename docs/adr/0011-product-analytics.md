@@ -102,6 +102,7 @@
 - 並び替えは、ドラッグ中に `dragover` のたびに並びが変わるので、`FileList` に `onReorderEnd` を足し、1 回のドラッグで並びが変わっていたときだけ `files_reordered` を送る。
 - Vercel Web Analytics（ページビュー）は並行して残している（決定 2）。
 - PostHog はプロジェクトの設定（管理画面）で autocapture・ヒートマップ・Web Vitals などを有効にでき、SDK は起動時にそれを読みに来る。管理画面の設定に左右されないよう、コードでも `capture_heatmaps` / `capture_performance` / `capture_dead_clicks` / `capture_exceptions` を `false` にした。
-  - **ヒートマップ・Web Vitals・デッドクリック・例外の自動収集は、この ADR で検討していなかった。** 上の無効化は、必要かどうかを評価しないまま入れたもので、**ADR 0019 で決めるまでの仮の設定**として残す（オーナーの指摘と判断: 2026-09-27）。`init` に渡す設定は `posthog-js` の `PostHogConfig` の型で書き、オプション名の打ち間違いを型チェックで見つけられるようにした。
+  - **ヒートマップ・Web Vitals・デッドクリック・例外の自動収集は、この ADR で検討していなかった。** 上の無効化は、必要かどうかを評価しないまま入れたもので、ADR 0019 で決めるまでの仮の設定として残した（オーナーの指摘と判断: 2026-09-27）。同日 ADR 0019 が採用され、無効化はその決定として残すことになった。`init` に渡す設定は `posthog-js` の `PostHogConfig` の型で書き、オプション名の打ち間違いを型チェックで見つけられるようにした。
 - オーナーが PostHog のプロジェクトを作った（2026-09-27）。オンボーディングでは Product Analytics だけを選び、SDK のウィザード（`npx @posthog/wizard@latest`）は使わず、Autocapture・Heatmaps・Web vitals autocapture・Session Replay を Off にした（ヒートマップと Web Vitals は、ADR 0019 で決めるまでの仮の設定）。
 - PostHog のプランは Free にした（オーナーの判断: 2026-09-27）。プロジェクトは 1 つ（本番だけが送るので足りる）、保存期間は 1 年（Phase 1 と Phase 6 の比べる期間は数か月）、Product analytics は月 100 万イベントまで（操作をした人 1 回あたり 8〜10 件の見込みで、操作をした人が月 10 万回ほどまで）。上限に達すると、その月の残りは記録されないが請求はない。
+- オーナーが PostHog の「Discard client IP data」を有効にし、Vercel の Production に `NEXT_PUBLIC_POSTHOG_KEY` を設定した（2026-09-27）。本番で計測が始まるのは、この機能を含む版を `main` にリリースしてから。
