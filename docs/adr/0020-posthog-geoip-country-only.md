@@ -56,11 +56,14 @@ ADR 0011 の「送らないもの」は IP アドレスだけを挙げていて�
 
 ## 完了条件（DoD）
 
-- [ ] PostHog に Property Filter の変換があり、GeoIP の変換より後に並んでいる
-- [ ] 設定後の新しいイベントに、決定 2 のプロパティがなく、`$geoip_country_code` が残っている
-- [ ] `docs/analytics.md` の「送らないもの」を更新した
-- [ ] ロードマップの共通 DoD を満たした
+- [x] PostHog に Property Filter の変換があり、GeoIP の変換より後に並んでいる
+- [x] 設定後の新しいイベントに、決定 2 のプロパティがなく、`$geoip_country_code` が残っている
+- [x] `docs/analytics.md` の「送らないもの」を更新した
+- [x] ロードマップの共通 DoD を満たした
 
 ## 追記
 
-（なし）
+### 2026-09-27: 設定と確認
+
+- オーナーが PostHog に Property Filter の変換を作り、GeoIP の変換より後に置いた。
+- 設定後の `files_added` のイベントで、市区町村・郵便番号・緯度経度・都道府県・精度の半径がなく、国（`Country code: JP` / `Country name: Japan`）・大陸・タイムゾーンが残っていることを確かめた。アプリが送るプロパティは `count_bucket` / `size_bucket` / `source` の 3 つだけで、ファイル名はない。
