@@ -106,3 +106,4 @@
 - オーナーが PostHog のプロジェクトを作った（2026-09-27）。オンボーディングでは Product Analytics だけを選び、SDK のウィザード（`npx @posthog/wizard@latest`）は使わず、Autocapture・Heatmaps・Web vitals autocapture・Session Replay を Off にした（ヒートマップと Web Vitals は、ADR 0019 で決めるまでの仮の設定）。
 - PostHog のプランは Free にした（オーナーの判断: 2026-09-27）。プロジェクトは 1 つ（本番だけが送るので足りる）、保存期間は 1 年（Phase 1 と Phase 6 の比べる期間は数か月）、Product analytics は月 100 万イベントまで（操作をした人 1 回あたり 8〜10 件の見込みで、操作をした人が月 10 万回ほどまで）。上限に達すると、その月の残りは記録されないが請求はない。
 - オーナーが PostHog の「Discard client IP data」を有効にし、Vercel の Production に `NEXT_PUBLIC_POSTHOG_KEY` を設定した（2026-09-27）。本番で計測が始まるのは、この機能を含む版を `main` にリリースしてから。
+- v1.1.0 のリリース後、PostHog が IP アドレスから推定した細かい位置情報（市区町村・郵便番号・緯度経度）をイベントに付けていることが分かった。決定 3 の「送らないもの」で検討していなかったので、ADR 0020 で国だけ残すことにした（2026-09-27）。
