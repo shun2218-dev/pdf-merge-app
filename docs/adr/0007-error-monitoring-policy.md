@@ -42,11 +42,11 @@
 
 - [x] 3 つの Sentry の設定で `sendDefaultPii` が `false`、DSN が環境変数から読まれている
 - [x] `beforeSend` がファイル名を置き換えることをユニットテストで確かめた
-- [ ] Replay の設定が決定 2 のとおりで、Preview 環境でわざと例外を起こした Replay にファイル名と PDF の中身が映っていないことを目で確かめた
+- [x] Replay の設定が決定 2 のとおりで、Preview 環境でわざと例外を起こした Replay にファイル名と PDF の中身が映っていないことを目で確かめた
 - [x] `SentryFrontendError` と `useSentry` がコードベースにない
 - [x] PDF 以外を選んだときに Sentry へ何も送られない（ユニットテストで `captureException` が呼ばれないことを確認）
 - [x] ローカルと CI では Sentry に送信されない
-- [ ] ロードマップの共通 DoD を満たした
+- [x] ロードマップの共通 DoD を満たした
 
 ## 追記
 
@@ -64,3 +64,8 @@
   - 通信の失敗などの想定外の例外: `Sentry.captureException` で送る。
 - ソースマップの設定（`withSentryConfig`）は変えていない。
 - **Vercel のプロジェクトに `NEXT_PUBLIC_SENTRY_DSN` を Production と Preview の両方で設定する必要がある。** 設定しないまま本番に出すと、Sentry が無効になる（送らない側に倒れる）。値はこれまで設定ファイルに直書きしていた DSN（公開してよい値）。
+
+### 2026-09-27: Vercel の設定と Preview での確認
+
+- オーナーが Vercel のプロジェクトに `NEXT_PUBLIC_SENTRY_DSN` を Production と Preview の両方で設定した。
+- オーナーが PR #55 の Preview で、DevTools で `/api/merge-pdf` への通信を止めて想定外の例外（`TypeError: Failed to fetch`）を起こし、Sentry の Issue の詳細と Replay にファイル名が出ず、画面の文字が伏せられていることを確かめた。
