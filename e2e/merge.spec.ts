@@ -112,4 +112,15 @@ test.describe("PDF Merger E2E Test", () => {
 		// 5. ダウンロードが開始されたことを確認
 		expect(download.suggestedFilename()).toBe("merged.pdf");
 	});
+
+	test("プレビューせずにダウンロードを1回クリックするとダウンロードされる", async ({ page }) => {
+		const fileInput = page.locator(SELECTORS.FILE_INPUT);
+		await fileInput.setInputFiles([pdfFile1, pdfFile2]);
+
+		const downloadPromise = page.waitForEvent("download", { timeout: 15000 });
+		await page.locator(SELECTORS.DOWNLOAD_BUTTON).click();
+		const download = await downloadPromise;
+
+		expect(download.suggestedFilename()).toBe("merged.pdf");
+	});
 });

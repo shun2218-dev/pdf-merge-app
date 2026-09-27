@@ -47,8 +47,10 @@ export default function PdfMergerPage() {
 		setMergedPdfUrl(null);
 	};
 
-	const handlePreview = async () => {
-		if (files.length === 0) return;
+	// 結合した PDF の URL を返す。呼び出し側は state の mergedPdfUrl ではなく、この戻り値を使う
+	// （setState の直後に state を読んでも、その時点のレンダーの古い値しか読めないため）
+	const handlePreview = async (): Promise<string | null> => {
+		if (files.length === 0) return null;
 
 		setIsProcessing(true);
 		try {
@@ -73,30 +75,23 @@ export default function PdfMergerPage() {
 
 			setMergedPdfUrl(url);
 			setShowPreview(true);
+			return url;
 		} catch (_: unknown) {
 			alert("PDFの結合中にエラーが発生しました");
+			return null;
 		} finally {
 			setIsProcessing(false);
 		}
 	};
 
 	const handleDownload = async () => {
-		if (mergedPdfUrl) {
-			const link = document.createElement("a");
-			link.href = mergedPdfUrl;
-			link.download = DOWNLOAD_FILE_NAME;
-			link.click();
-		} else {
-			await handlePreview();
-			setTimeout(() => {
-				if (mergedPdfUrl) {
-					const link = document.createElement("a");
-					link.href = mergedPdfUrl;
-					link.download = DOWNLOAD_FILE_NAME;
-					link.click();
-				}
-			}, 1000);
-		}
+		const url = mergedPdfUrl ?? (await handlePreview());
+		if (!url) return;
+
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = DOWNLOAD_FILE_NAME;
+		link.click();
 	};
 
 	return (
