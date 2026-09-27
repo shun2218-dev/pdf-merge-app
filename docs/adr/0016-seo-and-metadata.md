@@ -72,6 +72,6 @@
 - 本番の `og:url` は `pdf-merge-o0btx76ap-shun2218devs-projects.vercel.app`（プロトコルなし・デプロイごとの URL）で、背景に書いた S-1 が本番で起きていることを確かめた。
 - DNS は Cloudflare にあり、プロキシ（オレンジの雲）を通して Vercel に届いている（`server: cloudflare`）。
   - ブラウザの User-Agent のない `curl` は Cloudflare のボット対策で 403 になる。Slack・X・Facebook のプレビュー用のクローラーは 200 で、OGP の取得には問題ない。
-  - Vercel の前にプロキシを置くと、Vercel のファイアウォール・キャッシュ・Speed Insights が実際の利用者の IP やリクエストを正しく扱えないことがある。Vercel は、Cloudflare を DNS のみ（灰色の雲）で使う構成を推奨している。プロキシを外すかどうかは S-5 としてオーナーに確認する（ADR 0012 の計測と ADR 0017 のヘッダにも関わる）。
+  - Vercel の前にプロキシを置くと、Vercel のファイアウォール・キャッシュ・Speed Insights が実際の利用者の IP やリクエストを正しく扱えないことがある。Vercel は、Cloudflare を DNS のみ（灰色の雲）で使う構成を推奨している。プロキシを外すかどうかは S-4 としてオーナーに確認する（ADR 0012 の計測と ADR 0017 のヘッダにも関わる）。
 - Search Console の登録は済んでいる。sitemap の送信は、決定 3 の実装のあとに行う。
 - README と CLAUDE.md のデモ URL は `https://pdf-merge.app/` に直した（この追記と同じコミット）。
