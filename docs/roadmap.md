@@ -12,7 +12,10 @@
   - CI での Lighthouse の Performance を 10 回ほど集め（いま 4 回）、予算を締める（ADR 0012）
   - ADR 0018 の DoD の 1 つ目: Cloudflare の「使わない」4 つが Off の画面のスクリーンショットを追記に貼る（Web Analytics の差し込みは 2026-09-28 にオーナーが Off にした。P-5）
   - 上が済んだら、Phase 1 の DoD にチェックを付ける
-- **次に進むフェーズ: Phase 2**（ADR 0004 → 0015 → 0005）。利用者から見た動きを変えないので、ベースラインの計測と並行して進めてよい。ADR 0004 では、Sentry のブラウザのトレースが `web-vitals` と重なっている件（ADR 0021 の追記）も見直す。
+- **Phase 2 を進めている（ADR 0004 → 0015 → 0005）。** 利用者から見た動きを変えないので、ベースラインの計測と並行して進めてよい。
+  - ADR 0004 その 1（削除を伴わない部分）は #75 で `develop` に入った。版の固定・`ignoreBuildErrors` の撤去・knip と Renovate の設定・CSS の読み込み先・`tests/utils/dirname.ts`・README。オーナーが Preview でデスクトップとスマートフォンの表示を確かめた（2026-09-28）
+  - **次は ADR 0004 その 2（削除）。** 対象の一覧は ADR 0004 の 2026-09-28 の追記の「残り」。Claude Code の自動モードでは `git rm` が止められたので、オーナーが Claude Code で許可するか、オーナーが消すかを先に決める。Sentry のブラウザのトレースと `web-vitals` の重なり（ADR 0021 の追記）もここで見直す
+  - Renovate の GitHub App はオーナーが入れた（2026-09-28。Renovate Only・Scan and Alert・`pdf-merge-app` だけ）。`renovate.json` はまだ `develop` にしかないので、Renovate が `main` 向けに出した Onboarding の PR（#76「Configure Renovate」）はマージしない。次のリリースで `renovate.json` が `main` に入ったら、最初の更新の PR が `develop` 向けで、pnpm 10 系で lockfile が作られているか（`pnpm-workspace.yaml` ができていないか）を確かめる
 - **棚卸しに残っている小さな問題**: S-3（旧 URL の 404）、S-5（ワイルドカードの DNS と期限切れの証明書。ADR 0016 で対応）、プレビューのたびに結合し直す無駄（ADR 0005 で対応）。
 
 作業はフェーズ単位で進める。フェーズが終わるたびに `git diff` を自分の目で読み、フェーズの完了条件（DoD）を確かめてから次へ進む。
