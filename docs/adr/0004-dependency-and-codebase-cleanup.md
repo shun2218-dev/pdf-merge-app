@@ -46,9 +46,9 @@ v0 などの雛形から始めた名残で、使っていないものが多い�
 ## 完了条件（DoD）
 
 - [ ] `pnpm knip` が未使用の依存・ファイルを 0 件と報告する
-- [ ] `package.json` に `"latest"` が 1 つもない
+- [x] `package.json` に `"latest"` が 1 つもない（2026-09-28）
 - [ ] `components/ui/` のファイルがすべてどこかから import されている
-- [ ] `next.config.*` に `ignoreBuildErrors` がなく、`pnpm typecheck` が通る
+- [x] `next.config.*` に `ignoreBuildErrors` がなく、`pnpm typecheck` が通る（2026-09-28）
 - [ ] CSS の正本が `app/globals.css` の 1 つだけ
 - [ ] 本番ビルドの First Load JS が整理の前より増えていない（数値を PR に貼る）
 - [ ] 既存のユニット・Storybook・E2E のテストがすべて通る
@@ -56,4 +56,22 @@ v0 などの雛形から始めた名残で、使っていないものが多い�
 
 ## 追記
 
-（なし）
+### 2026-09-28: 削除を伴わない部分を先に実装した（その 1）
+
+ファイルの削除は、オーナーの判断で後の PR に分けた。この PR では削除を伴わないものだけを入れた。
+
+- **knip（決定 2）**: `knip@6.37.0`（2026-09-18 公開）を devDependencies に入れ、`pnpm knip` を足した。`knip.json` は 2 つだけ設定した。
+  - `ignoreFiles` に `public/lib/pdf.worker.min.js`（`components/pdf-preview.tsx` が URL の文字列で読むので、import をたどっても見つからない。ADR 0003 で置き換える）。
+  - `ignoreExportsUsedInFile: true`（shadcn の部品は、同じファイルの中で使う `buttonVariants` なども export している）。
+  - knip が依存する `smol-toml` の最新（1.9.0）は公開から 6 日だったので、`pnpm install --config.minimum-release-age=10080` で 1.8.0 にした。`pnpm update --depth Infinity` を使うと、関係のない依存まで解決し直されるので使わない。
+  - CI に knip を足すのは、削除が済んで 0 件になってから（いま足すと CI が赤になる）。
+- **版の固定（決定 3）**: `"latest"` の 45 個を、いま入っている版の `^x.y.z` にした。解決される版は 1 つも変わっていない（lockfile のパッケージの一覧を前後で比べた）。Radix の `radix-ui` への一本化は、残る部品（button / card / checkbox / dialog / label）が決まってから、削除の PR で行う。
+- **Renovate（決定 3）**: `renovate.json` を置いた。週 1 回（月曜の 9 時まで、日本時間）、パッチとマイナーは 1 つの PR にまとめ、メジャーは個別の PR。PR の向き先は `develop`、公開から 7 日たった版だけ（`minimumReleaseAge`）。pnpm は 10 系に固定した（`constraints`）。Renovate が別の版の pnpm で lockfile を作ると、`node_modules` の置き場所の食い違いなどが起きるため（CLAUDE.md の「開発の注意」）。GitHub App の導入はオーナーが行う。
+- **テスト用の依存（決定 4）**: `happy-dom` と `@vitest/runner` を devDependencies に移した。どちらもコードからは使っていないので、削除の PR で消す候補。
+- **CSS（決定 5）**: `styles/globals.css` にだけあった規則（開いたダイアログの閉じるボタンを隠す）を `app/globals.css` に移し、`app/layout.tsx` と `.storybook/preview.ts` を `app/globals.css` に向けた。2 つのファイルはいまは中身が同じで、`styles/globals.css` はどこからも読まれていない（削除の PR で消す）。
+- **型チェック（決定 7）**: `next.config.mjs` から `typescript.ignoreBuildErrors` を外した。`next build` の型の検査で、エラーは出なかった。
+- **`utils.ts`（決定 8）**: `tests/utils/dirname.ts` を作り、`vitest.config.ts`・`playwright.config.ts`・`e2e/merge.spec.ts` をそちらに向けた。ファイルの場所が変わると `__dirname` が指す場所も変わるので、中身はリポジトリのルートを返す `rootDir` にした。ルートの `utils.ts` は削除の PR で消す。
+- **README（決定 10）**: 「Edge Runtime で結合」の記述を、実際の Vercel Functions（Node.js）と 4.5MB の上限に直した。
+- **First Load JS（DoD）**: 整理の前の `/` は 241 kB（共通 211 kB）。この PR のあとも同じ。
+
+**残り（削除の PR）**: knip が未使用とした 56 ファイル（`components/ui/` の 51 ファイル、`hooks/` の 2 つ、`components/theme-provider.tsx`、`styles/globals.css`、`utils.ts`）と `public/placeholder-*` の削除、未使用の依存 39 個と `prettier`・`path`・`@edge-runtime/vm`・`happy-dom`・`@vitest/runner` の削除、`CardAction` と `lib/analytics/index.ts` の型の再 export（どちらも未使用）の削除、`postcss.config.mjs` の型の注釈（`postcss-load-config` を依存に持たないまま参照している）、`.vscode/mcp.json` の追跡をやめて `.gitignore` に入れる、Radix の一本化、CI への knip の追加。ADR 0021 の追記にある、Sentry のブラウザのトレースと `web-vitals` の重なりの見直しもこのときに行う。

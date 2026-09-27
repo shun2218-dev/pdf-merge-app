@@ -2,13 +2,13 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { STORAGE_KEY } from "@/components/disclaimer-modal";
 import { SELECTORS } from "@/lib/tests/e2e/selectors";
-import { dirname } from "@/utils";
+import { rootDir } from "@/tests/utils/dirname";
 
 // テスト用のダミーPDFファイルへのパス
 // プロジェクトのルートに `e2e/fixtures` フォルダを作成し、ダミーPDFを入れてください
-const pdfFile1 = resolve(dirname, "fixtures/dummy1.pdf");
-const pdfFile2 = resolve(dirname, "fixtures/dummy2.pdf");
-const txtFile = resolve(dirname, "fixtures/dummy.txt");
+const pdfFile1 = resolve(rootDir, "fixtures/dummy1.pdf");
+const pdfFile2 = resolve(rootDir, "fixtures/dummy2.pdf");
+const txtFile = resolve(rootDir, "fixtures/dummy.txt");
 
 test.describe("PDF Merger E2E Test", () => {
 	test.beforeEach(async ({ page }) => {

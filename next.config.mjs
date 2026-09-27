@@ -9,9 +9,6 @@ const nextConfig = {
 	// PostHog の受け口（/ingest/i/v0/e/）は末尾が / なので、末尾の / を外すリダイレクトをしない（ADR 0021 決定 5）。
 	// /ingest の転送そのものは vercel.json に書く（ここに rewrites を書くと、ブラウザ側に rewrites を解決するコードが入るため）
 	skipTrailingSlashRedirect: true,
-	typescript: {
-		ignoreBuildErrors: true,
-	},
 	images: {
 		unoptimized: true,
 	},
