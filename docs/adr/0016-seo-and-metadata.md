@@ -10,12 +10,15 @@
 - `openGraph.url` に `process.env.VERCEL_URL` を入れている（S-1）。これはプロトコルなしの、デプロイごとに変わる URL（`pdf-merge-app-xxxx.vercel.app`）で、本番の URL ではない。`metadataBase` もないので、OGP 画像の絶対 URL が正しく作られない可能性がある。
 - `robots.txt`・`sitemap.xml`・canonical・構造化データがない（S-2）。
 - Preview のデプロイも検索エンジンに読まれうる（noindex を返していない）。
-- 本番の URL は `pdf-merge-app-nine.vercel.app`。独自ドメインはない。
+- 本番の URL は `pdf-merge-app-nine.vercel.app`。独自ドメイン `pdf-merge.app` は取得済み（オーナーの回答 2026-09-27）で、これを正式な URL にする。
 - ADR 0013 で英語版（`/en`）ができると、言語ごとの URL の関係（hreflang）を検索エンジンに伝える必要がある。
 
 ## 決定
 
-1. **サイトの URL の起点を環境変数 1 つにする。** `NEXT_PUBLIC_SITE_URL`（未設定なら `https://${VERCEL_PROJECT_PRODUCTION_URL}`）を `metadataBase` に入れる。`VERCEL_URL` は使わない。
+1. **正式な URL を `https://pdf-merge.app` にし、URL の起点を環境変数 1 つにする。** `NEXT_PUBLIC_SITE_URL`（本番は `https://pdf-merge.app`。未設定なら `https://${VERCEL_PROJECT_PRODUCTION_URL}`）を `metadataBase` に入れる。`VERCEL_URL` は使わない。
+   - Vercel のプロジェクトに `pdf-merge.app` を Production のドメインとして追加し、`pdf-merge-app-nine.vercel.app` と `www.pdf-merge.app` から 301 でリダイレクトする（評価を 1 つの URL に集める）。
+   - `.app` の TLD はブラウザの HSTS preload に入っていて HTTPS でしか開けない。Vercel が証明書を自動で発行するので追加の作業は要らないが、`http://` のリンクを書かない。
+   - README のデモ URL も `https://pdf-merge.app/` に変える。
 2. **メタデータはロケールごとに `generateMetadata` で作る（ADR 0013）。**
    - `title` は `{ template: "%s - <アプリ名>", default: "<アプリ名> - <説明>" }`（アプリ名は ADR 0008 決定 6）。
    - `alternates.canonical` と `alternates.languages`（`ja` → `/`、`en` → `/en`、`x-default` → `/`）。
@@ -32,15 +35,16 @@
 ## 結果
 
 - 良い点: 共有したときのプレビューと検索の結果が正しくなる。Preview のデプロイが検索に出なくなる。英語版が英語の検索に出る。
-- 悪い点: 独自ドメインがないと、`vercel.app` のサブドメインのまま評価を積むことになる（後で移すとリダイレクトの手間がかかる）。
+- 悪い点: `vercel.app` の URL がすでに共有・インデックスされている場合、リダイレクトで評価が移り切るまで時間がかかる。
 
 ## オーナーに確認したいこと
 
-1. 独自ドメインを取るか。取るなら、この ADR の実装の前にするとよい。
+1. ~~独自ドメインを取るか~~ → **取得済み: `https://pdf-merge.app/`（オーナーの回答 2026-09-27）**。Vercel のプロジェクトへの追加と DNS の設定が済んでいるか。
 2. Google Search Console への登録。
 
 ## 完了条件（DoD）
 
+- [ ] `pdf-merge-app-nine.vercel.app` と `www.pdf-merge.app` が `https://pdf-merge.app` に 301 でリダイレクトされる
 - [ ] 本番の HTML の `og:url`・`og:image`・canonical が本番の絶対 URL になっている（E2E か `curl` の結果を PR に貼る）
 - [ ] `/` と `/en` に、互いを指す hreflang と `x-default` がある
 - [ ] 本番の `/robots.txt` が Allow と Sitemap を返し、Preview では `Disallow: /` と `X-Robots-Tag: noindex` を返す
