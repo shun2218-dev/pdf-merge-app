@@ -46,7 +46,8 @@
 
 ## 完了条件（DoD）
 
-- [ ] `pdf-merge-app-nine.vercel.app` と `www.pdf-merge.app` が `https://pdf-merge.app` に 301 でリダイレクトされる
+- [ ] `pdf-merge-app-nine.vercel.app` と `www.pdf-merge.app` が `https://pdf-merge.app` に 301 でリダイレクトされる（`www` は 2026-09-27 に済み。旧 URL は S-3）
+- [ ] DNS のワイルドカードのレコードを消し、`www` だけのレコードにした。Vercel の Domains から `*.pdf-merge.app` を外した（S-5）
 - [ ] 本番の HTML の `og:url`・`og:image`・canonical が本番の絶対 URL になっている（E2E か `curl` の結果を PR に貼る）
 - [ ] `/` と `/en` に、互いを指す hreflang と `x-default` がある
 - [ ] 本番の `/robots.txt` が Allow と Sitemap を返し、Preview では `Disallow: /` と `X-Robots-Tag: noindex` を返す
@@ -75,4 +76,9 @@
   - Vercel の前にプロキシを置くと、Vercel のファイアウォール・キャッシュ・Speed Insights が実際の利用者の IP やリクエストを正しく扱えないことがある。Vercel は、Cloudflare を DNS のみ（灰色の雲）で使う構成を推奨している。プロキシを外すかどうかは S-4 としてオーナーに確認する（ADR 0012 の計測と ADR 0017 のヘッダにも関わる）。
 - Search Console の登録は済んでいる。sitemap の送信は、決定 3 の実装のあとに行う。
 - README と CLAUDE.md のデモ URL は `https://pdf-merge.app/` に直した（この追記と同じコミット）。
-- 同日、オーナーから「Cloudflare は WAF として使っている（国ごとのブロックを含む）」と回答があった。プロキシは外さず、CSP・ヘッダ・計測との取り決めを ADR 0018 に書いた。この ADR の DoD の「`curl` で確かめる」は、ADR 0018 決定 4 のとおりブラウザの User-Agent で行う。
+- 同日、オーナーから「Cloudflare は WAF として使っている（国ごとのブロックを含む）」と回答があった。
+- 同日、Cloudflare の SSL/TLS を Full (strict) にしたところ、`www.pdf-merge.app` が 526 になった（S-5）。Vercel が `www` に出していたのはワイルドカード証明書（`*.pdf-merge.app`）で、期限が切れていた。DNS が Cloudflare にあるので、Vercel はワイルドカード証明書を更新できない（DNS による認証が要るため）と見られる。
+  - オーナーが Cloudflare の Redirect Rule（`https://www.*` → `https://${1}`、301、クエリを引き継ぐ）を作った。`www` へのアクセスは Cloudflare の時点で転送され、Vercel の期限切れの証明書は使われない。
+  - `https://www.pdf-merge.app/en?utm_source=test` が 301 で `https://pdf-merge.app/en?utm_source=test` に転送されることを確かめた。決定 1 の「`www` から 301 でリダイレクトする」を満たした（これまでは Vercel の 307）。
+  - Cloudflare は「`www` の DNS レコードがプロキシされていないかもしれない」と警告したが、`www` 用のレコードはなく、ワイルドカードのレコード（`*`、プロキシあり）で届いていたための誤検知だった。
+  - 残り（決定 1 の実装のときに行う）: ワイルドカードのレコードを消して `www` だけのレコード（プロキシあり）にし、Vercel の Domains から `*.pdf-merge.app` を外す。いまは `www` 以外のサブドメイン（例: `random-xyz.pdf-merge.app`）が 526 になる。プロキシは外さず、CSP・ヘッダ・計測との取り決めを ADR 0018 に書いた。この ADR の DoD の「`curl` で確かめる」は、ADR 0018 決定 4 のとおりブラウザの User-Agent で行う。

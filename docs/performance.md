@@ -6,7 +6,8 @@
 
 | 種類 | 道具 | どこで | 実行 |
 |---|---|---|---|
-| 実利用（RUM） | Vercel Speed Insights | 本番（Vercel の上だけで配信される） | 自動。Vercel のダッシュボードで見る |
+| 実利用（RUM）の LCP / INP / CLS | `web-vitals` で測り、PostHog に `web_vital` として送る（ADR 0021） | 本番 | 自動。PostHog の Insight で p75 を見る |
+| 実利用（RUM）のまとめた点数 | Vercel Speed Insights（Hobby プランでは Real Experience Score だけが見られる） | 本番 | 自動。Vercel のダッシュボードで見る |
 | 合成（ラボ） | Lighthouse CI（モバイルの設定・3 回の中央値） | CI の `lighthouse` ジョブ（PR ごと） | `pnpm build && pnpm lhci` |
 | バンドル | `@next/bundle-analyzer` | ローカル | `pnpm analyze` |
 | 結合の時間 | Playwright（`perf/merge-timing.spec.ts`） | ローカル（時間がかかるので CI には入れない） | `pnpm build && pnpm test:perf` |
@@ -36,9 +37,9 @@
 | Lighthouse SEO | 1.00 | Lighthouse CI | ベースラインに締めた（目標は 0.95） |
 | CLS（ラボ） | 0.1 以下 | Lighthouse CI | |
 | JS の転送量（ラボ、`resource-summary:script:size`） | 250,000 バイト以下 | Lighthouse CI | 増えていないことの見張り。20% 減の予算は ADR 0004 の後に決める |
-| LCP | 2.5 秒以下（RUM の p75） | Speed Insights | |
-| INP | 200ms 以下（RUM の p75） | Speed Insights | |
-| CLS | 0.1 以下（RUM の p75） | Speed Insights | |
+| LCP | 2.5 秒以下（RUM の p75） | PostHog（`web_vital`） | |
+| INP | 200ms 以下（RUM の p75） | PostHog（`web_vital`） | |
+| CLS | 0.1 以下（RUM の p75） | PostHog（`web_vital`） | |
 | `/` の First Load JS | ベースラインから 20% 減 | ビルドの出力 | ADR 0004 の後に確定 |
 | 結合（組 B） | ベースラインの値 | Playwright | ADR 0002 の後に確定 |
 
@@ -94,10 +95,10 @@ Performance の予算を締めるために、10 回ほど集める（ADR 0012 �
 
 ### 実利用（RUM）
 
-本番で Speed Insights を有効にしてから 1 週間分を取って書く。
+ADR 0021 を本番に出してから 1 週間分を PostHog で取って書く（端末ごと）。
 
-| 指標 | p75 | 期間 |
-|---|---|---|
-| LCP | （未計測） | |
-| INP | （未計測） | |
-| CLS | （未計測） | |
+| 指標 | p75（desktop） | p75（mobile） | 期間 |
+|---|---|---|---|
+| LCP | （未計測） | （未計測） | |
+| INP | （未計測） | （未計測） | |
+| CLS | （未計測） | （未計測） | |

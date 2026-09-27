@@ -33,6 +33,8 @@
 | [0017](0017-security-headers.md) | セキュリティヘッダと CSP | 採用 | 3 |
 | [0018](0018-cloudflare-waf-in-front-of-vercel.md) | Cloudflare を WAF として Vercel の前に置く（現状の記録と、ほかの ADR との取り決め） | 採用 | 1（設定）/ 5（国のブロックの見直し） |
 | [0019](0019-posthog-auto-capture-features.md) | PostHog の自動の収集（ヒートマップ・Web Vitals・デッドクリックなど）を使うか | 採用 | 1（決定）/ 4（試し） |
+| [0020](0020-posthog-geoip-country-only.md) | PostHog の位置情報は国だけ残す | 採用 | 1 |
+| [0021](0021-web-vitals-to-posthog.md) | 実利用者の Web Vitals は自分で測って、自分のドメイン経由で PostHog に送る | 採用 | 1 |
 
 ## テンプレート
 

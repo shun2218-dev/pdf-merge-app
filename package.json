@@ -1,6 +1,6 @@
 {
 	"name": "pdf-merge-app",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -89,6 +89,7 @@
 		"tailwind-merge": "^2.5.5",
 		"tailwindcss-animate": "^1.0.7",
 		"vaul": "latest",
+		"web-vitals": "^6.2.2",
 		"zod": "3.25.76"
 	},
 	"devDependencies": {
