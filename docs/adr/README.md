@@ -16,21 +16,21 @@
 |---|---|---|---|
 | [0001](0001-adr-and-dod.md) | 改善は ADR と DoD で進める（運用・Git Flow・共通 DoD） | 採用 | 0 |
 | [0002](0002-client-side-merge.md) | PDF の結合をブラウザ内で行い、サーバーへ送らない | 採用 | 3 |
-| [0003](0003-pdf-preview-renderer.md) | プレビューを @react-pdf-viewer から最新の pdfjs-dist（react-pdf）へ移す | 提案 | 1（暫定策）/ 3 |
-| [0004](0004-dependency-and-codebase-cleanup.md) | 依存とコードベースの整理（未使用の削除・版の固定・型チェックの有効化） | 提案 | 2 |
-| [0005](0005-merge-workflow-state.md) | 結合の状態管理を 1 つのフックにまとめ、画面を分割する | 提案 | 2 |
-| [0006](0006-ci-quality-gates.md) | CI の品質ゲート（落ちたら赤にする・develop でも走らせる） | 提案 | 1 |
-| [0007](0007-error-monitoring-policy.md) | エラー監視（Sentry）の方針：PII を送らず、送るべきものだけ送る | 提案 | 1 |
-| [0008](0008-design-tokens-and-theme.md) | デザイントークンの正本・ブランド・ライト / ダークのテーマ | 提案 | 4 |
-| [0009](0009-screen-flow-and-feedback.md) | 画面の流れとフィードバック（注意事項・エラー・進捗・ページ情報） | 提案 | 4 |
-| [0010](0010-reorder-with-dnd-kit.md) | ファイルの並び替えを dnd-kit にする（タッチ・キーボード対応） | 提案 | 4 |
-| [0011](0011-product-analytics.md) | プロダクトのアナリティクス（イベント設計と計測基盤） | 提案 | 1 |
-| [0012](0012-performance-budget.md) | パフォーマンスの計測と予算（RUM・Lighthouse CI・バンドル） | 提案 | 1 |
-| [0013](0013-i18n.md) | 国際化（next-intl、日本語と英語） | 提案 | 5 |
-| [0014](0014-accessibility.md) | アクセシビリティの目標（WCAG 2.2 AA）と検査の自動化 | 提案 | 1（検査）/ 4 |
-| [0015](0015-nextjs-16-upgrade.md) | Next.js 16 に上げる | 提案 | 2 |
-| [0016](0016-seo-and-metadata.md) | SEO とメタデータ（metadataBase・robots・sitemap・構造化データ） | 提案 | 5 |
-| [0017](0017-security-headers.md) | セキュリティヘッダと CSP | 提案 | 3 |
+| [0003](0003-pdf-preview-renderer.md) | プレビューを @react-pdf-viewer から最新の pdfjs-dist（react-pdf）へ移す | 採用 | 1（暫定策）/ 3 |
+| [0004](0004-dependency-and-codebase-cleanup.md) | 依存とコードベースの整理（未使用の削除・版の固定・型チェックの有効化） | 採用 | 2 |
+| [0005](0005-merge-workflow-state.md) | 結合の状態管理を 1 つのフックにまとめ、画面を分割する | 採用 | 2 |
+| [0006](0006-ci-quality-gates.md) | CI の品質ゲート（落ちたら赤にする・develop でも走らせる） | 採用 | 1 |
+| [0007](0007-error-monitoring-policy.md) | エラー監視（Sentry）の方針：PII を送らず、送るべきものだけ送る | 採用 | 1 |
+| [0008](0008-design-tokens-and-theme.md) | デザイントークンの正本・ブランド・ライト / ダークのテーマ | 採用 | 4 |
+| [0009](0009-screen-flow-and-feedback.md) | 画面の流れとフィードバック（注意事項・エラー・進捗・ページ情報） | 採用 | 4 |
+| [0010](0010-reorder-with-dnd-kit.md) | ファイルの並び替えを dnd-kit にする（タッチ・キーボード対応） | 採用 | 4 |
+| [0011](0011-product-analytics.md) | プロダクトのアナリティクス（イベント設計と計測基盤） | 採用 | 1 |
+| [0012](0012-performance-budget.md) | パフォーマンスの計測と予算（RUM・Lighthouse CI・バンドル） | 採用 | 1 |
+| [0013](0013-i18n.md) | 国際化（next-intl、日本語と英語） | 採用 | 5 |
+| [0014](0014-accessibility.md) | アクセシビリティの目標（WCAG 2.2 AA）と検査の自動化 | 採用 | 1（検査）/ 4 |
+| [0015](0015-nextjs-16-upgrade.md) | Next.js 16 に上げる | 採用 | 2 |
+| [0016](0016-seo-and-metadata.md) | SEO とメタデータ（metadataBase・robots・sitemap・構造化データ） | 採用 | 5 |
+| [0017](0017-security-headers.md) | セキュリティヘッダと CSP | 採用 | 3 |
 
 ## テンプレート
 
