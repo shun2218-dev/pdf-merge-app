@@ -68,7 +68,7 @@ C は、ADR 0019 で退けた「PostHog の SDK の Web Vitals の自動収集�
 
 ## 完了条件（DoD）
 
-- [ ] 本番で `web_vital` のイベントが `/ingest` 経由で PostHog に届く（ブラウザの開発者ツールの通信と、PostHog の Activity で確認）
+- [x] 本番で `web_vital` のイベントが `/ingest` 経由で PostHog に届く（ブラウザの開発者ツールの通信と、PostHog の Activity で確認）（2026-09-28。v1.2.1）
 - [x] 送るのが LCP / INP / CLS だけで、プロパティにファイル名が含まれないことをテストで確かめた
 - [x] 本番以外では送信されない
 - [ ] 同じページの読み込みの `web_vital` と製品のイベントの `distinct_id` が同じ
@@ -101,3 +101,11 @@ v1.2.0 のリリース後の確認（DoD の 1 つ目）で、本番の `POST /i
 - 直し方: `source` を `/ingest/:path(.*)`、`destination` を `https://us.i.posthog.com/:path` にした（PostHog の Vercel 向けの案内と同じ形）。末尾の `/` も含めて転送される。決定 5 の「`vercel.json` の rewrites で転送する」は変えていない。
 - 再現テスト: `__tests__/lib/vercel-rewrites.test.ts`。`vercel.json` を読み、Vercel と同じ strict の照合で、`WEB_VITALS_ENDPOINT` が末尾の `/` を保って PostHog に転送されることを確かめる。直す前は失敗した。
 - 1 週間分のベースライン（ADR 0011 / 0012 の DoD）の RUM の値は、この修正が本番に出た日から数え直す。
+
+### 2026-09-28: v1.2.1 で本番に届いたことを確かめた
+
+- ブラウザで本番を開き、`POST /ingest/i/v0/e/` が 200 になることを確かめた（開発者ツールの通信）。
+- オーナーが PostHog の Activity で `web_vital` を 1 件確かめた（`metric: INP`、`value: 40`、`rating: good`、`device_class: desktop`、`navigation_type: navigate`、`$pathname: /`、`$process_person_profile: false`）。プロパティは決定 3 のとおりで、ファイル名などは含まれていない。
+- このとき国は JP と判定されていたが、Vercel の転送も東京（hnd1）を通るので、決定 5 の「国の判定が狂うことがある」が起きないかどうかは、この 1 件では分からない。
+- 確かめたブラウザのタブは読み込んだ時点で裏にあったので、`web-vitals` の仕様で LCP と CLS は測られなかった（ページが最初に描かれる前に隠れていると、LCP を報告しない）。実利用のタブでは起きない。
+- 残り: 同じページの読み込みの `web_vital` と `files_added` の `distinct_id` が同じか、端末ごとの p75 の Insight（DoD の 4 つ目と 5 つ目）。
