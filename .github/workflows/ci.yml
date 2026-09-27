@@ -146,11 +146,45 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-lhci-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-lhci-${{ hashFiles('pnpm-lock.yaml') }}-
+      - run: pnpm build
+      # 予算は lighthouserc.json（ADR 0012 決定 2）。ubuntu-latest に入っている Google Chrome を使う
+      - name: Lighthouse CI
+        run: pnpm lhci
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          # .lighthouseci はドットで始まるので、明示しないと upload-artifact@v4 が除外する
+          include-hidden-files: true
+          retention-days: 30
+
   # 結果を PR に 1 つのコメントとしてまとめる。失敗したときにも付ける
   report:
     name: report
     if: ${{ always() && github.event_name == 'pull_request' }}
-    needs: [lint, unit, storybook, e2e]
+    needs: [lint, unit, storybook, e2e, lighthouse]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -177,7 +211,8 @@ jobs:
             | unit（Vitest） | ${{ needs.unit.result == 'success' && '✅ 成功' || format('❌ {0}', needs.unit.result) }} |
             | storybook（Vitest） | ${{ needs.storybook.result == 'success' && '✅ 成功' || format('❌ {0}', needs.storybook.result) }} |
             | e2e（Playwright） | ${{ needs.e2e.result == 'success' && '✅ 成功' || format('❌ {0}', needs.e2e.result) }} |
+            | lighthouse（Lighthouse CI） | ${{ needs.lighthouse.result == 'success' && '✅ 成功' || format('❌ {0}', needs.lighthouse.result) }} |
 
             - **カバレッジ（Lines、unit）:** `${{ needs.unit.outputs.coverage || 'N/A' }}%`
 
-            [レポート（Artifacts の vitest-coverage-report / playwright-report）](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)
+            [レポート（Artifacts の vitest-coverage-report / playwright-report / lighthouse-report）](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)
