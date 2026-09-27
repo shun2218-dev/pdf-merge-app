@@ -1,10 +1,17 @@
 "use client";
-import { Viewer, Worker } from "@react-pdf-viewer/core";
+import { type PdfJs, Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { useEffect, useState } from "react";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
+
+// CVE-2024-4367（pdfjs-dist 4.1.392 以前）の公開されている回避策。細工した PDF のフォントから任意の JavaScript を
+// 実行されるのを防ぐため、PDF.js にフォントの描画で eval（new Function）を使わせない（ADR 0003 決定 1）。
+// @react-pdf-viewer の型には isEvalSupported がないが、渡した値はそのまま PDF.js の getDocument に届く。
+// pdfjs-dist を 4.2.67 以上に上げたら（ADR 0003 決定 2）、この回避策は要らなくなる
+const disableEval = (params: PdfJs.GetDocumentParams): PdfJs.GetDocumentParams =>
+	({ ...params, isEvalSupported: false }) as PdfJs.GetDocumentParams;
 
 interface PdfPreviewProps {
 	pdfUrl: string;
@@ -50,7 +57,13 @@ export function PdfPreview({ pdfUrl }: PdfPreviewProps) {
 	return (
 		<div className="h-[800px] w-full rounded-lg border border-border bg-background">
 			<Worker workerUrl="/lib/pdf.worker.min.js">
-				<Viewer fileUrl={pdfUrl} plugins={[defaultLayoutPluginInstance]} defaultScale={initialZoom} theme="dark" />
+				<Viewer
+					fileUrl={pdfUrl}
+					plugins={[defaultLayoutPluginInstance]}
+					defaultScale={initialZoom}
+					theme="dark"
+					transformGetDocumentParams={disableEval}
+				/>
 			</Worker>
 		</div>
 	);
