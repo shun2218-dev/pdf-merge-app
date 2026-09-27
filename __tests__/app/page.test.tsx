@@ -5,6 +5,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PdfMergerPage from "@/app/page";
+import { track } from "@/lib/analytics";
 
 // Mock child components
 vi.mock("@/components/header", () => ({
@@ -30,6 +31,11 @@ vi.mock("@/components/file-uploader", () => ({
 
 vi.mock("@sentry/nextjs", () => ({
 	captureException: vi.fn(),
+}));
+
+vi.mock("@/lib/analytics", async (importOriginal) => ({
+	...(await importOriginal<typeof import("@/lib/analytics")>()),
+	track: vi.fn(),
 }));
 
 vi.mock("@/components/file-list", () => ({
@@ -507,5 +513,111 @@ describe("PdfMergerPage", () => {
 		await user.click(uploader);
 
 		expect(screen.queryByTestId("pdf-preview")).not.toBeInTheDocument();
+	});
+	describe("アナリティクス", () => {
+		const trackedNames = () => vi.mocked(track).mock.calls.map(([name]) => name);
+
+		const mockLinkClick = () => {
+			const originalCreateElement = document.createElement.bind(document);
+			const click = vi.fn();
+			vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+				const element = originalCreateElement(tagName);
+				if (tagName.toLowerCase() === "a") {
+					(element as HTMLAnchorElement).click = click;
+				}
+				return element;
+			});
+			return click;
+		};
+
+		const mockMergeResponse = () => {
+			vi.mocked(fetch).mockResolvedValueOnce({
+				ok: true,
+				blob: async () => new Blob(["pdf"], { type: "application/pdf" }),
+			} as Response);
+		};
+
+		it("プレビューで結合すると merge_started → merge_succeeded → preview_opened を 1 回ずつ送る", async () => {
+			const user = userEvent.setup();
+			mockMergeResponse();
+			render(<PdfMergerPage />);
+
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByRole("button", { name: /プレビュー/i }));
+
+			await waitFor(() => expect(trackedNames()).toContain("preview_opened"));
+			expect(trackedNames()).toEqual(["merge_started", "merge_succeeded", "preview_opened"]);
+			expect(track).toHaveBeenCalledWith("merge_started", { count_bucket: "1", size_bucket: "<1MB" });
+			expect(track).toHaveBeenCalledWith(
+				"merge_succeeded",
+				expect.objectContaining({ count_bucket: "1", size_bucket: "<1MB", duration_bucket: "<1s" }),
+			);
+		});
+
+		it.each([
+			[413, "payload_too_large"],
+			[500, "server_error"],
+		])("サーバーが %i を返したら merge_failed（%s）を送る", async (status, reason) => {
+			const user = userEvent.setup();
+			vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status } as Response);
+			render(<PdfMergerPage />);
+
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByRole("button", { name: /プレビュー/i }));
+
+			await waitFor(() => expect(track).toHaveBeenCalledWith("merge_failed", { reason }));
+			expect(trackedNames()).not.toContain("preview_opened");
+		});
+
+		it("通信に失敗したら merge_failed（network_error）を送る", async () => {
+			const user = userEvent.setup();
+			vi.mocked(fetch).mockRejectedValueOnce(new TypeError("Failed to fetch"));
+			render(<PdfMergerPage />);
+
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByRole("button", { name: /プレビュー/i }));
+
+			await waitFor(() => expect(track).toHaveBeenCalledWith("merge_failed", { reason: "network_error" }));
+		});
+
+		it("プレビューせずにダウンロードすると download_clicked（previewed: false）を送り、preview_opened は送らない", async () => {
+			const user = userEvent.setup();
+			mockMergeResponse();
+			const click = mockLinkClick();
+			render(<PdfMergerPage />);
+
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByRole("button", { name: /ダウンロード/i }));
+
+			await waitFor(() => expect(click).toHaveBeenCalled());
+			expect(track).toHaveBeenCalledWith("download_clicked", { renamed: false, previewed: false });
+			expect(trackedNames()).not.toContain("preview_opened");
+		});
+
+		it("プレビューしてからダウンロードすると previewed: true になる", async () => {
+			const user = userEvent.setup();
+			mockMergeResponse();
+			const click = mockLinkClick();
+			render(<PdfMergerPage />);
+
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByRole("button", { name: /プレビュー/i }));
+			await waitFor(() => expect(screen.getByTestId("pdf-preview")).toBeInTheDocument());
+			await user.click(screen.getByRole("button", { name: /ダウンロード/i }));
+
+			await waitFor(() => expect(click).toHaveBeenCalled());
+			expect(track).toHaveBeenCalledWith("download_clicked", { renamed: false, previewed: true });
+		});
+
+		it("ファイルを削除すると file_removed を残りの数とともに送る", async () => {
+			const user = userEvent.setup();
+			render(<PdfMergerPage />);
+
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByTestId("file-uploader"));
+			await user.click(screen.getByTestId("remove-0"));
+
+			expect(track).toHaveBeenCalledWith("file_removed", { remaining_bucket: "1" });
+		});
 	});
 });
