@@ -65,7 +65,7 @@
 
 - [ ] 決定 2 の「使わない」4 つがすべて無効になっている（Cloudflare のダッシュボードのスクリーンショットを追記に貼る）
 - [ ] SSL/TLS のモードが Full (strict)
-- [ ] 本番の HSTS のヘッダが 1 つだけで、値が決定 3 のとおり（ブラウザの User-Agent で確認）
+- [x] 本番の HSTS のヘッダが 1 つだけで、値が決定 3 のとおり（ブラウザの User-Agent で確認。値は 2026-09-27 の追記で改めたもの）
 - [ ] 本番のページの HTML に、このリポジトリ由来ではないスクリプトが、Bot Fight Mode の JavaScript Detections 以外にない
 - [ ] （Phase 5 の終わり）国ごとのブロックを見直し、結論を追記に書いた
 - [ ] ロードマップの共通 DoD を満たした
@@ -77,3 +77,21 @@
 - オーナーが Cloudflare の Security → Settings で Email Address Obfuscation を Off にした（既定では On）。
 - 本番の HTML に `email-decode.min.js` がないことを確かめた（ページにメールアドレスがないため、Off にする前から差し込まれてはいなかった）。
 - 将来 `/about` に連絡先を載せるときは、メールアドレスではなく GitHub の Issues へのリンクにする。
+
+### 2026-09-27: 決定 3 の HSTS の値を改める
+
+決定 3 は「Cloudflare の HSTS を `max-age=63072000; includeSubDomains; preload` に揃える」としていたが、これは Vercel が出していた値を写しただけで、次の 2 点を確かめていなかった（オーナーの Cloudflare の画面で判明）。
+
+1. **Cloudflare の HSTS の `max-age` は最長 12 か月**で、2 年は選べない。
+2. **`.app` の TLD は、丸ごとブラウザの HSTS preload リストに入っている。** 主要なブラウザは `*.app` を最初から HTTPS でしか開かないので、自分のドメインに `preload` を付けて preload リストに登録しても、何も変わらない。
+
+そこで値を次のように改めた。「Cloudflare の設定を HSTS の正にし、アプリでは付けない」という決定 3 の判断そのものは変えていないので、新しい ADR ではなくこの追記で直した（オーナーの判断: 2026-09-27）。
+
+| 項目 | 値 | 理由 |
+|---|---|---|
+| `max-age` | 31536000（12 か月） | Cloudflare で選べる最長。1 年は HSTS で一般に推奨される長さ |
+| `includeSubDomains` | 付ける | サブドメインは `www` だけで、HTTPS で `pdf-merge.app` へ転送している。`.app` はもともと全サブドメインが HTTPS 専用 |
+| `preload` | 付けない | 上の 2 のとおり意味がない |
+
+- オーナーが Cloudflare で上の値に保存し、本番の応答が `strict-transport-security: max-age=31536000; includeSubDomains` になったことを確かめた（2026-09-27）。Vercel の HSTS は Cloudflare の値で置き換えられ、ヘッダは 1 つだけ。
+- 同じ画面の No-Sniff Header（`X-Content-Type-Options: nosniff`）は On。決定 3 では HSTS 以外のヘッダはアプリで付けるので、ADR 0017 でアプリから付けるときに、Cloudflare 側を Off にするか二重のままにするかを決める（同じヘッダが 2 つあっても害はない）。
