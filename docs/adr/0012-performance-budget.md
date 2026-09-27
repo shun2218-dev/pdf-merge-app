@@ -75,7 +75,7 @@
 ## 完了条件（DoD）
 
 - [ ] Speed Insights が本番で有効で、データが届いている
-- [ ] Lighthouse CI が PR ごとに走り、予算を超えると失敗する（ジョブは追加済み。必須チェックへの登録はマージ後）
+- [x] Lighthouse CI が PR ごとに走り、予算を超えると失敗する
 - [x] バンドルアナライザを `pnpm analyze` で起動できる
 - [x] 結合の時間を計る Playwright のテストがあり、`docs/performance.md` に固定のファイルの組が書かれている
 - [ ] `docs/performance.md` にベースライン（Lighthouse・First Load JS・結合の時間・RUM の p75）と予算がある
@@ -99,3 +99,9 @@
   - 決定 1 は `performance.mark` / `measure` で計るとしていたが、計りたいのは「押してから結合した PDF を受け取り終えるまで」なので、Playwright の側で時刻を取った。ブラウザ内の結合（ADR 0002）に移したら、Worker の中の処理の時間を `performance.measure` で取ることを検討する。
 - 追加した依存は、どれも公開から 1 週間以上たった版（`@vercel/speed-insights@2.0.0`、`@lhci/cli@0.15.1`、`@next/bundle-analyzer@15.1.9`）。
 - ベースラインは `docs/performance.md`。
+
+### 2026-09-27: CI での値と必須チェック
+
+- `.lighthouseci` はドットで始まる隠しフォルダなので、`actions/upload-artifact@v4` が既定で除外し、最初はレポートが artifact に残っていなかった。`include-hidden-files: true` を指定した。
+- CI（GitHub Actions の ubuntu-latest）での 1 回目の Performance は 0.90 / 0.95 / 0.97（中央値 0.95）。ローカル（0.94〜0.97）より揺れが大きく、予算をローカルの 0.97 に締めていたら落ちていた。仮の予算 0.90 のまま、CI の値を集め続ける（集めた値は `docs/performance.md`）。
+- PR #57 のマージ後、ブランチ保護のルールセット「protect」の必須チェックに `lighthouse` を加えた（`lint` / `unit` / `storybook` / `e2e` / `lighthouse`）。
