@@ -73,6 +73,7 @@
 		"path": "latest",
 		"pdf-lib": "latest",
 		"pdfjs-dist": "^3.11.174",
+		"posthog-js": "^1.434.2",
 		"prettier": "latest",
 		"react": "^19",
 		"react-day-picker": "latest",

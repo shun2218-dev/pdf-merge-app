@@ -74,14 +74,33 @@
 
 ## 完了条件（DoD）
 
-- [ ] `docs/analytics.md` に決定 4 のイベントの表と KPI の定義がある
-- [ ] イベントの型が定義され、定義にないイベントを送るとコンパイルエラーになる
-- [ ] 各イベントが、決定 4 の「いつ」で 1 回だけ送られることをユニット / コンポーネントテストで確かめた
-- [ ] 送るプロパティにファイル名が含まれないことをテストで確かめた（ファイル名にしか現れない文字列を使ったテスト）
-- [ ] 本番以外では送信されない
+- [x] `docs/analytics.md` に決定 4 のイベントの表と KPI の定義がある
+- [x] イベントの型が定義され、定義にないイベントを送るとコンパイルエラーになる
+- [x] 各イベントが、決定 4 の「いつ」で 1 回だけ送られることをユニット / コンポーネントテストで確かめた（いまの UI にあるイベントについて）
+- [x] 送るプロパティにファイル名が含まれないことをテストで確かめた（ファイル名にしか現れない文字列を使ったテスト）
+- [x] 本番以外では送信されない
 - [ ] 本番で 1 週間分のベースライン（KPI の値）を取り、`docs/analytics.md` に書いた
 - [ ] ロードマップの共通 DoD を満たした
 
 ## 追記
 
-（なし）
+### 2026-09-27: 実装
+
+- 窓口は `lib/analytics/`。`events.ts`（イベントの型）・`buckets.ts`（区間への丸め）・`track.ts`（PostHog への送信）。コンポーネントは `track()` だけを呼ぶ。
+- `track` の引数はイベント名ごとにプロパティの型が決まり、定義にないイベント名や、違う型のプロパティはコンパイルエラーになる。
+- PostHog の SDK（`posthog-js`）は、最初のイベントが起きてから `import()` で読み込む。読み込むまでのイベントは貯めて、読み込んだあとに `$pageview` → 貯めたイベントの順に送る。広告ブロッカーなどで読み込めなくても、アプリの動作には影響させない。
+  - `posthog-js` は、公開から 1 週間以上たった `1.434.2` にした。最新の `1.434.15` は公開から 1 日たっておらず、pnpm の「公開直後の版は入れない」ルール（`minimumReleaseAge`）に引っかかったため。
+- 設定は `persistence: "memory"`（Cookie も localStorage も使わない）、`autocapture` / `capture_pageview` / `capture_pageleave` を切り、`disable_session_recording` / `disable_surveys`、`person_profiles: "identified_only"`。
+  - その結果、**「セッション」は 1 回のページの読み込み**になる。KPI の定義（`docs/analytics.md`）もこの前提で読む。
+- 送るのは `NEXT_PUBLIC_VERCEL_ENV === "production"` で、`NEXT_PUBLIC_POSTHOG_KEY` があるときだけ。送信先は `NEXT_PUBLIC_POSTHOG_HOST`（未設定なら US の `https://us.i.posthog.com`）。
+- いまの UI（サーバーで結合している）に合わせて、決定 4 の表から次を変えた。
+  - `merge_failed` の `reason` は、サーバーとの通信の結果で `payload_too_large`（413）/ `server_error` / `network_error` に分ける。ADR 0002 でブラウザ内の結合に移したら、決定 4 の値に置き換える。
+  - `pages_bucket` は、ページ数をブラウザで数えるようになるまで送らない。
+  - `files_rejected` の `reason` は `not_pdf` だけ、`files_reordered` の `method` は `pointer` だけ。
+  - `files_cleared` / `size_warning_shown` / `theme_changed` / `locale_changed` は、UI ができたときに足す。
+  - `preview_opened` は「プレビュー」を押して開いたときだけ。プレビューせずに「ダウンロード」を押したときも結合の結果としてプレビューが開くが、利用者が求めたものではないので数えない。
+- 並び替えは、ドラッグ中に `dragover` のたびに並びが変わるので、`FileList` に `onReorderEnd` を足し、1 回のドラッグで並びが変わっていたときだけ `files_reordered` を送る。
+- Vercel Web Analytics（ページビュー）は並行して残している（決定 2）。
+- PostHog はプロジェクトの設定（管理画面）で autocapture・ヒートマップ・Web Vitals などを有効にでき、SDK は起動時にそれを読みに来る。管理画面の設定に左右されないよう、コードでも `capture_heatmaps` / `capture_performance` / `capture_dead_clicks` / `capture_exceptions` を `false` にした。
+  - **ヒートマップ・Web Vitals・デッドクリック・例外の自動収集は、この ADR で検討していなかった。** 上の無効化は、必要かどうかを評価しないまま入れたもので、**ADR 0019 で決めるまでの仮の設定**として残す（オーナーの指摘と判断: 2026-09-27）。`init` に渡す設定は `posthog-js` の `PostHogConfig` の型で書き、オプション名の打ち間違いを型チェックで見つけられるようにした。
+- オーナーが PostHog のプロジェクトを作った（2026-09-27）。オンボーディングでは Product Analytics だけを選び、SDK のウィザード（`npx @posthog/wizard@latest`）は使わず、Autocapture・Heatmaps・Web vitals autocapture・Session Replay を Off にした（ヒートマップと Web Vitals は、ADR 0019 で決めるまでの仮の設定）。

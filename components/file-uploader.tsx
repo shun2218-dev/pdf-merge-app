@@ -2,9 +2,29 @@
 
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { countBucket, sizeBucket, totalSize, track } from "@/lib/analytics";
 
 interface FileUploaderProps {
 	onFilesSelected: (files: File[]) => void;
+}
+
+// PDF だけを受け付け、受け付けた / 断った結果をアナリティクスで数える（ADR 0011）
+function acceptPdfFiles(files: File[], source: "picker" | "drop"): File[] | null {
+	const pdfFiles = files.filter((file) => file.type === "application/pdf");
+
+	if (pdfFiles.length !== files.length) {
+		track("files_rejected", { reason: "not_pdf", count_bucket: countBucket(files.length - pdfFiles.length) });
+		return null;
+	}
+
+	if (pdfFiles.length > 0) {
+		track("files_added", {
+			source,
+			count_bucket: countBucket(pdfFiles.length),
+			size_bucket: sizeBucket(totalSize(pdfFiles)),
+		});
+	}
+	return pdfFiles;
 }
 
 export function FileUploader({ onFilesSelected }: FileUploaderProps) {
@@ -12,10 +32,9 @@ export function FileUploader({ onFilesSelected }: FileUploaderProps) {
 
 	// PDF 以外を選んだのは利用者の操作の結果で、コードの不具合ではないので Sentry には送らない（ADR 0007 決定 4）
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const selectedFiles = Array.from(e.target.files || []);
-		const pdfFiles = selectedFiles.filter((file) => file.type === "application/pdf");
+		const pdfFiles = acceptPdfFiles(Array.from(e.target.files || []), "picker");
 
-		if (pdfFiles.length !== selectedFiles.length) {
+		if (!pdfFiles) {
 			alert("PDFファイルのみ選択してください");
 			return;
 		}
@@ -31,10 +50,9 @@ export function FileUploader({ onFilesSelected }: FileUploaderProps) {
 
 	const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault();
-		const droppedFiles = Array.from(e.dataTransfer.files);
-		const pdfFiles = droppedFiles.filter((file) => file.type === "application/pdf");
+		const pdfFiles = acceptPdfFiles(Array.from(e.dataTransfer.files), "drop");
 
-		if (pdfFiles.length !== droppedFiles.length) {
+		if (!pdfFiles) {
 			alert("PDFファイルのみ選択してください");
 			return;
 		}
