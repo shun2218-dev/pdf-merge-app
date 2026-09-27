@@ -90,3 +90,12 @@ C は、ADR 0019 で退けた「PostHog の SDK の Web Vitals の自動収集�
 - 直したあとは 247,934 バイト（ベースラインから +3.4 KB）で、予算の範囲内。内訳は `web-vitals` が 3.0 KB、送信の処理などが 0.5 KB。Lighthouse の Performance は 0.97 のまま。`/` の First Load JS は 238 kB → 241 kB。
 - ローカルで `NEXT_PUBLIC_VERCEL_ENV=production` と偽のキーでビルドし、`/ingest/i/v0/e/` への送信が PostHog まで転送され（応答 200）、LCP / INP / CLS の 3 件が決定 3 のプロパティで送られることを確かめた。このときは `next.config` の rewrites で確かめた。`vercel.json` の rewrites は `next start` では効かないので、本番で確かめる（DoD の 1 つ目）。
 - Sentry の SDK も、トレースのために独自の Web Vitals のコードを持っている（`@sentry-internal/browser-utils`）。`web-vitals` と役割が重なるので、Sentry のブラウザのトレースを続けるかは、依存の整理（ADR 0004）のときに見直す。
+
+### 2026-09-28: 本番で `/ingest/i/v0/e/` が 404 だったのを直す（B-9）
+
+v1.2.0 のリリース後の確認（DoD の 1 つ目）で、本番の `POST /ingest/i/v0/e/` が PostHog に転送されず、Next.js の 404 になっていることが分かった。`web_vital` は 1 件も届いていなかった。
+
+- 原因: Vercel は `vercel.json` の rewrites の `source` を path-to-regexp の strict（末尾の `/` を区別する）で照合する。`/ingest/:path*` は `/ingest/i/v0/e`（末尾の `/` なし）には当たるが、`/ingest/i/v0/e/` には当たらない。ローカルの確認は `next.config` の rewrites で行っており（上の追記）、Next.js は末尾の `/` を区別しないので気づけなかった。
+- 直し方: `source` を `/ingest/:path(.*)`、`destination` を `https://us.i.posthog.com/:path` にした（PostHog の Vercel 向けの案内と同じ形）。末尾の `/` も含めて転送される。決定 5 の「`vercel.json` の rewrites で転送する」は変えていない。
+- 再現テスト: `__tests__/lib/vercel-rewrites.test.ts`。`vercel.json` を読み、Vercel と同じ strict の照合で、`WEB_VITALS_ENDPOINT` が末尾の `/` を保って PostHog に転送されることを確かめる。直す前は失敗した。
+- 1 週間分のベースライン（ADR 0011 / 0012 の DoD）の RUM の値は、この修正が本番に出た日から数え直す。

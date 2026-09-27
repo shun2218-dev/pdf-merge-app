@@ -1,4 +1,4 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"rewrites": [{ "source": "/ingest/:path*", "destination": "https://us.i.posthog.com/:path*" }]
+	"rewrites": [{ "source": "/ingest/:path(.*)", "destination": "https://us.i.posthog.com/:path" }]
 }

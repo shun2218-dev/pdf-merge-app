@@ -18,6 +18,7 @@
 | B-6 | 中 | ファイル一覧の `key` が `ファイル名-index`。並び替えのたびに key が変わり、同名ファイルがあると衝突する | `components/file-list.tsx:43` | 0005 |
 | B-7 | 中 | 並び替えが HTML5 の Drag and Drop だけなので、スマートフォン（タッチ）とキーボードでは並び替えられない。biome の抑止コメントは「キーボードの代替手段がある」と書いているが、実際にはない | `components/file-list.tsx:40` | 0010 |
 | B-8 | 低 | PDF の判定が `file.type` だけ。拡張子が `.pdf` でも MIME が空の環境（一部の Windows / Android）では弾かれる | `components/file-uploader.tsx:18` | 0009 |
+| B-9 | 高 | 本番で Web Vitals の送信（`POST /ingest/i/v0/e/`）が Next.js の 404 になり、PostHog に届いていない。Vercel は `vercel.json` の rewrites の `source` を末尾の `/` を区別して照合するので、`/ingest/:path*` が末尾が `/` のパスに当たらない（v1.2.0 で発生。2026-09-28 に発見） | `vercel.json`、本番の通信 | 0021 |
 
 ## 2. プライバシー・セキュリティ
 
@@ -27,6 +28,7 @@
 | P-2 | 高 | Sentry が `sendDefaultPii: true`（IP アドレスなどを送る）、Session Replay 10%、エラー時 100%。Replay にはファイル名が映る | `instrumentation-client.ts:21,28`、`sentry.*.config.ts` | 0007 |
 | P-3 | 中 | セキュリティヘッダ（CSP、`X-Content-Type-Options` など）を何も返していない | `next.config.mjs` | 0017 |
 | P-4 | 中 | API にファイル数・サイズ・レートの制限がない | `app/api/merge-pdf/route.ts` | 0002 |
+| P-5 | 中 | ブラウザからのアクセスの HTML に、Cloudflare Web Analytics のビーコン（`static.cloudflareinsights.com/beacon.min.js`）が差し込まれ、`/cdn-cgi/rum` にページの閲覧の情報が送られている。ADR 0018 決定 2 で「使わない」とした機能。以前の確認は `Accept: text/html` を付けない `curl` で行っており、差し込まれない応答を見ていた。→ オーナーが Off にし、ビーコンがなくなったことを確かめた（2026-09-28） | ブラウザと `curl -H "Accept: text/html"` の結果（2026-09-28） | 0018 |
 
 ## 3. コードベース・依存関係
 
