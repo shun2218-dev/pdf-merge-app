@@ -94,6 +94,7 @@ Phase 6  効果の検証と次の計画
 - ADR 0014: 自動の検査（Storybook の `a11y.test: "error"`。既存の違反を直す）
 - ADR 0018: Cloudflare の設定（スクリプトを差し込む機能の無効化・SSL/TLS・HSTS）を整え、WAF のルールを記録する
 - ADR 0019: PostHog の自動の収集（ヒートマップ・Web Vitals・デッドクリックなど）を使うかを決める
+- ADR 0020: PostHog の位置情報を国だけにする（管理画面の Property Filter）
 
 **DoD**
 - [ ] 本番で、プレビューせずに「ダウンロード」を 1 回押すとダウンロードされる（PR #50 で修正を本番に出した。本番での手動の確認が残り）
