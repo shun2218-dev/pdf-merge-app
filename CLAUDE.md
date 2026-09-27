@@ -44,6 +44,14 @@ pnpm test:e2e         # Playwright（事前に pnpm build）
 pnpm storybook        # Storybook
 ```
 
+## 開発の注意（これまでにはまったこと）
+
+- **pnpm は 10 系を使う**（CI は `pnpm/action-setup` の version 10）。ローカルに pnpm 12 などが入っていると、`node_modules` の置き場所が食い違ったり、`pnpm-workspace.yaml` が勝手に作られたりする。迷ったら `npx -y pnpm@10 <コマンド>` を使い、`pnpm-workspace.yaml` ができたら消す。
+- **依存を足すときは、公開から 1 週間以上たった版にする**（pnpm の `minimumReleaseAge` の考え方。サプライチェーン対策）。
+- ファイルを動かしたり import を変えたりしたら、最後に必ず `biome ci .` と `pnpm typecheck` をかけ直す。
+- 本番の確認で `curl` を使うときは、ブラウザの User-Agent を付ける（Cloudflare の WAF が `curl` を止める。ADR 0018）。
+- **外部のサービスの機能を使う・勧める前に、その機能が必要か、何を送るか、いまのプランで何が使えるかを確かめる。** ヒートマップ（ADR 0019）・HSTS の値（ADR 0018 の追記）・Speed Insights の Hobby の制限（ADR 0021）で、確かめずに決めて直すことになった。
+
 ## 守ること
 
 - **PDF の中身・ファイル名を、アナリティクス・Sentry・ログに送らない**（ADR 0007 / 0011）。
