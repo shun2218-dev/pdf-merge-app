@@ -64,7 +64,7 @@
 ## 完了条件（DoD）
 
 - [ ] 決定 2 の「使わない」4 つがすべて無効になっている（Cloudflare のダッシュボードのスクリーンショットを追記に貼る）
-- [ ] SSL/TLS のモードが Full (strict)
+- [x] SSL/TLS のモードが Full (strict)
 - [x] 本番の HSTS のヘッダが 1 つだけで、値が決定 3 のとおり（ブラウザの User-Agent で確認。値は 2026-09-27 の追記で改めたもの）
 - [ ] 本番のページの HTML に、このリポジトリ由来ではないスクリプトが、Bot Fight Mode の JavaScript Detections 以外にない
 - [ ] （Phase 5 の終わり）国ごとのブロックを見直し、結論を追記に書いた
@@ -94,4 +94,11 @@
 | `preload` | 付けない | 上の 2 のとおり意味がない |
 
 - オーナーが Cloudflare で上の値に保存し、本番の応答が `strict-transport-security: max-age=31536000; includeSubDomains` になったことを確かめた（2026-09-27）。Vercel の HSTS は Cloudflare の値で置き換えられ、ヘッダは 1 つだけ。
-- 同じ画面の No-Sniff Header（`X-Content-Type-Options: nosniff`）は On。決定 3 では HSTS 以外のヘッダはアプリで付けるので、ADR 0017 でアプリから付けるときに、Cloudflare 側を Off にするか二重のままにするかを決める（同じヘッダが 2 つあっても害はない）。
+- 同じ画面の No-Sniff Header（`X-Content-Type-Options: nosniff`）は On。
+
+### 2026-09-27: SSL/TLS を Full (strict) にした
+
+- オーナーが SSL/TLS のモードを Full (strict) に変えた（それまでは Full (strict) ではなかった）。Cloudflare が Vercel の証明書を検証するようになった。
+- その結果、Vercel の期限切れのワイルドカード証明書（`*.pdf-merge.app`）を使っていた `www` が 526 になった。Cloudflare の Redirect Rule で `www` を `pdf-merge.app` に 301 で転送して直した（ADR 0016 の追記、S-5）。
+- 同日の時点で使っている Cloudflare のルール: カスタムルール 4 件（WAF）、Redirect Rule 1 件（`www` → `pdf-merge.app`）。
+- 教訓: Full (strict) に変えるなど、証明書の検証を強める変更の前に、すべてのホスト名（サブドメインを含む）で接続先の証明書が有効かを確かめる（`openssl s_client -connect <Vercel の IP>:443 -servername <ホスト名>`）。決定 3 では HSTS 以外のヘッダはアプリで付けるので、ADR 0017 でアプリから付けるときに、Cloudflare 側を Off にするか二重のままにするかを決める（同じヘッダが 2 つあっても害はない）。
