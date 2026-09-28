@@ -1,29 +1,24 @@
-import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
 
-// `pnpm analyze` でチャンクの中身を見る（ADR 0012 決定 1）
-const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+// ビルドは Turbopack（Next.js 16 の既定。ADR 0015）。webpack の独自設定は持たない
+export const nextConfig: NextConfig = {
 	// PostHog の受け口（/ingest/i/v0/e/）は末尾が / なので、末尾の / を外すリダイレクトをしない（ADR 0021 決定 5）。
 	// /ingest の転送そのものは vercel.json に書く（ここに rewrites を書くと、ブラウザ側に rewrites を解決するコードが入るため）
 	skipTrailingSlashRedirect: true,
 	images: {
 		unoptimized: true,
 	},
-	webpack: (config, { isServer }) => {
-		if (isServer) {
-			// 'canvas' をサーバーサイドのバンドルから除外する
-			// 'pdf-preview.tsx' は 'ssr: false' なので、
-			// サーバー上で 'canvas' が require されることはない
-			config.externals.push("canvas");
-		}
-		return config;
+	compiler: {
+		// Sentry のトレースのコード（ADR 0022）とデバッグ用のログのコードをビルドから除く。
+		// Sentry の `bundleSizeOptimizations.excludeTracing` と `disableLogger` は webpack のビルドにしか効かないので、
+		// 同じ定数をここで置き換える（ブラウザとサーバーの両方に効く）。値は文字列ではなく boolean にする
+		// （文字列の "false" は真と見なされ、コードが残る）
+		define: { __SENTRY_TRACING__: false, __SENTRY_DEBUG__: false },
 	},
 };
 
-export default withSentryConfig(withBundleAnalyzer(nextConfig), {
+export default withSentryConfig(nextConfig, {
 	// For all available options, see:
 	// https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -46,17 +41,6 @@ export default withSentryConfig(withBundleAnalyzer(nextConfig), {
 	// side errors will fail.
 	// tunnelRoute: "/monitoring",
 
-	// Automatically tree-shake Sentry logger statements to reduce bundle size
-	disableLogger: true,
-
-	// トレースのコードをブラウザ・サーバー・Edge のビルドから除く（ADR 0022）
-	bundleSizeOptimizations: {
-		excludeTracing: true,
-	},
-
-	// Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-	// See the following for more information:
-	// https://docs.sentry.io/product/crons/
-	// https://vercel.com/docs/cron-jobs
-	automaticVercelMonitors: true,
+	// 画面遷移のトレースは使わないので、onRouterTransitionStart を export しない（ADR 0022）
+	suppressOnRouterTransitionStartWarning: true,
 });

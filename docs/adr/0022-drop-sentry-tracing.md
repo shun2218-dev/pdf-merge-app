@@ -76,3 +76,7 @@ Sentry のトレースでできることを 1 つずつ挙げ、このアプリ�
   - サーバー: 例外を投げるだけの一時的なルート（確かめたあとに消した。コミットしていない）を開き、`onRequestError` から `event` が届いた。メッセージの `secret.pdf` は `[file]` になっていた。
   - ブラウザ: ページで例外を投げ、`event` が届いた（`client check [file]`）。エラー時の Session Replay（`replay_event` / `replay_recording`）も届いた。
   - 届いたものの中に、`transaction` と `span` は 1 つもなかった。
+
+### 2026-09-29: Turbopack では `compiler.define` で除く（ADR 0015）
+
+- Sentry の `bundleSizeOptimizations.excludeTracing` は webpack のビルドにしか効かない。Next.js 16 で Turbopack にしたところ、トレースのコードが残った。Next.js の `compiler.define` で `__SENTRY_TRACING__: false`（文字列ではなく boolean）を渡すと除けた。決定 2 の「トレースのコードをビルドから除く」は変えていない。

@@ -9,7 +9,7 @@
 | 実利用（RUM）の LCP / INP / CLS | `web-vitals` で測り、PostHog に `web_vital` として送る（ADR 0021） | 本番 | 自動。PostHog の Insight で p75 を見る |
 | 実利用（RUM）のまとめた点数 | Vercel Speed Insights（Hobby プランでは Real Experience Score だけが見られる） | 本番 | 自動。Vercel のダッシュボードで見る |
 | 合成（ラボ） | Lighthouse CI（モバイルの設定・3 回の中央値） | CI の `lighthouse` ジョブ（PR ごと） | `pnpm build && pnpm lhci` |
-| バンドル | `@next/bundle-analyzer` | ローカル | `pnpm analyze` |
+| バンドル | `next experimental-analyze`（Turbopack のアナライザ。ADR 0015） | ローカル | `pnpm analyze`（ブラウザで開く。`-o` でファイルに書くだけにもできる） |
 | 結合の時間 | Playwright（`perf/merge-timing.spec.ts`） | ローカル（時間がかかるので CI には入れない） | `pnpm build && pnpm test:perf` |
 
 ### 結合の時間の固定のファイルの組

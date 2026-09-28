@@ -15,7 +15,8 @@
   - ADR 0004 その 1（削除を伴わない部分）は #75 で `develop` に入った。版の固定・`ignoreBuildErrors` の撤去・knip と Renovate の設定・CSS の読み込み先・`tests/utils/dirname.ts`・README。オーナーが Preview でデスクトップとスマートフォンの表示を確かめた（2026-09-28）
   - ADR 0004 その 2（削除）は #78、Sentry のトレースをやめる ADR 0022 は #79 で `develop` に入った。`/` の First Load JS は 241 kB → 205 kB。Radix の一本化は見送った（ADR 0004 の追記）
   - パフォーマンスの予算を、利用者の体験の目標から決め直した（ADR 0023。#80）。CI の関門は LCP 2,500 ms・TBT 200 ms・CLS 0.1・JS の転送量 350,000 バイト
-  - **次は ADR 0015（Next.js 16）。** 作業中の変更はローカルのブランチ `feature/adr-0015-nextjs-16` にある（16.3.5 / React 19.3.0、`next.config.ts`、`canvas` の設定の撤去、Sentry のトレースの除外を `compiler.define` で）。ADR 0023 の関門で判定し、Turbopack で進める。ローカルの測定（2026-09-28）は ADR 0023 の背景の表
+  - ADR 0015（Next.js 16.3.5、Turbopack）をブランチ `feature/adr-0015-nextjs-16` で実装した。ADR 0023 の CI の関門で判定する。オーナーの Preview の確認（追加・並び替え・プレビュー・ダウンロード、Sentry にソースマップ付きでエラーが届くこと）がまだ
+  - その次は ADR 0005（状態管理を 1 つのフックにまとめ、画面を分割する）
   - Renovate の GitHub App はオーナーが入れた（2026-09-28。Renovate Only・Scan and Alert・`pdf-merge-app` だけ）。`renovate.json` はまだ `develop` にしかないので、Renovate が `main` 向けに出した Onboarding の PR（#76「Configure Renovate」）はマージしない。次のリリースで `renovate.json` が `main` に入ったら、最初の更新の PR が `develop` 向けで、pnpm 10 系で lockfile が作られているか（`pnpm-workspace.yaml` ができていないか）を確かめる
 - **棚卸しに残っている小さな問題**: S-3（旧 URL の 404）、S-5（ワイルドカードの DNS と期限切れの証明書。ADR 0016 で対応）、プレビューのたびに結合し直す無駄（ADR 0005 で対応）。
 

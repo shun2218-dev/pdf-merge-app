@@ -118,3 +118,9 @@
 - ADR 0023 で、予算を利用者の体験の目標（実際の利用者の p75 の LCP / INP / CLS）から決め直した。CI の関門は LCP 2,500 ms・TBT 200 ms・CLS 0.1 以下（Lighthouse のモバイルの設定、3 回の中央値）。JS の転送量は、その条件から逆算した「超えたら必ず失敗する上限」の 350,000 バイト。
 - Performance を CI の値の最小値に締める予定（DoD の 1 つ）はやめた。0.90 のまま。
 - 決定 1（計測の種類）・決定 3（重いものは要るときに読み込む）・決定 4（結果を残す）は変えていない。
+
+### 2026-09-29: バンドルアナライザを Turbopack のものにした（ADR 0015）
+
+- Next.js 16 で Turbopack でビルドするようにしたので、webpack 専用の `@next/bundle-analyzer` を外し、`pnpm analyze` を `next experimental-analyze` にした（決定 1 の「Turbopack のアナライザが使えるならそちら」）。
+- Next.js 16 のビルドの出力には First Load JS が出なくなった。JS の大きさは Lighthouse CI の JS の転送量（ADR 0023 決定 4）で見る。
+

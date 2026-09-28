@@ -48,3 +48,6 @@ node_modules/
 
 # editor (personal settings)
 .vscode/mcp.json
+
+# Next.js が生成する型の参照（`next typegen` / `next build` で作られる。ADR 0015）
+next-env.d.ts
