@@ -45,3 +45,6 @@ node_modules/
 
 # Lighthouse CI
 /.lighthouseci/
+
+# editor (personal settings)
+.vscode/mcp.json
