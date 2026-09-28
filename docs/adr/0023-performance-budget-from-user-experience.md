@@ -1,7 +1,7 @@
 # 0023. パフォーマンスの予算を、利用者の体験の目標から決める
 
-- 状態: 提案
-- オーナーの確認: 未
+- 状態: 採用
+- オーナーの確認: 2026-09-29
 - 日付: 2026-09-28
 - 関連: M-2、ADR 0005 / 0009 / 0012 / 0015 / 0021 / 0022
 
@@ -92,14 +92,22 @@ ADR 0015（Next.js 16）の実装で、この 2 つが判断の役に立たな�
 2. PR の時点の基準の利用者を、Lighthouse の既定のモバイルの設定にすることでよいか。
 3. JS の大きさを、逆算した「超えたら必ず失敗する上限」（350,000 バイト）だけ関門にし、実際には LCP と TBT で守ることでよいか。
 
+**オーナーの回答（2026-09-29）**: すべて提案どおりでよい。
+
 ## 完了条件（DoD）
 
-- [ ] `lighthouserc.json` に LCP（2,500 ms 以下）と TBT（200 ms 以下）の関門があり、JS の転送量の関門が 350,000 バイト
+- [x] `lighthouserc.json` に LCP（2,500 ms 以下）と TBT（200 ms 以下）の関門があり、JS の転送量の関門が 350,000 バイト（2026-09-29）
 - [ ] CI の結果のコメントに、LCP・TBT・JS の転送量の値が出る
-- [ ] `docs/performance.md` の予算の表と、ロードマップの Phase 2 の DoD をこの ADR に合わせた
-- [ ] ADR 0012 に、決定 2 の予算の部分をこの ADR で置き換えたことを追記した
+- [x] `docs/performance.md` の予算の表と、ロードマップの Phase 2 の DoD をこの ADR に合わせた（2026-09-29）
+- [x] ADR 0012 に、決定 2 の予算の部分をこの ADR で置き換えたことを追記した（2026-09-29）
 - [ ] ロードマップの共通 DoD を満たした
 
 ## 追記
 
-（実装で確定した詳細を日付付きで足す）
+### 2026-09-29: 実装
+
+- `lighthouserc.json` に `largest-contentful-paint`（2,500 ms 以下）と `total-blocking-time`（200 ms 以下）の関門を足し、`resource-summary:script:size` を 350,000 バイトにした。どれも 3 回の中央値（`median-run`）。
+- `scripts/lighthouse-summary.ts` を足した。`.lighthouseci/lhr-*.json` から LCP・TBT・CLS・JS の転送量・Performance を指標ごとに中央値で取り出し、`GITHUB_OUTPUT` に書く。CI の `lighthouse` ジョブで関門を超えたときにも走らせ、`report` ジョブの PR のコメントに表で出す。CI の Node 24 は TypeScript の型を外して実行できるので、`.ts` のまま `node` で実行している。
+  - Lighthouse CI の `median-run` は、Performance の点数などで「真ん中の 1 回」を選んでその回の値で判定する。コメントの値は指標ごとの中央値なので、関門の判定に使われた値と少し違うことがある。
+- `__tests__/scripts/lighthouse-budget.test.ts` で、`lighthouserc.json` の関門の値と、中央値の取り方（起動直後の遅い 1 回目に引きずられないこと）を確かめる。
+- `develop`（ADR 0022 まで）の CI の値を、このスクリプトで取り出すと、LCP 1,814 ms・TBT 65 ms・CLS 0・JS の転送量 211,637 B・Performance 0.99。どれも関門の内。

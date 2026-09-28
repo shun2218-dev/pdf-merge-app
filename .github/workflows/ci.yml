@@ -153,6 +153,12 @@ jobs:
     name: lighthouse
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      performance: ${{ steps.summary.outputs.performance }}
+      lcp: ${{ steps.summary.outputs.lcp }}
+      tbt: ${{ steps.summary.outputs.tbt }}
+      cls: ${{ steps.summary.outputs.cls }}
+      script: ${{ steps.summary.outputs.script }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -171,9 +177,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-lhci-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm build
-      # 予算は lighthouserc.json（ADR 0012 決定 2）。ubuntu-latest に入っている Google Chrome を使う
+      # 予算は lighthouserc.json（ADR 0023）。ubuntu-latest に入っている Google Chrome を使う
       - name: Lighthouse CI
         run: pnpm lhci
+      # 関門の指標の中央値を PR のコメントに出す（ADR 0023 決定 4）。関門を超えたときにも出す
+      - name: Summarize
+        id: summary
+        if: ${{ !cancelled() }}
+        run: node scripts/lighthouse-summary.ts .lighthouseci
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -217,5 +228,15 @@ jobs:
             | lighthouse（Lighthouse CI） | ${{ needs.lighthouse.result == 'success' && '✅ 成功' || format('❌ {0}', needs.lighthouse.result) }} |
 
             - **カバレッジ（Lines、unit）:** `${{ needs.unit.outputs.coverage || 'N/A' }}%`
+
+            **Lighthouse（モバイル、3 回の中央値。関門は ADR 0023）**
+
+            | 指標 | 値 | 関門 |
+            |---|---|---|
+            | LCP | ${{ needs.lighthouse.outputs.lcp || 'N/A' }} ms | 2,500 ms 以下 |
+            | TBT | ${{ needs.lighthouse.outputs.tbt || 'N/A' }} ms | 200 ms 以下 |
+            | CLS | ${{ needs.lighthouse.outputs.cls || 'N/A' }} | 0.1 以下 |
+            | JS の転送量 | ${{ needs.lighthouse.outputs.script || 'N/A' }} B | 350,000 B 以下 |
+            | Performance | ${{ needs.lighthouse.outputs.performance || 'N/A' }} | 0.90 以上 |
 
             [レポート（Artifacts の vitest-coverage-report / playwright-report / lighthouse-report）](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)

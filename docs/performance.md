@@ -27,20 +27,21 @@
 
 ## 予算
 
-`lighthouserc.json` と CI で守る。RUM の値は週に 1 回 Speed Insights を見る。
+決め方は ADR 0023。最上位の目標は実際の利用者の p75 の LCP / INP / CLS で、CI の関門はそれを Lighthouse のモバイルの設定（遅い 4G・4 倍遅い CPU）に当てはめたもの。`lighthouserc.json` と CI で守る。RUM の値は週に 1 回 PostHog で見る。
 
 | 指標 | 予算 | 測る場所 | 状態 |
 |---|---|---|---|
-| Lighthouse Performance（モバイル） | 0.90 以上（仮） | Lighthouse CI | CI での値を 10 回ほど集めてから、ベースラインに締める（ADR 0012 の追記） |
+| Lighthouse Performance（モバイル） | 0.90 以上 | Lighthouse CI | Lighthouse の「良い」（緑）の線（ADR 0023 決定 3） |
 | Lighthouse Accessibility | 1.00 | Lighthouse CI | ベースラインに締めた |
 | Lighthouse Best Practices | 1.00 | Lighthouse CI | ベースラインに締めた（目標は 0.95） |
 | Lighthouse SEO | 1.00 | Lighthouse CI | ベースラインに締めた（目標は 0.95） |
+| LCP（ラボ） | 2,500 ms 以下 | Lighthouse CI | 実際の利用者の LCP の目標をラボに当てはめた（ADR 0023 決定 3） |
+| TBT（ラボ） | 200 ms 以下 | Lighthouse CI | INP の代わり（ADR 0023 決定 3） |
 | CLS（ラボ） | 0.1 以下 | Lighthouse CI | |
-| JS の転送量（ラボ、`resource-summary:script:size`） | 250,000 バイト以下 | Lighthouse CI | 増えていないことの見張り。20% 減の予算は ADR 0004 の後に決める |
+| JS の転送量（ラボ、`resource-summary:script:size`） | 350,000 バイト以下 | Lighthouse CI | 超えたら LCP の関門を必ず満たせない上限。(2,500 − FCP 約 760 ms) × 1.6 Mbps から逆算（ADR 0023 決定 4） |
 | LCP | 2.5 秒以下（RUM の p75） | PostHog（`web_vital`） | |
 | INP | 200ms 以下（RUM の p75） | PostHog（`web_vital`） | |
 | CLS | 0.1 以下（RUM の p75） | PostHog（`web_vital`） | |
-| `/` の First Load JS | ベースラインから 20% 減 | ビルドの出力 | ADR 0004 の後に確定 |
 | 結合（組 B） | ベースラインの値 | Playwright | ADR 0002 の後に確定 |
 
 ## ベースライン（2026-09-27）
