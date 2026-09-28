@@ -45,12 +45,12 @@ v0 などの雛形から始めた名残で、使っていないものが多い�
 
 ## 完了条件（DoD）
 
-- [ ] `pnpm knip` が未使用の依存・ファイルを 0 件と報告する
+- [x] `pnpm knip` が未使用の依存・ファイルを 0 件と報告する（2026-09-28）
 - [x] `package.json` に `"latest"` が 1 つもない（2026-09-28）
-- [ ] `components/ui/` のファイルがすべてどこかから import されている
+- [x] `components/ui/` のファイルがすべてどこかから import されている（2026-09-28）
 - [x] `next.config.*` に `ignoreBuildErrors` がなく、`pnpm typecheck` が通る（2026-09-28）
-- [ ] CSS の正本が `app/globals.css` の 1 つだけ
-- [ ] 本番ビルドの First Load JS が整理の前より増えていない（数値を PR に貼る）
+- [x] CSS の正本が `app/globals.css` の 1 つだけ（2026-09-28）
+- [x] 本番ビルドの First Load JS が整理の前より増えていない（数値を PR に貼る）（2026-09-28。`/` は 241 kB のまま）
 - [ ] 既存のユニット・Storybook・E2E のテストがすべて通る
 - [ ] ロードマップの共通 DoD を満たした
 
@@ -75,3 +75,18 @@ v0 などの雛形から始めた名残で、使っていないものが多い�
 - **First Load JS（DoD）**: 整理の前の `/` は 241 kB（共通 211 kB）。この PR のあとも同じ。
 
 **残り（削除の PR）**: knip が未使用とした 56 ファイル（`components/ui/` の 51 ファイル、`hooks/` の 2 つ、`components/theme-provider.tsx`、`styles/globals.css`、`utils.ts`）と `public/placeholder-*` の削除、未使用の依存 39 個と `prettier`・`path`・`@edge-runtime/vm`・`happy-dom`・`@vitest/runner` の削除、`CardAction` と `lib/analytics/index.ts` の型の再 export（どちらも未使用）の削除、`postcss.config.mjs` の型の注釈（`postcss-load-config` を依存に持たないまま参照している）、`.vscode/mcp.json` の追跡をやめて `.gitignore` に入れる、Radix の一本化、CI への knip の追加。ADR 0021 の追記にある、Sentry のブラウザのトレースと `web-vitals` の重なりの見直しもこのときに行う。
+
+### 2026-09-28: 削除を実装した（その 2）
+
+オーナーの許可を得て、Claude Code が `git rm` と `pnpm remove` で消した。
+
+- **ファイル（決定 1 / 5 / 6 / 8 / 9）**: knip が未使用とした 56 ファイル（`components/ui/` の 51、`hooks/` の 2、`components/theme-provider.tsx`、`styles/globals.css`、`utils.ts`）と `public/placeholder-*` の 5 つを消した。`hooks/` と `styles/` はディレクトリごとなくなった。`components/ui/` に残ったのは button / card / checkbox / dialog / label（と button と card の Story）。
+- **依存（決定 2 / 4）**: knip が未使用とした 39 個と、`prettier`・`@edge-runtime/vm`・`happy-dom`・`@vitest/runner` を消した（`path` は knip の 39 個に入っている）。lockfile のパッケージは 1245 → 1149。新しく入った版・版の変わったものは 0（前後の lockfile のパッケージの一覧を比べた）。
+- **未使用の export**: `components/ui/card.tsx` の `CardAction` と、`lib/analytics/index.ts` の型の再 export（`AnalyticsEvent` / `EventName` / `EventProperties`。使う側は `./events` から直接読んでいる）を消した。
+- **`postcss.config.mjs`**: 依存に持っていない `postcss-load-config` を指す JSDoc の型の注釈を消した。
+- **`.vscode/mcp.json`（決定 9）**: 追跡をやめ、`.gitignore` に足した。ファイルは各自の手元に残る。
+- **CI（決定 2 / ADR 0006）**: `lint` ジョブに `pnpm knip` のステップを足した。
+- **First Load JS（DoD）**: `/` は 241 kB、共通は 211 kB で、整理の前と同じ。
+- **Radix の一本化（決定 3）は見送った。** `radix-ui@1.6.7`（2026-07-24 公開）にまとめて試したところ、`/` が 241 kB → 243 kB に増えた。`radix-ui` は `sideEffects: false` で、使う部品だけがバンドルに入る。増えたのは、`radix-ui@1.6.7` が中の部品を新しい版にする（dialog 1.1.15 → 1.1.23、checkbox 1.3.3 → 1.3.11 など）ため。この ADR の DoD（First Load JS を増やさない）に反し、Lighthouse CI の JS の転送量の予算（250,000 バイト。いまは約 247,934 バイト。ADR 0012 / 0021）も超えるおそれがあるので、この PR では個別のパッケージのままにした。Renovate が Radix を上げる PR で同じだけ増えるはずなので、そのときに一本化も合わせて判断する。
+  - オーナーは Radix にこだわりがない（2026-09-28）。JS を減らすなら、Radix をまとめるより、Radix への依存そのものを減らす（ブラウザ標準の `<dialog>` や `<input type="checkbox">` にする）ほうが早い可能性がある。部品の作り直しになるので、デザインのリニューアル（Phase 4。ADR 0008 / 0009）で判断する。
+- **Sentry のブラウザのトレース（ADR 0021 の追記）**: `withSentryConfig` に `bundleSizeOptimizations: { excludeTracing: true }` を足して試しにビルドすると、`/` が 241 kB → 205 kB、共通が 211 kB → 175 kB になった（−36 kB）。トレースをやめるのは ADR 0007 の決定 3 を変えることになるので、この PR には入れず、別の ADR で決める。

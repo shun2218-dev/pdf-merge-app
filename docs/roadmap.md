@@ -14,7 +14,9 @@
   - 上が済んだら、Phase 1 の DoD にチェックを付ける
 - **Phase 2 を進めている（ADR 0004 → 0015 → 0005）。** 利用者から見た動きを変えないので、ベースラインの計測と並行して進めてよい。
   - ADR 0004 その 1（削除を伴わない部分）は #75 で `develop` に入った。版の固定・`ignoreBuildErrors` の撤去・knip と Renovate の設定・CSS の読み込み先・`tests/utils/dirname.ts`・README。オーナーが Preview でデスクトップとスマートフォンの表示を確かめた（2026-09-28）
-  - **次は ADR 0004 その 2（削除）。** 対象の一覧は ADR 0004 の 2026-09-28 の追記の「残り」。Claude Code の自動モードでは `git rm` が止められたので、オーナーが Claude Code で許可するか、オーナーが消すかを先に決める。Sentry のブラウザのトレースと `web-vitals` の重なり（ADR 0021 の追記）もここで見直す
+  - ADR 0004 その 2（削除）をこのブランチ（`feature/adr-0004-cleanup-part2`）で実装した。knip は 0 件、First Load JS は 241 kB のまま。Radix の一本化は First Load JS が増えるので見送った（ADR 0004 の追記）。オーナーの Preview の確認がまだ
+  - **Sentry のブラウザのトレースをやめるかを決める。** やめると `/` の First Load JS が 241 kB → 205 kB になる（ADR 0004 の追記）。ADR 0007 の決定 3 を変えるので、新しい ADR を起こしてオーナーに確認する
+  - その次は ADR 0015（Next.js 16）
   - Renovate の GitHub App はオーナーが入れた（2026-09-28。Renovate Only・Scan and Alert・`pdf-merge-app` だけ）。`renovate.json` はまだ `develop` にしかないので、Renovate が `main` 向けに出した Onboarding の PR（#76「Configure Renovate」）はマージしない。次のリリースで `renovate.json` が `main` に入ったら、最初の更新の PR が `develop` 向けで、pnpm 10 系で lockfile が作られているか（`pnpm-workspace.yaml` ができていないか）を確かめる
 - **棚卸しに残っている小さな問題**: S-3（旧 URL の 404）、S-5（ワイルドカードの DNS と期限切れの証明書。ADR 0016 で対応）、プレビューのたびに結合し直す無駄（ADR 0005 で対応）。
 
@@ -167,6 +169,7 @@ Phase 6  効果の検証と次の計画
 - ADR 0010: dnd-kit での並び替え
 - ADR 0014: 残り（フォーカスの移り先・ライブリージョン・E2E の axe・手動の確認の一覧）
 - ADR 0019 決定 4: 新しい画面で、ヒートマップとデッドクリックを 2 週間試す
+- 部品を作り直すときに、Radix を使い続けるか、ブラウザ標準の要素（`<dialog>` など）にして依存を減らすかを決める（オーナーは Radix にこだわりがない。ADR 0004 の 2026-09-28 の追記）
 
 **DoD**
 - [ ] ADR 0008 / 0009 / 0010 / 0014 の完了条件を満たした

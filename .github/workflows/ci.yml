@@ -40,6 +40,9 @@ jobs:
         run: pnpm exec biome ci .
       - name: Typecheck
         run: pnpm typecheck
+      # 未使用の依存・ファイル・export を検査する（ADR 0004 決定 2）
+      - name: Knip
+        run: pnpm knip
 
   unit:
     name: unit
