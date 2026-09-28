@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { type LighthouseResult, summarize } from "@/scripts/lighthouse-summary";
+import { type LighthouseResult, summarize, writeSummary } from "@/scripts/lighthouse-summary";
 
 // Lighthouse CI の関門が ADR 0023 の値になっているかを確かめる
 
@@ -70,5 +71,37 @@ describe("summarize", () => {
 
 	it("結果が 1 つもないときは null を返す", () => {
 		expect(summarize([])).toBeNull();
+	});
+});
+
+describe("writeSummary", () => {
+	it("lhr-*.json だけを読み、GITHUB_OUTPUT の形で追記する", () => {
+		const dir = mkdtempSync(join(tmpdir(), "lhci-"));
+		writeFileSync(
+			join(dir, "lhr-1.json"),
+			JSON.stringify(lhr({ performance: 0.99, lcp: 1810.4, tbt: 65, cls: 0, script: 211637 })),
+		);
+		writeFileSync(
+			join(dir, "lhr-2.json"),
+			JSON.stringify(lhr({ performance: 1, lcp: 1814.6, tbt: 58, cls: 0, script: 211637 })),
+		);
+		writeFileSync(
+			join(dir, "lhr-3.json"),
+			JSON.stringify(lhr({ performance: 0.79, lcp: 2742, tbt: 688, cls: 0, script: 211637 })),
+		);
+		writeFileSync(join(dir, "assertion-results.json"), "[]");
+		const output = join(dir, "github-output");
+		writeFileSync(output, "existing=1\n");
+
+		const lines = writeSummary(dir, output);
+
+		const expected = ["performance=0.99", "lcp=1,815", "tbt=65", "cls=0.000", "script=211,637"];
+		expect(lines).toEqual(expected);
+		expect(readFileSync(output, "utf8")).toBe(`existing=1\n${expected.join("\n")}\n`);
+	});
+
+	it("結果がないときは null を返し、何も書かない", () => {
+		const dir = mkdtempSync(join(tmpdir(), "lhci-"));
+		expect(writeSummary(dir, join(dir, "github-output"))).toBeNull();
 	});
 });

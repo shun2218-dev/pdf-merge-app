@@ -47,28 +47,31 @@ export function summarize(results: LighthouseResult[]): LighthouseSummary | null
 	};
 }
 
-function main() {
-	const dir = process.argv[2] ?? ".lighthouseci";
-	const results = readdirSync(dir)
-		.filter((name) => /^lhr-.*\.json$/.test(name))
-		.map((name) => JSON.parse(readFileSync(join(dir, name), "utf8")) as LighthouseResult);
-	const summary = summarize(results);
-	if (!summary) {
-		console.log("Lighthouse の結果がない");
-		return;
-	}
-
-	const lines = [
+// GITHUB_OUTPUT の形（key=value）。PR のコメントでそのまま読めるよう、桁区切りを付ける
+export function formatSummary(summary: LighthouseSummary): string[] {
+	return [
 		`performance=${summary.performance.toFixed(2)}`,
 		`lcp=${Math.round(summary.lcp).toLocaleString("en-US")}`,
 		`tbt=${Math.round(summary.tbt).toLocaleString("en-US")}`,
 		`cls=${summary.cls.toFixed(3)}`,
 		`script=${Math.round(summary.script).toLocaleString("en-US")}`,
 	];
-	console.log(lines.join("\n"));
-	if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join("\n")}\n`);
+}
+
+// dir の lhr-*.json を読んで要約し、outputPath（GITHUB_OUTPUT）があれば追記する。結果がなければ null
+export function writeSummary(dir: string, outputPath?: string): string[] | null {
+	const results = readdirSync(dir)
+		.filter((name) => /^lhr-.*\.json$/.test(name))
+		.map((name) => JSON.parse(readFileSync(join(dir, name), "utf8")) as LighthouseResult);
+	const summary = summarize(results);
+	if (!summary) return null;
+
+	const lines = formatSummary(summary);
+	if (outputPath) appendFileSync(outputPath, `${lines.join("\n")}\n`);
+	return lines;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-	main();
+	const lines = writeSummary(process.argv[2] ?? ".lighthouseci", process.env.GITHUB_OUTPUT);
+	console.log(lines ? lines.join("\n") : "Lighthouse の結果がない");
 }
