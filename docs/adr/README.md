@@ -36,6 +36,7 @@
 | [0020](0020-posthog-geoip-country-only.md) | PostHog の位置情報は国だけ残す | 採用 | 1 |
 | [0021](0021-web-vitals-to-posthog.md) | 実利用者の Web Vitals は自分で測って、自分のドメイン経由で PostHog に送る | 採用 | 1 |
 | [0022](0022-drop-sentry-tracing.md) | Sentry のトレースをやめ、Sentry はエラーの監視だけに使う | 採用 | 2 |
+| [0023](0023-performance-budget-from-user-experience.md) | パフォーマンスの予算を、利用者の体験の目標から決める | 採用 | 2 |
 
 ## テンプレート
 

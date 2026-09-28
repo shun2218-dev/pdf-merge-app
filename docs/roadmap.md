@@ -3,20 +3,19 @@
 本番公開中のアプリを、全体にわたって改善するための計画。
 問題の一覧は [`docs/assessment.md`](assessment.md)、判断は [`docs/adr/`](adr/README.md)、ここは「どの順で・何をもって終わりとするか」を書く（ADR 0001 決定 5）。
 
-## 今の状況（2026-09-28 時点。セッションの引き継ぎ用）
+## 今の状況（2026-09-29 時点。セッションの引き継ぎ用）
 
 - **Phase 0 は完了、Phase 1 は大部分が完了。** 本番は v1.2.1（hotfix の PR は #72 / #73）。v1.2.0 では Web Vitals の送信が 404 で PostHog に届いていなかった（B-9）のを、v1.2.1 で直した。
 - **Phase 1 で残っていること**
   - ADR 0021 の DoD の残り: `web_vital` と `files_added` の `distinct_id` が同じか確かめる。PostHog で LCP / INP / CLS の p75 を端末ごとに出す Insight を作る（どちらもオーナーの PostHog の画面での操作）。`/ingest` への POST が 200 で、`web_vital` が届くことは確かめた（2026-09-28）
   - 1 週間後（v1.2.1 を出した 2026-09-28 から数えて、2026-10-05 以降）: `docs/analytics.md` の KPI と、`docs/performance.md` の RUM の p75 にベースラインを書く（ADR 0011 / 0012 / 0021 の DoD）
-  - CI での Lighthouse の Performance を 10 回ほど集め（いま 4 回）、予算を締める（ADR 0012）
   - ADR 0018 の DoD の 1 つ目: Cloudflare の「使わない」4 つが Off の画面のスクリーンショットを追記に貼る（Web Analytics の差し込みは 2026-09-28 にオーナーが Off にした。P-5）
   - 上が済んだら、Phase 1 の DoD にチェックを付ける
 - **Phase 2 を進めている（ADR 0004 → 0015 → 0005）。** 利用者から見た動きを変えないので、ベースラインの計測と並行して進めてよい。
   - ADR 0004 その 1（削除を伴わない部分）は #75 で `develop` に入った。版の固定・`ignoreBuildErrors` の撤去・knip と Renovate の設定・CSS の読み込み先・`tests/utils/dirname.ts`・README。オーナーが Preview でデスクトップとスマートフォンの表示を確かめた（2026-09-28）
-  - ADR 0004 その 2（削除）をこのブランチ（`feature/adr-0004-cleanup-part2`）で実装した。knip は 0 件、First Load JS は 241 kB のまま。Radix の一本化は First Load JS が増えるので見送った（ADR 0004 の追記）。オーナーの Preview の確認がまだ
-  - **Sentry のブラウザのトレースをやめるかを決める。** やめると `/` の First Load JS が 241 kB → 205 kB になる（ADR 0004 の追記）。ADR 0007 の決定 3 を変えるので、新しい ADR を起こしてオーナーに確認する
-  - その次は ADR 0015（Next.js 16）
+  - ADR 0004 その 2（削除）は #78、Sentry のトレースをやめる ADR 0022 は #79 で `develop` に入った。`/` の First Load JS は 241 kB → 205 kB。Radix の一本化は見送った（ADR 0004 の追記）
+  - パフォーマンスの予算を、利用者の体験の目標から決め直した（ADR 0023。#80）。CI の関門は LCP 2,500 ms・TBT 200 ms・CLS 0.1・JS の転送量 350,000 バイト
+  - **次は ADR 0015（Next.js 16）。** 作業中の変更はローカルのブランチ `feature/adr-0015-nextjs-16` にある（16.3.5 / React 19.3.0、`next.config.ts`、`canvas` の設定の撤去、Sentry のトレースの除外を `compiler.define` で）。ADR 0023 の関門で判定し、Turbopack で進める。ローカルの測定（2026-09-28）は ADR 0023 の背景の表
   - Renovate の GitHub App はオーナーが入れた（2026-09-28。Renovate Only・Scan and Alert・`pdf-merge-app` だけ）。`renovate.json` はまだ `develop` にしかないので、Renovate が `main` 向けに出した Onboarding の PR（#76「Configure Renovate」）はマージしない。次のリリースで `renovate.json` が `main` に入ったら、最初の更新の PR が `develop` 向けで、pnpm 10 系で lockfile が作られているか（`pnpm-workspace.yaml` ができていないか）を確かめる
 - **棚卸しに残っている小さな問題**: S-3（旧 URL の 404）、S-5（ワイルドカードの DNS と期限切れの証明書。ADR 0016 で対応）、プレビューのたびに結合し直す無駄（ADR 0005 で対応）。
 
@@ -137,7 +136,7 @@ Phase 6  効果の検証と次の計画
 **DoD**
 - [ ] ADR 0004 / 0015 / 0005 の完了条件を満たした
 - [ ] 利用者から見た振る舞いが Phase 1 の終わりと同じ（既存の E2E がすべて通る）
-- [ ] First Load JS がベースラインより減った（`docs/performance.md` に値を記録）
+- [ ] Lighthouse CI の関門（ADR 0023 の LCP・TBT・CLS・JS の転送量）を満たしている（`docs/performance.md` に値を記録）
 
 ---
 
