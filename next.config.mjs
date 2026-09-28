@@ -49,6 +49,11 @@ export default withSentryConfig(withBundleAnalyzer(nextConfig), {
 	// Automatically tree-shake Sentry logger statements to reduce bundle size
 	disableLogger: true,
 
+	// トレースのコードをブラウザ・サーバー・Edge のビルドから除く（ADR 0022）
+	bundleSizeOptimizations: {
+		excludeTracing: true,
+	},
+
 	// Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
 	// See the following for more information:
 	// https://docs.sentry.io/product/crons/

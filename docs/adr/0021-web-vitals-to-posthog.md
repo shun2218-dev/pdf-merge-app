@@ -91,7 +91,7 @@ C は、ADR 0019 で退けた「PostHog の SDK の Web Vitals の自動収集�
 
 - 直したあとは 247,934 バイト（ベースラインから +3.4 KB）で、予算の範囲内。内訳は `web-vitals` が 3.0 KB、送信の処理などが 0.5 KB。Lighthouse の Performance は 0.97 のまま。`/` の First Load JS は 238 kB → 241 kB。
 - ローカルで `NEXT_PUBLIC_VERCEL_ENV=production` と偽のキーでビルドし、`/ingest/i/v0/e/` への送信が PostHog まで転送され（応答 200）、LCP / INP / CLS の 3 件が決定 3 のプロパティで送られることを確かめた。このときは `next.config` の rewrites で確かめた。`vercel.json` の rewrites は `next start` では効かないので、本番で確かめる（DoD の 1 つ目）。
-- Sentry の SDK も、トレースのために独自の Web Vitals のコードを持っている（`@sentry-internal/browser-utils`）。`web-vitals` と役割が重なるので、Sentry のブラウザのトレースを続けるかは、依存の整理（ADR 0004）のときに見直す。
+- Sentry の SDK も、トレースのために独自の Web Vitals のコードを持っている（`@sentry-internal/browser-utils`）。`web-vitals` と役割が重なるので、Sentry のブラウザのトレースを続けるかは、依存の整理（ADR 0004）のときに見直す。→ 2026-09-28 に ADR 0022 でトレースをやめた。
 
 ### 2026-09-28: 本番で `/ingest/i/v0/e/` が 404 だったのを直す（B-9）
 
