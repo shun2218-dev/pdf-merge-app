@@ -21,8 +21,7 @@ export function sharedSentryOptions(env: Env = defaultEnv) {
 		environment: env.NEXT_PUBLIC_VERCEL_ENV ?? "development",
 		// IP アドレスなどを送らない（決定 1）
 		sendDefaultPii: false,
-		// 本番の量を見て見直す（決定 3）
-		tracesSampleRate: 0.1,
+		// トレースは使わない（ADR 0022）。tracesSampleRate を書かないとトレースは無効になる
 		beforeSend: (event: ErrorEvent) => scrubDeep(event),
 		beforeBreadcrumb: (breadcrumb) => scrubDeep(breadcrumb),
 	} satisfies BrowserOptions;

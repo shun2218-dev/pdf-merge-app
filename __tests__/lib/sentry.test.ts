@@ -70,10 +70,11 @@ describe("sharedSentryOptions", () => {
 		expect(options.environment).toBe("production");
 	});
 
-	it("PII を送らず、トレースは 10% にする", () => {
+	it("PII を送らず、トレースは使わない（ADR 0022）", () => {
 		const options = sharedSentryOptions({});
 		expect(options.sendDefaultPii).toBe(false);
-		expect(options.tracesSampleRate).toBe(0.1);
+		expect(options).not.toHaveProperty("tracesSampleRate");
+		expect(options).not.toHaveProperty("tracesSampler");
 	});
 
 	it("送る前のイベントとパンくずからファイル名を取り除く", () => {

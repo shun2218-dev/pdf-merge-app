@@ -69,3 +69,8 @@
 
 - オーナーが Vercel のプロジェクトに `NEXT_PUBLIC_SENTRY_DSN` を Production と Preview の両方で設定した。
 - オーナーが PR #55 の Preview で、DevTools で `/api/merge-pdf` への通信を止めて想定外の例外（`TypeError: Failed to fetch`）を起こし、Sentry の Issue の詳細と Replay にファイル名が出ず、画面の文字が伏せられていることを確かめた。
+
+### 2026-09-28: 決定 3 を ADR 0022 で置き換えた
+
+- 決定 3（トレースは 10%）は、ADR 0022 で「トレースを使わず、トレースのコードをビルドから除く」に置き換えた。トレースで見るものがなく、表示の速さは PostHog の Web Vitals（ADR 0021）と Lighthouse CI（ADR 0012）で見ているため。`/` の First Load JS は 241 kB → 205 kB。
+- ほかの決定（PII・Session Replay・送るエラーの範囲など）は変えていない。
