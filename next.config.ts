@@ -1,4 +1,4 @@
-import { withSentryConfig } from "@sentry/nextjs";
+import { type SentryBuildOptions, withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 // ビルドは Turbopack（Next.js 16 の既定。ADR 0015）。webpack の独自設定は持たない
@@ -18,13 +18,15 @@ export const nextConfig: NextConfig = {
 	},
 };
 
-export default withSentryConfig(nextConfig, {
+export const sentryBuildOptions: SentryBuildOptions = {
 	// For all available options, see:
 	// https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-	org: "vercel-development",
+	// ソースマップの送り先。Vercel の Sentry の連携が入れる環境変数から読む。
+	// 以前は実際と違う組織名とプロジェクト名を直接書いていて、ソースマップを送れていなかった（B-10）
+	org: process.env.SENTRY_ORG,
 
-	project: "pdf-merge-app",
+	project: process.env.SENTRY_PROJECT,
 
 	// Only print logs for uploading source maps in CI
 	silent: !process.env.CI,
@@ -43,4 +45,6 @@ export default withSentryConfig(nextConfig, {
 
 	// 画面遷移のトレースは使わないので、onRouterTransitionStart を export しない（ADR 0022）
 	suppressOnRouterTransitionStartWarning: true,
-});
+};
+
+export default withSentryConfig(nextConfig, sentryBuildOptions);

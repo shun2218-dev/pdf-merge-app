@@ -54,6 +54,7 @@ pnpm storybook        # Storybook
 - ローカルの E2E: ポート 3000 をほかのプロジェクトが使っていると、Playwright はそのサーバーを使ってしまう（`reuseExistingServer`）。また、ローカルの既定の reporter（`html`）は失敗するとレポートのサーバーを開いて待ち続ける。別のポートと `--reporter=line` の設定を、リポジトリの外（scratchpad など。`{"type":"module"}` の `package.json` を横に置く）に作って走らせる。
 - 依存の一部だけを別の版にするときに `pnpm update --depth Infinity` を使わない（関係のない依存まで解決し直される）。新しく足す依存に 1 週間の条件をかけるなら `pnpm install --config.minimum-release-age=10080`（ADR 0004 の追記）。
 - ビルドは Turbopack（Next.js 16。ADR 0015）。**webpack 専用の設定は、Turbopack ではエラーも出さずに効かない**（Sentry の `bundleSizeOptimizations` や `disableLogger` など）。ライブラリのビルドの設定を足したら、`.next/static/chunks/` の中身で効いているかを確かめる。定数の置き換えは `compiler.define` で、値は文字列ではなく boolean などの実際の値にする（ADR 0015 の追記）。
+- 手元の `pnpm build` は、`.env` の `SENTRY_AUTH_TOKEN` で本物の Sentry にソースマップを送る（B-10 を直したあと）。確認のためのビルドなどで送りたくないときは `SENTRY_AUTH_TOKEN= pnpm build` のように空にして走らせる。
 - `next-env.d.ts` は Next.js が生成するので git で追跡しない。型チェックは `pnpm typecheck`（`next typegen` のあとに `tsc`）で走らせる。
 - **外部のサービスの機能を使う・勧める前に、その機能が必要か、何を送るか、いまのプランで何が使えるかを確かめる。** ヒートマップ（ADR 0019）・HSTS の値（ADR 0018 の追記）・Speed Insights の Hobby の制限（ADR 0021）で、確かめずに決めて直すことになった。
 

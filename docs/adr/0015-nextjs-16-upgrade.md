@@ -59,3 +59,10 @@
 - **Sentry**: 画面遷移のトレースは使わないので（ADR 0022）、`onRouterTransitionStart` がないという警告を `suppressOnRouterTransitionStartWarning` で止めた。ローカルで偽の受け口に送らせ、サーバーとブラウザのエラーが届き（ファイル名は `[file]`）、エラー時の Session Replay も届き、トレースのデータがないことを確かめた（ADR 0022 と同じ方法）。
 - **大きさと Lighthouse（DoD の 6 つ目）**: `/` が読み込む JS（gzip、polyfills を含む）は 242.1 kB → 296.9 kB。Next.js 16 と React 19.3 の本体で約 +28 kB、Turbopack で約 +29 kB（Sentry のデバッグ用のログを除いて −2 kB）。ローカルの Lighthouse の比較は ADR 0023 の背景の表。「上げる前より悪化していない」は満たさないが、ADR 0023 で予算を利用者の体験の目標から決め直したので、この PR の CI の関門（LCP・TBT・CLS・JS の転送量）で判定する。
 - **ビルドの警告**: `app/opengraph-image.tsx` と `app/twitter-image.tsx` の Edge Runtime が 16 で非推奨になった（S-6 として `docs/assessment.md` に足した。ADR 0016 で扱う）。`metadataBase` の警告は前からある（S-1）。
+
+### 2026-09-30: Preview でのソースマップの確認と B-10
+
+- オーナーが PR #81 の Preview で `/api/merge-pdf` への通信を止めてエラーを起こしたところ、Sentry に届いた（環境は preview）が、スタックトレースが圧縮後のファイル名のままだった。
+- Turbopack のせいではなかった。Sentry 10.22 は `TURBOPACK` の環境変数（Next.js 16 のビルドでは `auto`）で Turbopack と見分け、ブラウザのソースマップを作り、ビルドの最後（`runAfterProductionCompile`）で送る。送ったあとにはソースマップを消す（`deleteSourcemapsAfterUpload` の既定）。
+- 原因は、`next.config` に直接書いた Sentry の組織名とプロジェクト名が実際と違い、アップロードが 403 で失敗していたこと（B-10。ADR 0007 の追記）。環境変数から読むようにした。
+- これで手元の `pnpm build` も、`.env` の `SENTRY_AUTH_TOKEN` で本物の Sentry にソースマップを送るようになる。送りたくないときは `SENTRY_AUTH_TOKEN=` を付けてビルドする（CLAUDE.md の「開発の注意」）。
