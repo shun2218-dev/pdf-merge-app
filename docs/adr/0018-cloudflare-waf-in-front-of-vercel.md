@@ -63,7 +63,7 @@
 
 ## 完了条件（DoD）
 
-- [ ] 決定 2 の「使わない」4 つがすべて無効になっている（Cloudflare のダッシュボードのスクリーンショットを追記に貼る）
+- [x] 決定 2 の「使わない」4 つがすべて無効になっている（Cloudflare のダッシュボードのスクリーンショットを追記に貼る）（2026-10-02）
 - [x] SSL/TLS のモードが Full (strict)
 - [x] 本番の HSTS のヘッダが 1 つだけで、値が決定 3 のとおり（ブラウザの User-Agent で確認。値は 2026-09-27 の追記で改めたもの）
 - [x] 本番のページの HTML に、このリポジトリ由来ではないスクリプトが、Bot Fight Mode の JavaScript Detections 以外にない（2026-09-28。ブラウザと `Accept: text/html` 付きの `curl` で確認）
@@ -110,3 +110,19 @@
 - オーナーに、Cloudflare のダッシュボードの Web Analytics（または Speed → Observatory の RUM）で、`pdf-merge.app` の自動の差し込みを Off にしてもらう。Off にしたあと、`Accept: text/html` を付けた `curl` とブラウザの両方で、ビーコンがないことを確かめて、ここに追記する。
 - 教訓: Cloudflare が HTML を書き換えるかの確認は、ブラウザと同じ `Accept` を付けた `curl` か、ブラウザそのもので行う。
 - オーナーが Cloudflare の設定で自動の差し込みを Off にした（2026-09-28）。そのあと、`Accept: text/html` を付けた `curl`（3 回）とブラウザの両方で、ビーコンの読み込みと `/cdn-cgi/rum` への送信がないことを確かめた。差し込まれているのは Bot Fight Mode の JavaScript Detections だけで、Email Address Obfuscation と Rocket Loader の痕跡もない。
+
+### 2026-10-02: 決定 2 の「使わない」4 つが無効になっていることを、ダッシュボードで確かめた
+
+オーナーが Cloudflare のダッシュボード（`pdf-merge.app` のゾーン、Free プラン）のスクリーンショットを撮った。
+
+| 機能 | 場所 | 状態 | 画像 |
+|---|---|---|---|
+| Email Address Obfuscation | Security → Settings の「Client side abuse」 | Off | [画像](assets/0018/2026-10-02-email-address-obfuscation-off.webp) |
+| Rocket Loader | Speed → Settings → Content Optimization | Off | [画像](assets/0018/2026-10-02-rocket-loader-off.webp) |
+| Cloudflare Web Analytics の自動の差し込み | Delivery & performance → Analytics → Web Analytics | 「RUM is currently disabled for this zone.」 | [画像](assets/0018/2026-10-02-web-analytics-rum-disabled.webp) |
+| Zaraz | Web tag management → Tag setup | ツールが 1 つも設定されていない（始めの画面） | [画像](assets/0018/2026-10-02-zaraz-no-tools.webp) |
+
+- 同じ日に、本番の HTML をブラウザの User-Agent と `Accept: text/html` を付けた `curl` で取り、Zaraz・Rocket Loader・Email Address Obfuscation・Web Analytics の差し込みが 0 件で、差し込まれているのは Bot Fight Mode の JavaScript Detections（`/cdn-cgi/challenge-platform`）の 1 件だけであることを確かめた（決定 2 の「残す」）。
+- Security → Settings の同じ画面の Continuous script monitoring と Hotlink Protection も Off だった（決定 2 の対象外）。
+- Cloudflare のダッシュボードは、2026-09 時点のドキュメントと場所の名前が少し違った（Web Analytics がゾーンの「Delivery & performance → Analytics」の下にある、など）。次に確かめるときは、ダッシュボードの検索で機能の名前を探す。
+
