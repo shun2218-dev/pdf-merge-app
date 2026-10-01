@@ -23,13 +23,16 @@ const nextConfig = {
 	},
 };
 
-export default withSentryConfig(withBundleAnalyzer(nextConfig), {
+/** @type {import("@sentry/nextjs").SentryBuildOptions} */
+export const sentryBuildOptions = {
 	// For all available options, see:
 	// https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-	org: "vercel-development",
+	// ソースマップの送り先。Vercel の Sentry の連携が入れる環境変数から読む。
+	// 以前は実際と違う組織名とプロジェクト名を直接書いていて、ソースマップを送れていなかった（B-10）
+	org: process.env.SENTRY_ORG,
 
-	project: "pdf-merge-app",
+	project: process.env.SENTRY_PROJECT,
 
 	// Only print logs for uploading source maps in CI
 	silent: !process.env.CI,
@@ -59,4 +62,6 @@ export default withSentryConfig(withBundleAnalyzer(nextConfig), {
 	// https://docs.sentry.io/product/crons/
 	// https://vercel.com/docs/cron-jobs
 	automaticVercelMonitors: true,
-});
+};
+
+export default withSentryConfig(withBundleAnalyzer(nextConfig), sentryBuildOptions);

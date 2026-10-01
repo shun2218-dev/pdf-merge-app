@@ -53,6 +53,7 @@ pnpm storybook        # Storybook
 - `vercel.json` の rewrites の `source` は、Vercel では末尾の `/` を区別して照合される（`next.config` の rewrites とは違う）。`:path*` は末尾が `/` のパスに当たらない（B-9）。変えたら `__tests__/lib/vercel-rewrites.test.ts` に足す。
 - ローカルの E2E: ポート 3000 をほかのプロジェクトが使っていると、Playwright はそのサーバーを使ってしまう（`reuseExistingServer`）。また、ローカルの既定の reporter（`html`）は失敗するとレポートのサーバーを開いて待ち続ける。別のポートと `--reporter=line` の設定を、リポジトリの外（scratchpad など。`{"type":"module"}` の `package.json` を横に置く）に作って走らせる。
 - 依存の一部だけを別の版にするときに `pnpm update --depth Infinity` を使わない（関係のない依存まで解決し直される）。新しく足す依存に 1 週間の条件をかけるなら `pnpm install --config.minimum-release-age=10080`（ADR 0004 の追記）。
+- 手元の `pnpm build` は、`.env` の `SENTRY_AUTH_TOKEN` で本物の Sentry にソースマップを送る（B-10 を直したあと）。確認のためのビルドなどで送りたくないときは `SENTRY_AUTH_TOKEN= pnpm build` のように空にして走らせる。
 - **外部のサービスの機能を使う・勧める前に、その機能が必要か、何を送るか、いまのプランで何が使えるかを確かめる。** ヒートマップ（ADR 0019）・HSTS の値（ADR 0018 の追記）・Speed Insights の Hobby の制限（ADR 0021）で、確かめずに決めて直すことになった。
 
 ## 守ること
