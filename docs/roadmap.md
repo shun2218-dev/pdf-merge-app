@@ -119,7 +119,7 @@ Phase 6  効果の検証と次の計画
 
 **DoD**
 - [ ] 本番で、プレビューせずに「ダウンロード」を 1 回押すとダウンロードされる（PR #50 で修正を本番に出した。本番での手動の確認が残り）
-- [ ] 本番の pdfjs に `isEvalSupported: false` が渡っている
+- [x] 本番の pdfjs に `isEvalSupported: false` が渡っている（2026-10-02。本番のプレビューのチャンクで、`Viewer` に `transformGetDocumentParams: e => ({...e, isEvalSupported: !1})` が渡っていることを確かめた。ADR 0003 の追記）
 - [x] テストが落ちた PR は CI が赤になり、`main` / `develop` にマージできない（ADR 0006、2026-09-27）
 - [ ] 本番の Sentry に PII が送られていない
 - [ ] `docs/analytics.md` と `docs/performance.md` に、1 週間分のベースラインがある
