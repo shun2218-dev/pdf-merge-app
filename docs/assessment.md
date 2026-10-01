@@ -19,7 +19,7 @@
 | B-7 | 中 | 並び替えが HTML5 の Drag and Drop だけなので、スマートフォン（タッチ）とキーボードでは並び替えられない。biome の抑止コメントは「キーボードの代替手段がある」と書いているが、実際にはない | `components/file-list.tsx:40` | 0010 |
 | B-8 | 低 | PDF の判定が `file.type` だけ。拡張子が `.pdf` でも MIME が空の環境（一部の Windows / Android）では弾かれる | `components/file-uploader.tsx:18` | 0009 |
 | B-9 | 高 | 本番で Web Vitals の送信（`POST /ingest/i/v0/e/`）が Next.js の 404 になり、PostHog に届いていない。Vercel は `vercel.json` の rewrites の `source` を末尾の `/` を区別して照合するので、`/ingest/:path*` が末尾が `/` のパスに当たらない（v1.2.0 で発生。2026-09-28 に発見） | `vercel.json`、本番の通信 | 0021 |
-| B-10 | 中 | Sentry にソースマップが送られていない。`next.config` に直接書いた組織名（`vercel-development`）とプロジェクト名（`pdf-merge-app`）が、実際のもの（Vercel の環境変数の `SENTRY_ORG` / `SENTRY_PROJECT`）と違い、アップロードが 403 で失敗していた。Issue のスタックトレースが圧縮後のファイル名のままで、どこで起きたかを読みにくい | `next.config.mjs`、PR #81 の Preview で起こしたエラーの Issue（2026-09-30） | 0007 / 0015 |
+| B-10 | 中 | Sentry にソースマップが送られていない。`next.config` に直接書いた組織名（`vercel-development`）とプロジェクト名（`pdf-merge-app`）が、実際のもの（Vercel の環境変数の `SENTRY_ORG` / `SENTRY_PROJECT`）と違い、アップロードが 403 で失敗していた。Issue のスタックトレースが圧縮後のファイル名のままで、どこで起きたかを読みにくい | `next.config.mjs`、PR #81 の Preview と本番で起こしたエラーの Issue（2026-09-30） | 0007 |
 
 ## 2. プライバシー・セキュリティ
 
@@ -90,5 +90,4 @@
 | S-2 | 低 | `robots.txt`、`sitemap.xml`、canonical、構造化データがない | — | 0016 |
 | S-3 | 中 | 旧 URL `pdf-merge-app-nine.vercel.app` が 404（`DEPLOYMENT_NOT_FOUND`）。README のデモ URL と、よそに貼られたリンクが切れている。`www.pdf-merge.app` は 307（一時的なリダイレクト）で `pdf-merge.app` に転送されている | `curl` の結果（2026-09-27） | 0016 |
 | S-5 | 中 | DNS にワイルドカードのレコード（`*`、プロキシあり）があり、どんなサブドメインも Vercel に届く。Vercel がサブドメインに出している証明書（`*.pdf-merge.app`、Let's Encrypt）は期限切れで、Cloudflare の SSL/TLS を Full (strict) にしたところ、`www` を含むすべてのサブドメインが 526 になった。`www` は Cloudflare の Redirect Rule で直した（ADR 0016 / 0018 の追記）。`www` 以外のサブドメインは 526 のまま | `curl` と `openssl s_client` の結果（2026-09-27） | 0016 |
-| S-6 | 低 | `opengraph-image` と `twitter-image` が `runtime = "edge"`。Edge Runtime は Next.js 16 で非推奨になり、ビルドで警告が出る。Edge のページは静的に生成されない | `app/opengraph-image.tsx:3`、`app/twitter-image.tsx:3`、`next build` の警告（2026-09-29） | 0016 |
 | S-4 | 低 | `pdf-merge.app` は Cloudflare のプロキシ経由で Vercel に届いている。ブラウザ以外のクライアントは 403 になり、Vercel 側からは実際のリクエストの情報が見えにくい。→ Cloudflare は WAF として意図的に使っている（オーナーの回答 2026-09-27）。CSP・ヘッダ・計測との取り決めが要る | `curl` の結果（2026-09-27） | 0018 |
