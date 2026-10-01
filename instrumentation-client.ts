@@ -7,16 +7,5 @@ import { sharedSentryOptions } from "@/lib/sentry/options";
 Sentry.init({
 	...sharedSentryOptions(),
 
-	// Session Replay はエラーが起きたセッションだけ、画面の文字と画像をすべて隠して記録する（決定 2）。
-	// ファイル名は一覧の文字として、PDF の中身はプレビューの canvas として画面に出るため
-	integrations: [
-		Sentry.replayIntegration({
-			maskAllText: true,
-			maskAllInputs: true,
-			blockAllMedia: true,
-			block: ["canvas"],
-		}),
-	],
-	replaysSessionSampleRate: 0,
-	replaysOnErrorSampleRate: 1.0,
+	// Session Replay は使わない。エラーの前の操作は、結合の操作のパンくずで追う（ADR 0024）
 });
