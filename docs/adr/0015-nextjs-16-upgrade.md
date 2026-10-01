@@ -69,3 +69,13 @@
 - B-10 を直したあとの Preview でも、まだ圧縮後のファイル名のままだった（2026-10-01）。Vercel でビルドすると、Next.js 16.3 は Turbopack の JS を `.next/static/immutable/chunks` に置く（`supportsImmutableAssets`。手元のビルドでは `.next/static/chunks` のまま）。Sentry 10.22 は `.next/static/chunks` しか送らないので、ソースマップが 1 つも送られていなかった。`.next/static/immutable/chunks` にも対応した `@sentry/nextjs` 10.75.3（2026-09-23 公開）に上げた（決定 4）。`withSentryConfig` の import 元も、10.75 の推奨の `@sentry/nextjs/config` にした。
 - Sentry 10.75 で、`/` が読み込む JS は 296.9 kB → 279.8 kB（gzip）になった。
 
+### 2026-10-01: CI の TBT の関門で落ち、マージを保留した
+
+- #81 の CI で TBT が 204 ms になり、ADR 0023 の関門（200 ms）を超えた。同じコードでも CI のマシンの速さ（Lighthouse の benchmarkIndex）で TBT が大きく変わる（`develop` で約 4,300 のとき 58〜65 ms、約 2,440 のとき 157〜161 ms）。Lighthouse の既定の「4 倍遅い CPU」は、測るマシンを基準にした倍率なので、基準の端末が実行のたびに変わっていた。
+- Lighthouse の文書では、既定の 4 倍は「高性能なデスクトップ（benchmarkIndex 1,500〜2,000）から中位のスマートフォンへ」の倍率。手元で、倍率をマシンの速さに合わせて 8.3 倍（benchmarkIndex 約 440 の端末に相当）にして、4 つのビルドを 8 回ずつ測った。手元のマシンの状態で結果が 2 つの群に分かれ、差を正確には言えないが、同じ群の中で比べると次の傾向だった。
+  - `develop` → Next 16 + webpack で TBT が増える（+17〜87 ms）
+  - Next 16 の webpack → Turbopack は同じか少し多い（+5〜45 ms）
+  - Sentry の Session Replay を外すと、TBT が 28〜38 ms、`/` の JS（gzip）が 39 kB 減る
+  - LCP（中央値）は `develop` 2,591 ms、16 + webpack 2,625 ms、16 + Turbopack 2,777 ms、Replay なし 2,623 ms。この端末の条件では、いまの `develop` でも LCP の関門（2,500 ms）を超える
+- オーナーの判断（2026-10-01）: 基準の端末は、実際の利用者の値（PostHog の p75。2026-10-05 以降にたまる）で決め、CI の CPU の倍率の補正と合わせて新しい ADR にする。それまでこの PR はマージしない。B-10 の修正は #82 として切り出して先に出す。
+
