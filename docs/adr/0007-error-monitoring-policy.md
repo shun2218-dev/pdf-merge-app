@@ -74,3 +74,11 @@
 
 - 決定 3（トレースは 10%）は、ADR 0022 で「トレースを使わず、トレースのコードをビルドから除く」に置き換えた。トレースで見るものがなく、表示の速さは PostHog の Web Vitals（ADR 0021）と Lighthouse CI（ADR 0012）で見ているため。`/` の First Load JS は 241 kB → 205 kB。
 - ほかの決定（PII・Session Replay・送るエラーの範囲など）は変えていない。
+
+### 2026-10-01: ソースマップが送られていなかった（B-10）
+
+- ADR 0015（PR #81）の確認で、Preview で起こしたエラーの Issue のスタックトレースが、圧縮後のファイル名（`_next/static/chunks/…js`）のままだった。Next.js 15 のビルドから送られた Issue も同じだった。決定 7 の「ソースマップのアップロードは続ける」が、実際には行われていなかった。
+- 原因は `next.config` に直接書いた組織名（`vercel-development`）とプロジェクト名（`pdf-merge-app`）。実際の組織とプロジェクト（Vercel の Sentry の連携が入れる環境変数 `SENTRY_ORG` / `SENTRY_PROJECT`）と違い、アップロードが 403 で失敗していた。設定の値が環境変数より優先される。
+- 環境変数から読むように直した。再現テストは `__tests__/lib/next-config.test.ts`（直す前は失敗した）。
+- Next.js 16（Turbopack）では、これとは別に Sentry の更新が要る（Vercel のビルドで JS の置き場所が変わるため。ADR 0015 の追記）。
+
