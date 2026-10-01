@@ -66,3 +66,6 @@
 - Turbopack のせいではなかった。Sentry 10.22 は `TURBOPACK` の環境変数（Next.js 16 のビルドでは `auto`）で Turbopack と見分け、ブラウザのソースマップを作り、ビルドの最後（`runAfterProductionCompile`）で送る。送ったあとにはソースマップを消す（`deleteSourcemapsAfterUpload` の既定）。
 - 原因は、`next.config` に直接書いた Sentry の組織名とプロジェクト名が実際と違い、アップロードが 403 で失敗していたこと（B-10。ADR 0007 の追記）。環境変数から読むようにした。
 - これで手元の `pnpm build` も、`.env` の `SENTRY_AUTH_TOKEN` で本物の Sentry にソースマップを送るようになる。送りたくないときは `SENTRY_AUTH_TOKEN=` を付けてビルドする（CLAUDE.md の「開発の注意」）。
+- B-10 を直したあとの Preview でも、まだ圧縮後のファイル名のままだった（2026-10-01）。Vercel でビルドすると、Next.js 16.3 は Turbopack の JS を `.next/static/immutable/chunks` に置く（`supportsImmutableAssets`。手元のビルドでは `.next/static/chunks` のまま）。Sentry 10.22 は `.next/static/chunks` しか送らないので、ソースマップが 1 つも送られていなかった。`.next/static/immutable/chunks` にも対応した `@sentry/nextjs` 10.75.3（2026-09-23 公開）に上げた（決定 4）。`withSentryConfig` の import 元も、10.75 の推奨の `@sentry/nextjs/config` にした。
+- Sentry 10.75 で、`/` が読み込む JS は 296.9 kB → 279.8 kB（gzip）になった。
+

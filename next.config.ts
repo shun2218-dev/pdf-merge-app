@@ -1,4 +1,4 @@
-import { type SentryBuildOptions, withSentryConfig } from "@sentry/nextjs";
+import { type SentryBuildOptions, withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 // ビルドは Turbopack（Next.js 16 の既定。ADR 0015）。webpack の独自設定は持たない
