@@ -79,3 +79,8 @@
   - LCP（中央値）は `develop` 2,591 ms、16 + webpack 2,625 ms、16 + Turbopack 2,777 ms、Replay なし 2,623 ms。この端末の条件では、いまの `develop` でも LCP の関門（2,500 ms）を超える
 - オーナーの判断（2026-10-01）: 基準の端末は、実際の利用者の値（PostHog の p75。2026-10-05 以降にたまる）で決め、CI の CPU の倍率の補正と合わせて新しい ADR にする。それまでこの PR はマージしない。B-10 の修正は #82 として切り出して先に出す。
 
+### 2026-10-01: `develop`（ADR 0005 / 0024）を取り込んだ
+
+- ADR 0005（画面の分割）と ADR 0024（Session Replay をやめる）の入った `develop` を、このブランチにマージした。衝突は、両方に書いた B-10 の記録と `next.config.mjs`（このブランチでは `.ts` に移した）だけだった。
+- `/` が読み込む JS（gzip、polyfills を含む。測り方は ADR 0023 の背景と同じ）は、`develop`（Next.js 15）が 203.1 kB、このブランチ（Next.js 16 + Turbopack）が 241.3 kB（+38 kB）。ユニット・Storybook（207 件）と E2E（Chromium 14 件）は通った。判定は、基準の端末を決める ADR の関門で行う。
+
