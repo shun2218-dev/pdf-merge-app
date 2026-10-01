@@ -1,11 +1,11 @@
 export const SELECTORS = {
-	// --- FileUploader (from file-uploader.tsx) ---
+	// --- DropZone (from components/merge/drop-zone.tsx) ---
 	/** FileUploader のドラッグ＆ドロップ領域 */
 	FILE_UPLOADER_DROPZONE: '[data-testid="dropzone"]',
 	/** FileUploader の <input type="file"> (hidden) */
 	FILE_INPUT: '[data-testid="file-input"]',
 
-	// --- FileList (from file-list.tsx) ---
+	// --- FileList (from components/merge/file-list.tsx) ---
 	/** FileList 全体のコンテナ */
 	FILE_LIST_CONTAINER: '[data-testid="file-list"]',
 
@@ -33,7 +33,7 @@ export const SELECTORS = {
 	 */
 	dragHandle: (name: string) => `[data-testid="file-item-container-${name}"] >> [data-testid="drag-handle"]`,
 
-	// --- Buttons (from page.tsx) ---
+	// --- Buttons (from components/merge/merge-actions.tsx) ---
 	PREVIEW_BUTTON: 'button:has-text("プレビュー")',
 	DOWNLOAD_BUTTON: 'button:has-text("ダウンロード")',
 	PROCESSING_BUTTON: 'button:has-text("処理中...")',

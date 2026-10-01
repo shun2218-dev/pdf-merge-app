@@ -31,9 +31,11 @@ test.describe("PDF Merger E2E Test", () => {
 	});
 
 	test("ファイルをアップロード(TXTファイル)", async ({ page }) => {
+		// alert() は使わず、画面の中に文言を出す（ADR 0005 決定 7）
+		let dialogShown = false;
 		page.on("dialog", async (dialog) => {
-			expect(dialog.message()).toBe("PDFファイルのみ選択してください");
-			await dialog.accept();
+			dialogShown = true;
+			await dialog.dismiss();
 		});
 
 		const fileInput = page.locator(SELECTORS.FILE_INPUT);
@@ -41,8 +43,11 @@ test.describe("PDF Merger E2E Test", () => {
 		// 1. TXTをセット
 		await fileInput.setInputFiles([txtFile]);
 
-		// 2. FileList に .txt　ファイルが表示されていないことを確認
+		// 2. 文言が出て、FileList に .txt ファイルが表示されていないことを確認
+		// Next.js の route announcer も role="alert" を持つので、文言で絞る
+		await expect(page.getByRole("alert").filter({ hasText: "PDFファイルのみ選択してください" })).toBeVisible();
 		await expect(page.locator(SELECTORS.fileName("dummy.txt"))).not.toBeVisible();
+		expect(dialogShown).toBe(false);
 	});
 
 	test("ファイルの削除", async ({ page }) => {
