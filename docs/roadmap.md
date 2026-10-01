@@ -9,7 +9,7 @@
 - **Phase 1 で残っていること**
   - ADR 0021 の DoD の残り: `web_vital` と `files_added` の `distinct_id` が同じか確かめる。PostHog で LCP / INP / CLS の p75 を端末ごとに出す Insight を作る（どちらもオーナーの PostHog の画面での操作）。`/ingest` への POST が 200 で、`web_vital` が届くことは確かめた（2026-09-28）
   - 1 週間後（v1.2.1 を出した 2026-09-28 から数えて、2026-10-05 以降）: `docs/analytics.md` の KPI と、`docs/performance.md` の RUM の p75 にベースラインを書く（ADR 0011 / 0012 / 0021 の DoD）
-  - ADR 0018 の DoD の 1 つ目: Cloudflare の「使わない」4 つが Off の画面のスクリーンショットを追記に貼る（Web Analytics の差し込みは 2026-09-28 にオーナーが Off にした。P-5）
+  - ~~ADR 0018 の DoD の 1 つ目~~（2026-10-02 にスクリーンショットを追記に貼った）
   - 上が済んだら、Phase 1 の DoD にチェックを付ける
 - **Phase 2 を進めている（ADR 0004 → 0015 → 0005）。** 利用者から見た動きを変えないので、ベースラインの計測と並行して進めてよい。
   - ADR 0004 その 1（削除を伴わない部分）は #75 で `develop` に入った。版の固定・`ignoreBuildErrors` の撤去・knip と Renovate の設定・CSS の読み込み先・`tests/utils/dirname.ts`・README。オーナーが Preview でデスクトップとスマートフォンの表示を確かめた（2026-09-28）
@@ -119,7 +119,7 @@ Phase 6  効果の検証と次の計画
 
 **DoD**
 - [ ] 本番で、プレビューせずに「ダウンロード」を 1 回押すとダウンロードされる（PR #50 で修正を本番に出した。本番での手動の確認が残り）
-- [ ] 本番の pdfjs に `isEvalSupported: false` が渡っている
+- [x] 本番の pdfjs に `isEvalSupported: false` が渡っている（2026-10-02。本番のプレビューのチャンクで、`Viewer` に `transformGetDocumentParams: e => ({...e, isEvalSupported: !1})` が渡っていることを確かめた。ADR 0003 の追記）
 - [x] テストが落ちた PR は CI が赤になり、`main` / `develop` にマージできない（ADR 0006、2026-09-27）
 - [ ] 本番の Sentry に PII が送られていない
 - [ ] `docs/analytics.md` と `docs/performance.md` に、1 週間分のベースラインがある

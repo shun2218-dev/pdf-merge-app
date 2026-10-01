@@ -70,3 +70,9 @@
   - `@react-pdf-viewer` の型（`PdfJs.GetDocumentParams`）には `isEvalSupported` がないので型を合わせたが、渡した値は `core.js` の中でそのまま PDF.js の `getDocument` に渡る。
   - ローカルの E2E（Chromium）で、実際にプレビューが表示されることを確かめた。
 - ロードマップでは `main` からの hotfix で出す予定だったが、`main` にはまだ新しい CI（`ci.yml`）がなく、ブランチ保護の必須チェックが報告されずにマージできなかった（PR #59 / #60 を閉じた）。`develop` の上に載せ直し、Phase 1 のリリースで本番に出す。
+
+### 2026-10-02: 本番で決定 1（暫定策）が効いていることを確かめた
+
+- 本番（v1.2.1）の HTML をブラウザの User-Agent で取り、webpack のランタイムのチャンクの対応表から、遅れて読み込むチャンクを `curl` で取った（ページは動かしていないので、PostHog などには何も送っていない）。
+- プレビューのチャンク（`872.*.js`）で、`@react-pdf-viewer` の `Viewer` に `transformGetDocumentParams` として `e => ({...e, isEvalSupported: !1})`（`!1` は `false`）が渡っていた。`components/pdf-preview.tsx` の `disableEval` のとおり。
+
