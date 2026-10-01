@@ -46,6 +46,10 @@
 | `size_warning_shown` | 大きさの警告を出したとき | `size_bucket` | 未実装（ADR 0002 / 0009） |
 | `theme_changed` / `locale_changed` | 切り替えたとき | `value` | 未実装（ADR 0008 / 0013） |
 
+数え方の変更:
+
+- ADR 0005 の実装（2026-10-01 に `develop` へ。本番は次のリリースから）で、結合の結果があるときは「プレビュー」を押し直しても結合し直さなくなった。それまでは押すたびに結合し直し、`merge_started` / `merge_succeeded`（または `merge_failed`）を送っていた。この日の前後で `merge_started` の数を比べるときは、この違いを考える。`preview_opened` は押すたびに送る（変えていない）。
+
 今後の予定:
 
 - `files_rejected` の `reason` に `encrypted` / `corrupt` を足す（ADR 0002 でブラウザ内で PDF を読むようになったら）。
