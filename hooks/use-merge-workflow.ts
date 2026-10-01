@@ -4,7 +4,20 @@ import * as Sentry from "@sentry/nextjs";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
 import { countBucket, durationBucket, sizeBucket, totalSize, track } from "@/lib/analytics";
+import type { EventName, EventProperties } from "@/lib/analytics/events";
 import { initialState, type MergeItem, mergeWorkflowReducer } from "@/lib/merge-workflow/reducer";
+
+// 操作をアナリティクス（ADR 0011）に送り、同じ名前・同じ値で Sentry のパンくずにも残す（ADR 0024 決定 2）。
+// エラーが起きたとき、その前の操作を順番どおりに読めるようにする。値は区間（バケット）だけで、ファイル名は入らない
+function record<N extends EventName>(name: N, properties: EventProperties<N>) {
+	track(name, properties);
+	Sentry.addBreadcrumb({
+		category: "merge",
+		message: name,
+		data: properties,
+		level: name === "merge_failed" ? "warning" : "info",
+	});
+}
 
 // 結合の状態と操作をまとめたフック（ADR 0005 決定 1）。画面ではこれを持つのは merge-workspace だけにする。
 // 通信・URL の解放・アナリティクス（ADR 0011）・Sentry（ADR 0007）の副作用はここに置き、状態遷移は reducer に任せる
@@ -28,12 +41,12 @@ export function useMergeWorkflow() {
 		// PDF 以外を選んだのは利用者の操作の結果で、コードの不具合ではないので Sentry には送らない（ADR 0007 決定 4）
 		const rejected = files.filter((file) => file.type !== "application/pdf");
 		if (rejected.length > 0) {
-			track("files_rejected", { reason: "not_pdf", count_bucket: countBucket(rejected.length) });
+			record("files_rejected", { reason: "not_pdf", count_bucket: countBucket(rejected.length) });
 			dispatch({ type: "reject", reason: "not_pdf" });
 			return;
 		}
 
-		track("files_added", {
+		record("files_added", {
 			source,
 			count_bucket: countBucket(files.length),
 			size_bucket: sizeBucket(totalSize(files)),
@@ -43,7 +56,7 @@ export function useMergeWorkflow() {
 	}, []);
 
 	const removeFile = useCallback((id: string) => {
-		track("file_removed", { remaining_bucket: countBucket(stateRef.current.items.length - 1) });
+		record("file_removed", { remaining_bucket: countBucket(stateRef.current.items.length - 1) });
 		dispatch({ type: "remove", id });
 	}, []);
 
@@ -53,7 +66,7 @@ export function useMergeWorkflow() {
 
 	// ドラッグを終えて、並びが変わっていたときに 1 回だけ呼ぶ
 	const reorderEnded = useCallback(() => {
-		track("files_reordered", { method: "pointer" });
+		record("files_reordered", { method: "pointer" });
 	}, []);
 
 	// 結合した PDF の URL を返す。結果があれば結合し直さない。呼び出し側は state ではなく、この戻り値を使う（B-1）
@@ -65,7 +78,7 @@ export function useMergeWorkflow() {
 		const files = items.map((item) => item.file);
 		const mergeProperties = { count_bucket: countBucket(files.length), size_bucket: sizeBucket(totalSize(files)) };
 		const startedAt = performance.now();
-		track("merge_started", mergeProperties);
+		record("merge_started", mergeProperties);
 		dispatch({ type: "merge_start" });
 
 		try {
@@ -78,18 +91,18 @@ export function useMergeWorkflow() {
 			// サーバーが返した失敗（500 など）は、サーバー側の Sentry が記録するので、ここでは送らない。
 			// 大きすぎるファイル（413）のように利用者の操作が原因のものも、エラーとしては送らない（ADR 0007 決定 4）
 			if (!response.ok) {
-				track("merge_failed", { reason: response.status === 413 ? "payload_too_large" : "server_error" });
+				record("merge_failed", { reason: response.status === 413 ? "payload_too_large" : "server_error" });
 				dispatch({ type: "merge_failure" });
 				return null;
 			}
 
 			const url = URL.createObjectURL(await response.blob());
-			track("merge_succeeded", { ...mergeProperties, duration_bucket: durationBucket(performance.now() - startedAt) });
+			record("merge_succeeded", { ...mergeProperties, duration_bucket: durationBucket(performance.now() - startedAt) });
 			dispatch({ type: "merge_success", url });
 			return url;
 		} catch (error: unknown) {
 			// 通信の失敗や想定外の例外は、コードの前提が崩れたものとして送る（ADR 0007 決定 4）
-			track("merge_failed", { reason: "network_error" });
+			record("merge_failed", { reason: "network_error" });
 			Sentry.captureException(error);
 			dispatch({ type: "merge_failure" });
 			return null;
@@ -98,7 +111,7 @@ export function useMergeWorkflow() {
 
 	const openPreview = useCallback(async () => {
 		const url = await merge();
-		if (url) track("preview_opened", {});
+		if (url) record("preview_opened", {});
 	}, [merge]);
 
 	// 結果がなければ結合を待ってから、得た結果でダウンロードする（決定 4・B-1）
@@ -108,7 +121,7 @@ export function useMergeWorkflow() {
 		const url = await merge();
 		if (!url) return;
 
-		track("download_clicked", { renamed: false, previewed });
+		record("download_clicked", { renamed: false, previewed });
 		const link = document.createElement("a");
 		link.href = url;
 		link.download = DOWNLOAD_FILE_NAME;

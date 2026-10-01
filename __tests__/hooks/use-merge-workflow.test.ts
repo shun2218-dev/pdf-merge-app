@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMergeWorkflow } from "@/hooks/use-merge-workflow";
 import { track } from "@/lib/analytics";
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
 vi.mock("@/lib/analytics", async (importOriginal) => ({
 	...(await importOriginal<typeof import("@/lib/analytics")>()),
 	track: vi.fn(),
@@ -79,6 +79,7 @@ describe("useMergeWorkflow", () => {
 			act(() => result.current.removeFile(result.current.items[0].id));
 
 			expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain("源泉徴収票");
+			expect(JSON.stringify(vi.mocked(Sentry.addBreadcrumb).mock.calls)).not.toContain("源泉徴収票");
 		});
 
 		it("空の選択は何もしない", async () => {
@@ -291,5 +292,50 @@ describe("useMergeWorkflow", () => {
 			unmount();
 			expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:merged-1");
 		});
+	});
+});
+
+describe("Sentry のパンくず（ADR 0024 決定 2）", () => {
+	it("アナリティクスと同じ名前・同じ値で、操作をパンくずに残す", async () => {
+		const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+		const { result } = await setupWithFiles(pdf("a.pdf"), pdf("b.pdf"));
+		act(() => result.current.moveFile(0, 1));
+		act(() => result.current.reorderEnded());
+		act(() => result.current.removeFile(result.current.items[0].id));
+		vi.mocked(fetch).mockRejectedValueOnce(new TypeError("Failed to fetch"));
+		await act(() => result.current.openPreview());
+		mergeSucceeds();
+		await act(() => result.current.download());
+		click.mockRestore();
+
+		const crumbs = vi.mocked(Sentry.addBreadcrumb).mock.calls.map(([crumb]) => crumb);
+		expect(crumbs.map((c) => c.message)).toEqual([
+			"files_added",
+			"files_reordered",
+			"file_removed",
+			"merge_started",
+			"merge_failed",
+			"merge_started",
+			"merge_succeeded",
+			"download_clicked",
+		]);
+		expect(crumbs.every((c) => c.category === "merge")).toBe(true);
+		// 値もアナリティクスと同じ
+		expect(crumbs.map((c) => [c.message, c.data])).toEqual(vi.mocked(track).mock.calls);
+		// 失敗だけは目立つように warning にする
+		expect(crumbs.find((c) => c.message === "merge_failed")?.level).toBe("warning");
+	});
+
+	it("PDF 以外を拒んだこともパンくずに残す", () => {
+		const { result } = renderHook(() => useMergeWorkflow());
+		act(() => result.current.addFiles([txt("a.txt")], "drop"));
+
+		expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
+			expect.objectContaining({
+				category: "merge",
+				message: "files_rejected",
+				data: { reason: "not_pdf", count_bucket: "1" },
+			}),
+		);
 	});
 });

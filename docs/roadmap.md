@@ -19,7 +19,7 @@
   - **2026-10-05 以降にやること**: PostHog で実際の利用者の LCP / INP / CLS の p75 を端末ごとに見て、CI の基準の端末（Lighthouse の CPU の倍率をマシンの速さで補正する）を決める新しい ADR を書く。その関門で #81 を判定する。#81 は `develop` を取り込み直す（ADR 0005 と衝突するので、ブランチの付け替えではなくマージで）
   - B-10（Sentry にソースマップが送られていなかった）は #82 で直した
   - ADR 0005（状態管理を 1 つのフックにまとめ、画面を分割する）をブランチ `feature/adr-0005-merge-workflow` で実装した。オーナーの Preview の確認がまだ
-  - 調べて分かったこと: Sentry の Session Replay が `/` の JS（gzip）で 39 kB、TBT で 30〜40 ms を使っている（2026-10-01、手元の測定）。Replay をエラーが起きてから読み込むなどの見直しは、新しい ADR の候補（ADR 0007 決定 2 にかかわる）
+  - ADR 0024 で Sentry の Session Replay をやめ、結合の操作を Sentry のパンくずとして残すようにした（#85）。`/` の First Load JS は 206 kB → 165 kB
   - Renovate の GitHub App はオーナーが入れた（2026-09-28。Renovate Only・Scan and Alert・`pdf-merge-app` だけ）。`renovate.json` はまだ `develop` にしかないので、Renovate が `main` 向けに出した Onboarding の PR（#76「Configure Renovate」）はマージしない。次のリリースで `renovate.json` が `main` に入ったら、最初の更新の PR が `develop` 向けで、pnpm 10 系で lockfile が作られているか（`pnpm-workspace.yaml` ができていないか）を確かめる
 - **棚卸しに残っている小さな問題**: S-3（旧 URL の 404）、S-5（ワイルドカードの DNS と期限切れの証明書。ADR 0016 で対応）。
 
