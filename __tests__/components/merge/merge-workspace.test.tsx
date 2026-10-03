@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MergeWorkspace } from "@/components/merge/merge-workspace";
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
+vi.mock("@/lib/sentry/browser", () => ({ sentry: { captureException: vi.fn(), addBreadcrumb: vi.fn() } }));
 vi.mock("@/lib/analytics", async (importOriginal) => ({
 	...(await importOriginal<typeof import("@/lib/analytics")>()),
 	track: vi.fn(),
