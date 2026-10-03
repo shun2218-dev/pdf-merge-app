@@ -78,6 +78,7 @@
 | M-1 | 中 | Vercel Web Analytics はページビューだけ。「アップロード → 結合 → ダウンロード」のどこで離脱しているか、失敗がどれだけあるかが分からない | `app/layout.tsx` | 0011 |
 | M-2 | 中 | Web Vitals（LCP / INP / CLS）を実利用者から取っていない。バンドルサイズや Lighthouse の値を追っていない | — | 0012 |
 | M-3 | 低 | Sentry の `tracesSampleRate: 1`（全件）。量が増えると無料枠をすぐ使い切る | `instrumentation-client.ts:14` | 0007 |
+| M-4 | 中 | ブラウザの Sentry の読み込みと初期化が、最初の表示の JS の処理の半分ほどを占め、ADR 0025 の基準の端末で TBT が関門（200 ms）を超える（223〜245 ms）。DSN のない CI では Sentry が無効なので、本番の利用者の体験より甘く測っている | `instrumentation-client.ts`、ADR 0026 の背景の計測（2026-10-03） | 0026 |
 
 ## 7. i18n・a11y・SEO
 
