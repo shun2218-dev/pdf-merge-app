@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { PDFDocument, PDFName } from "pdf-lib";
-import { STORAGE_KEY } from "@/components/disclaimer-modal";
 
 // docs/performance.md の「固定のファイルの組」。変えるときは docs/performance.md も直す
 const FILE_SETS = [
@@ -49,8 +48,6 @@ for (const set of FILE_SETS) {
 			writeFileSync(path, pdf);
 			return path;
 		});
-
-		await page.addInitScript((key) => sessionStorage.setItem(key, "true"), STORAGE_KEY);
 
 		const durations: number[] = [];
 		for (let i = 0; i < ITERATIONS; i++) {

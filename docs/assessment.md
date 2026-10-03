@@ -64,7 +64,7 @@
 | D-2 | 中 | shadcn の既定（無彩色の neutral）のままで、ブランドの色・ロゴがない。ヘッダーは「PDF Merger」、メタデータは「PDF Merge App」と名前が揺れている | `styles/globals.css`、`components/header.tsx` | 0008 |
 | D-3 | 中 | `--font-sans: "Geist"` を指定しているが、フォントを読み込んでいない（`next/font` なし）。環境ごとに違う書体で描かれる | `styles/globals.css`、`app/layout.tsx:44` | 0008 |
 | D-4 | 中 | 「ご利用上の注意」ボタンが `destructive`（赤）。削除や危険な操作の色を案内に使っている | `components/header.tsx:58` | 0008 |
-| U-1 | 中 | 開くたびに（タブごとに）注意事項のモーダルが出て、チェックを入れないと閉じられない。Esc でも閉じない。最初の操作までの手数が多い | `components/header.tsx`、`components/disclaimer-modal.tsx:34` | 0009 |
+| U-1 | 中 | 開くたびに（タブごとに）注意事項のモーダルが出て、チェックを入れないと閉じられない。Esc でも閉じない。最初の操作までの手数が多い | `components/header.tsx`、`components/disclaimer-modal.tsx:34` | 0009 / 0027 |
 | U-2 | 中 | エラーを `alert()` で出す。どのファイルが悪いのか、何をすればよいのかが分からない | `app/page.tsx:77`、`components/file-uploader.tsx:21` | 0009 |
 | U-3 | 中 | 結合の進み具合が「処理中...」の文字だけ。大きいファイルでは固まったように見える | `app/page.tsx` | 0009 |
 | U-4 | 低 | プレビューの高さが 800px 固定、ビューアは `theme="dark"` 固定。スマートフォンでは画面より高い | `components/pdf-preview.tsx:51,53` | 0003 |
@@ -78,7 +78,7 @@
 | M-1 | 中 | Vercel Web Analytics はページビューだけ。「アップロード → 結合 → ダウンロード」のどこで離脱しているか、失敗がどれだけあるかが分からない | `app/layout.tsx` | 0011 |
 | M-2 | 中 | Web Vitals（LCP / INP / CLS）を実利用者から取っていない。バンドルサイズや Lighthouse の値を追っていない | — | 0012 |
 | M-3 | 低 | Sentry の `tracesSampleRate: 1`（全件）。量が増えると無料枠をすぐ使い切る | `instrumentation-client.ts:14` | 0007 |
-| M-4 | 中 | ブラウザの Sentry の読み込みと初期化が、最初の表示の JS の処理の半分ほどを占め、ADR 0025 の基準の端末で TBT が関門（200 ms）を超える（223〜245 ms）。DSN のない CI では Sentry が無効なので、本番の利用者の体験より甘く測っている | `instrumentation-client.ts`、ADR 0026 の背景の計測（2026-10-03） | 0026 |
+| M-4 | 中 | ブラウザの Sentry の読み込みと初期化が、最初の表示の JS の処理の半分ほどを占め、ADR 0025 の基準の端末で TBT が関門（200 ms）を超える（223〜245 ms）。DSN のない CI では Sentry が無効なので、本番の利用者の体験より甘く測っている | `instrumentation-client.ts`、ADR 0026 の背景と追記の計測（2026-10-03） | 0026 / 0027 |
 
 ## 7. i18n・a11y・SEO
 

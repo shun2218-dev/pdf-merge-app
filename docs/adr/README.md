@@ -40,6 +40,7 @@
 | [0024](0024-replace-sentry-replay-with-breadcrumbs.md) | Sentry の Session Replay をやめ、操作のパンくずを自分で残す | 採用 | 2 |
 | [0025](0025-ci-lighthouse-reference-device.md) | CI の Lighthouse の基準の端末を固定し、温める回を捨てる | 採用 | 2 |
 | [0026](0026-defer-sentry-until-after-load.md) | ブラウザの Sentry を、ページの読み込みのあとに読み込む | 採用 | 2 |
+| [0027](0027-inline-disclaimer-before-client-merge.md) | 注意事項は、自動で開くモーダルをやめ、ドロップ領域の下に常に出す（ADR 0002 より前に） | 採用 | 2 |
 
 ## テンプレート
 

@@ -122,4 +122,13 @@ describe("MergeWorkspace", () => {
 		await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
 		expect(fetch).toHaveBeenCalledTimes(1);
 	});
+
+	it("受け取った断りを、ドロップ領域のすぐ下に出す（ADR 0027 決定 2・3）", () => {
+		render(<MergeWorkspace notice={<p data-testid="notice">断り</p>} />);
+
+		const dropzone = screen.getByTestId("dropzone");
+		const notice = screen.getByTestId("notice");
+		expect(dropzone.compareDocumentPosition(notice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		expect(screen.queryByText("ステップ 2: ファイルの順番を調整")).not.toBeInTheDocument();
+	});
 });
