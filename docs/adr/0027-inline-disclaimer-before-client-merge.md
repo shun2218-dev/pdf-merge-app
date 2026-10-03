@@ -73,4 +73,10 @@ CI で部品を外したビルドを並べて測った内訳（ADR 0026 の追�
 
 ## 追記
 
-（実装で確定した詳細を日付付きで足す）
+### 2026-10-03: 実装した
+
+- 断りは `components/merge/upload-notice.tsx`（サーバーコンポーネント）。文言は同じファイルの `UPLOAD_NOTICE` に 1 か所にまとめた（Phase 5 で辞書に移しやすくするため）。`app/page.tsx` から `MergeWorkspace` の `notice` に渡し、ドロップ領域のすぐ下に出す。断りの文言は、サーバーで描いた HTML に入り、ブラウザの JS には入らない（ビルドした `/` のページのチャンクに文言がないことを確かめた）。
+- ヘッダーは状態を持たなくなったので、`"use client"` を外してサーバーコンポーネントにした。
+- 使わなくなった `components/ui/dialog.tsx`・`checkbox.tsx`・`label.tsx` と、`@radix-ui/react-dialog`・`react-checkbox`・`react-label` を消した（knip が未使用として止めるため）。ADR 0009 でダイアログが要るようになったら、そのときに足し直す。
+- `/` の First Load JS は 139 kB → 125 kB（ページのチャンクは 31.4 kB → 18 kB）。
+- テスト: ユニット（断りの文言・色・チェックやボタンがないこと、`MergeWorkspace` がドロップ領域の下に断りを出すこと、ヘッダーにボタンがないこと）、Storybook（`Merge/UploadNotice`）、E2E（`e2e/upload-notice.spec.ts`。モーダルを出さずに断りがドロップ領域の下に見え、最初からファイルを選べる）。モーダル用のテスト・ストーリー・E2E と、E2E と結合の時間の計測（`perf/`）の `sessionStorage` の準備を消した。
