@@ -24,7 +24,7 @@ export function MergeActions({ isMerging, onPreview, onDownload, errorMessage }:
 				</Button>
 			</div>
 			{errorMessage && (
-				<p role="alert" className="text-sm text-destructive">
+				<p role="alert" className="text-sm text-destructive-foreground">
 					{errorMessage}
 				</p>
 			)}

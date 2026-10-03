@@ -62,7 +62,7 @@ export function DropZone({ onFiles, errorMessage }: DropZoneProps) {
 				</div>
 			</div>
 			{errorMessage && (
-				<p role="alert" className="text-sm text-destructive">
+				<p role="alert" className="text-sm text-destructive-foreground">
 					{errorMessage}
 				</p>
 			)}
