@@ -6,7 +6,7 @@
 
 ## 概要
 
-このプロジェクトは、Next.js 15 (App Router) と `pdf-lib` ライブラリを使用して構築したPDF結合ツールです。モダンなフロントエンド技術とサーバーレスアーキテクチャ（Vercel Functions）の実践的な活用を目的として開発しました。
+このプロジェクトは、Next.js 16 (App Router) と `pdf-lib` ライブラリを使用して構築したPDF結合ツールです。モダンなフロントエンド技術とサーバーレスアーキテクチャ（Vercel Functions）の実践的な活用を目的として開発しました。
 
 ## 主な機能
 
@@ -31,7 +31,7 @@ PDFの結合処理（`/api/merge-pdf`）は、Vercel Functions（Node.js のラ�
 
 ### モダンなフロントエンド構成
 
-* **Next.js 15 (App Router):** `page.tsx` に `"use client"` を明記し、React Server Components (RSC) のアーキテクチャを意識したクライアントコンポーネントとして構築
+* **Next.js 16 (App Router):** `page.tsx` に `"use client"` を明記し、React Server Components (RSC) のアーキテクチャを意識したクライアントコンポーネントとして構築
 * **React 19:** 最新のReactの機能を採用
 * **TypeScript:** 型安全な開発を徹底
 * **Tailwind CSS & shadcn/ui:** モダンでレスポンシブなUIを効率的に構築
@@ -44,7 +44,7 @@ PDFの結合処理（`/api/merge-pdf`）は、Vercel Functions（Node.js のラ�
 
 ### 使用技術一覧
 
-* **フレームワーク:** Next.js 15 (App Router)
+* **フレームワーク:** Next.js 16 (App Router)
 * **言語:** TypeScript
 * **スタイリング:** Tailwind CSS, shadcn/ui
 * **PDF処理:** `pdf-lib`
