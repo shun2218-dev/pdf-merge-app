@@ -142,3 +142,11 @@ Lighthouse の文書（v12.6.1 の `docs/throttling.md`）によると、既定�
 
 - CI のビルドには DSN がないので、ブラウザの Sentry は無効（`enabled: false`。ADR 0007 決定 5）のまま測っていた。ADR 0026 の追記の計測で、Sentry を有効にすると、同じビルドの TBT が 23〜43 ms 増えることが分かった。CI の関門は、本番の利用者の体験より甘く出ていた。
 - **オーナーの判断（2026-10-03）**: この ADR の実装で、Lighthouse で測るビルドは、送り先のないダミーの DSN（例: `127.0.0.1` の 9 番）で Sentry を有効にしてビルドする。どこにも送らない。測る条件を本番に合わせるもので、関門の値（決定 5）は変えない。
+
+### 2026-10-03: 実装した
+
+- `pnpm lhci` は `scripts/lighthouse-ci.ts` を走らせる。`next start` を 1 つだけ起動し、同じサーバーに対して `lhci collect --numberOfRuns=2`（温める回）→ その `lhr-*.json` の benchmarkIndex の大きいほうを `B_ci` にして、倍率 `B_ci ÷ 440`（小数 2 桁）を出す → `lhci collect --settings.throttling.cpuSlowdownMultiplier=倍率`（3 回。`collect` は前の結果を消してから書くので、判定に温める回は入らない）→ `lhci upload` → `lhci assert` の順に走らせる。`lighthouserc.json` からはサーバーの起動（`startServerCommand`）を外した。
+- `B_ci` と倍率は `GITHUB_OUTPUT` に書き、PR のコメントの Lighthouse の表の下に出す（決定 4）。
+- Sentry を有効にするための DSN は、`scripts/lighthouse-ci.ts` が立てる受け口（`127.0.0.1:3001`。受け取って 200 を返すだけで、何も保存しない）を指す。最初は送り先のない `127.0.0.1` の 9 番にしたが、Sentry が初期化のときに送るセッションの記録が失敗し、コンソールのエラーとして Lighthouse の Best Practices（errors-in-console）が落ちたため。CI の `lighthouse` ジョブの `env` に書いた。
+- `@lhci/cli` はスクリプトから `node_modules/.bin/lhci` で呼ぶので、knip が未使用と判定する。`knip.json` の `ignoreDependencies` に入れた。
+- 手元で走らせたとき、Accessibility の color-contrast で落ちた。暗いテーマで赤い文字のコントラストが足りない、既存の不具合だった（A-3。#92 で直す）。#91 の CI の Lighthouse では検出されなかった（理由は未確認）。

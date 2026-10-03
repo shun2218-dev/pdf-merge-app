@@ -161,9 +161,10 @@ jobs:
       script: ${{ steps.summary.outputs.script }}
       bci: ${{ steps.lhci.outputs.bci }}
       multiplier: ${{ steps.lhci.outputs.multiplier }}
-    # 本番と同じく Sentry を有効にして測る。送り先のないダミーの DSN（127.0.0.1 の 9 番）で、どこにも送らない（ADR 0025 の追記）
+    # 本番と同じく Sentry を有効にして測る。DSN は scripts/lighthouse-ci.ts が立てる受け口（127.0.0.1:3001）を指す。
+    # 受け取って 200 を返すだけで、どこにも送らない（ADR 0025 の追記）
     env:
-      NEXT_PUBLIC_SENTRY_DSN: "https://0123456789abcdef0123456789abcdef@127.0.0.1:9/1"
+      NEXT_PUBLIC_SENTRY_DSN: "http://0123456789abcdef0123456789abcdef@127.0.0.1:3001/1"
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4

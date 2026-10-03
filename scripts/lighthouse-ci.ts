@@ -4,6 +4,7 @@
 
 import { execFileSync, spawn } from "node:child_process";
 import { appendFileSync, readdirSync, readFileSync } from "node:fs";
+import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -14,6 +15,8 @@ export const WARMUP_RUNS = 2;
 
 const RESULTS_DIR = ".lighthouseci";
 const PORT = 3000;
+/** Sentry の送り先の受け口のポート。CI の DSN（.github/workflows/ci.yml）はここを指す */
+export const SENTRY_SINK_PORT = 3001;
 
 // 温める回の benchmarkIndex から、測る回の CPU の倍率を決める。
 // benchmarkIndex は下にだけ大きく外れるので、大きいほうを使う（ADR 0025 決定 2）
@@ -55,7 +58,24 @@ async function startServer() {
 	return server;
 }
 
+// Sentry を有効にして測るときの送り先（ADR 0025 の追記）。受け取って 200 を返すだけで、何も保存しない。
+// 送り先がないと、送信の失敗がコンソールのエラーになり、Lighthouse の Best Practices が落ちるため
+export function startSentrySink(port = SENTRY_SINK_PORT): Promise<Server> {
+	const sink = createServer((request, response) => {
+		request.resume();
+		request.on("end", () => {
+			response.writeHead(200, { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" });
+			response.end("{}");
+		});
+	});
+	return new Promise((resolve, reject) => {
+		sink.once("error", reject);
+		sink.listen(port, "127.0.0.1", () => resolve(sink));
+	});
+}
+
 async function main() {
+	const sink = await startSentrySink();
 	const server = await startServer();
 	try {
 		// collect は前の結果を消してから書くので、温める回の結果は測る回の前に読み終える
@@ -71,6 +91,7 @@ async function main() {
 		lhci("assert");
 	} finally {
 		server.kill();
+		sink.close();
 	}
 }
 

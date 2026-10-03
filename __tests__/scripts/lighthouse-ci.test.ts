@@ -2,7 +2,15 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { B_REF, calibrate, formatCalibration, readBenchmarkIndexes, WARMUP_RUNS } from "@/scripts/lighthouse-ci";
+import {
+	B_REF,
+	calibrate,
+	formatCalibration,
+	readBenchmarkIndexes,
+	SENTRY_SINK_PORT,
+	startSentrySink,
+	WARMUP_RUNS,
+} from "@/scripts/lighthouse-ci";
 
 const root = resolve(__dirname, "../..");
 
@@ -57,8 +65,10 @@ describe("CI の設定", () => {
 		expect(pkg.scripts.lhci).toBe("node scripts/lighthouse-ci.ts");
 	});
 
-	it("Sentry を有効にして測る。DSN は送り先のないダミー（ADR 0025 の追記）", () => {
-		expect(lighthouseJob).toMatch(/NEXT_PUBLIC_SENTRY_DSN: "https:\/\/[0-9a-f]+@127\.0\.0\.1:9\/1"/);
+	it("Sentry を有効にして測る。DSN は手元の受け口を指す（ADR 0025 の追記）", () => {
+		expect(lighthouseJob).toMatch(
+			new RegExp(`NEXT_PUBLIC_SENTRY_DSN: "http://[0-9a-f]+@127\\.0\\.0\\.1:${SENTRY_SINK_PORT}/1"`),
+		);
 	});
 
 	it("補正に使った値を PR のコメントに出す（決定 4）", () => {
@@ -66,5 +76,23 @@ describe("CI の設定", () => {
 		expect(lighthouseJob).toMatch(/multiplier: \$\{\{ steps\.lhci\.outputs\.multiplier \}\}/);
 		expect(workflow).toContain("needs.lighthouse.outputs.bci");
 		expect(workflow).toContain("needs.lighthouse.outputs.multiplier");
+	});
+});
+
+describe("startSentrySink（ADR 0025 の追記）", () => {
+	it("Sentry の送信を受け取って 200 を返す（ブラウザから送れるよう CORS も許す）", async () => {
+		const sink = await startSentrySink(0);
+		try {
+			const address = sink.address();
+			const port = typeof address === "object" && address ? address.port : 0;
+			const response = await fetch(`http://127.0.0.1:${port}/api/1/envelope/?sentry_version=7`, {
+				method: "POST",
+				body: '{"type":"session"}',
+			});
+			expect(response.status).toBe(200);
+			expect(response.headers.get("access-control-allow-origin")).toBe("*");
+		} finally {
+			sink.close();
+		}
 	});
 });
