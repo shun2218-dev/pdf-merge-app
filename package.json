@@ -22,7 +22,7 @@
 		"test:storybook": "vitest run --project storybook --coverage.enabled=false",
 		"test:e2e": "playwright test",
 		"test:perf": "playwright test --config playwright.perf.config.ts",
-		"lhci": "lhci autorun",
+		"lhci": "node scripts/lighthouse-ci.ts",
 		"test:e2e:trace": "playwright test --trace on",
 		"test:e2e:report": "playwright test --trace on && playwright show-report",
 		"test:e2e:ui": "playwright test --ui",
