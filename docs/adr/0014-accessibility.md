@@ -73,3 +73,8 @@
   - 追加・削除・並び替え・結合の完了が読み上げられない（A-1）
   - 各行の `aria-label="File List"`（全行同じ・英語）と、対象のファイル名を含まない削除ボタンの名前（A-2）
   - ストーリーがない状態（結合中・エラー・プレビュー）は検査されていない。ADR 0005 で presentational なコンポーネントに分けるときに、全状態のストーリーを置く
+
+### 2026-10-03: Storybook の a11y の検査を、本番と同じ暗いテーマで行う
+
+- 本番は常に暗いテーマ（`app/layout.tsx` の `<html className="dark">`）なのに、Storybook は明るいテーマで描いていたので、暗いテーマでのコントラスト不足（A-3）を検査が見逃していた。`.storybook/preview.ts` の `beforeEach` で `dark` を付け、利用者が見る色で検査するようにした。
+- 赤い文字は `text-destructive`（暗いテーマで #82181a。背景との比 1.97:1）をやめ、`text-destructive-foreground` にした。明るいテーマでは同じ色。

@@ -15,7 +15,7 @@ export function UploadNotice() {
 	return (
 		<div className="space-y-1 text-sm" data-testid="upload-notice">
 			<p className="text-foreground">{UPLOAD_NOTICE.sending}</p>
-			<p className="font-semibold text-destructive">{UPLOAD_NOTICE.confidential}</p>
+			<p className="font-semibold text-destructive-foreground">{UPLOAD_NOTICE.confidential}</p>
 			<p className="text-xs text-muted-foreground">{UPLOAD_NOTICE.liability}</p>
 		</div>
 	);

@@ -79,7 +79,7 @@ export function FileList({ items, onMove, onRemove, onReorderEnd }: FileListProp
 							variant="ghost"
 							size="icon"
 							onClick={() => onRemove(id)}
-							className="h-8 w-8 text-muted-foreground hover:text-destructive"
+							className="h-8 w-8 text-muted-foreground hover:text-destructive-foreground"
 							aria-label="削除する"
 						>
 							<X size={16} aria-hidden="true" />

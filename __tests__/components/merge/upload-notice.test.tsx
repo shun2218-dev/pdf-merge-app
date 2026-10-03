@@ -16,7 +16,7 @@ describe("UploadNotice（ADR 0027）", () => {
 
 		const confidential = screen.getByText(UPLOAD_NOTICE.confidential);
 		expect(confidential.textContent).toContain("社外秘の文書や個人情報");
-		expect(confidential).toHaveClass("text-destructive");
+		expect(confidential).toHaveClass("text-destructive-foreground");
 	});
 
 	it("免責を小さく出す（決定 4）", () => {
