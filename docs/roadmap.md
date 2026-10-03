@@ -3,7 +3,7 @@
 本番公開中のアプリを、全体にわたって改善するための計画。
 問題の一覧は [`docs/assessment.md`](assessment.md)、判断は [`docs/adr/`](adr/README.md)、ここは「どの順で・何をもって終わりとするか」を書く（ADR 0001 決定 5）。
 
-## 今の状況（2026-10-01 夜の時点。セッションの引き継ぎ用）
+## 今の状況（2026-10-02 の時点。セッションの引き継ぎ用）
 
 - **Phase 0 は完了、Phase 1 は大部分が完了。** 本番は v1.2.1（hotfix の PR は #72 / #73）。v1.2.0 では Web Vitals の送信が 404 で PostHog に届いていなかった（B-9）のを、v1.2.1 で直した。
 - **Phase 1 で残っていること**
@@ -16,8 +16,9 @@
   - ADR 0004 その 2（削除）は #78、Sentry のトレースをやめる ADR 0022 は #79 で `develop` に入った。`/` の First Load JS は 241 kB → 205 kB。Radix の一本化は見送った（ADR 0004 の追記）
   - パフォーマンスの予算を、利用者の体験の目標から決め直した（ADR 0023。#80）。CI の関門は LCP 2,500 ms・TBT 200 ms・CLS 0.1・JS の転送量 350,000 バイト
   - ADR 0015（Next.js 16.3.5、Turbopack）は #81（下書き）。**マージを保留している。** CI の TBT が関門を超えたが、CI のマシンの速さで TBT が大きく揺れ、基準の端末が定まっていないことが分かった（#81 のブランチの ADR 0015 の 2026-10-01 の追記）。Next 16 では Sentry 10.75 への更新も要る（Vercel のビルドで JS の置き場所が `static/immutable/chunks` に変わるため。#81 に入っている）
-  - **2026-10-05 以降にやること**: PostHog で実際の利用者の LCP / INP / CLS の p75 を端末ごとに見て、CI の基準の端末（Lighthouse の CPU の倍率をマシンの速さで補正する）を決める新しい ADR を書く。CI の LCP と TBT は、同じ速さのマシンでも回ごとに大きく揺れる（#85 で LCP が 1,668 / 2,273 ms）ので、回数（いまは 3 回）もこの ADR で見直す。その関門で #81 を判定する。#81 は 2026-10-01 に `develop`（ADR 0005 / 0024）を取り込み済み（Next 16 の `/` の JS は gzip で 241.3 kB、`develop` は 203.1 kB）
+  - **2026-10-05 以降にやること**: PostHog で実際の利用者の LCP / INP / CLS の p75 を端末ごとに見て、Phase 1 のベースラインに書く。あわせて CI の値と比べ、CI の基準の端末が甘すぎないか・厳しすぎないかを確かめる（ADR 0025 決定 3）。#81 は 2026-10-01 に `develop`（ADR 0005 / 0024）を取り込み済み（Next 16 の `/` の JS は gzip で 241.3 kB、`develop` は 203.1 kB）
   - B-10（Sentry にソースマップが送られていなかった）は #82 で直した
+  - **ADR 0025（CI の Lighthouse の基準の端末を固定し、温める回を捨てる）を採用した（2026-10-03。#88）。** CI と手元で CPU の倍率を変えて測った結果、CI の LCP は倍率で動かないので、基準の端末は Lighthouse が想定している端末（benchmarkIndex 440。CI のマシンの単位）に固定し、実際の利用者の値は確かめるのに使う。倍率の補正は、速さの違う CI のマシンの間で TBT をそろえられることを確かめた。**この基準では、いまの `develop` の TBT が 223〜245 ms で関門（200 ms）を超えるので、先に TBT を減らす ADR を起こし、そのあとで ADR 0025 の補正を入れる（オーナーの判断。ADR 0025 の (a)）。** #81 の判定はそのあと。数値は ADR 0025 の背景
   - ADR 0005（状態管理を 1 つのフックにまとめ、画面を分割する）をブランチ `feature/adr-0005-merge-workflow` で実装した。オーナーの Preview の確認がまだ
   - ADR 0024 で Sentry の Session Replay をやめ、結合の操作を Sentry のパンくずとして残すようにした（#85）。`/` の First Load JS は 206 kB → 165 kB
   - Renovate の GitHub App はオーナーが入れた（2026-09-28。Renovate Only・Scan and Alert・`pdf-merge-app` だけ）。`renovate.json` はまだ `develop` にしかないので、Renovate が `main` 向けに出した Onboarding の PR（#76「Configure Renovate」）はマージしない。次のリリースで `renovate.json` が `main` に入ったら、最初の更新の PR が `develop` 向けで、pnpm 10 系で lockfile が作られているか（`pnpm-workspace.yaml` ができていないか）を確かめる

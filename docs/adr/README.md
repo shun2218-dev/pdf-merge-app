@@ -38,6 +38,7 @@
 | [0022](0022-drop-sentry-tracing.md) | Sentry のトレースをやめ、Sentry はエラーの監視だけに使う | 採用 | 2 |
 | [0023](0023-performance-budget-from-user-experience.md) | パフォーマンスの予算を、利用者の体験の目標から決める | 採用 | 2 |
 | [0024](0024-replace-sentry-replay-with-breadcrumbs.md) | Sentry の Session Replay をやめ、操作のパンくずを自分で残す | 採用 | 2 |
+| [0025](0025-ci-lighthouse-reference-device.md) | CI の Lighthouse の基準の端末を固定し、温める回を捨てる | 採用 | 2 |
 
 ## テンプレート
 
