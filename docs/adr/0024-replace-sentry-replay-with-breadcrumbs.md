@@ -56,7 +56,7 @@ Replay だけが担っているのは「画面がどう見えていたか」だ�
 ## 完了条件（DoD）
 
 - [x] ビルドした JS に Replay のコード（rrweb）が含まれない（2026-10-01）
-- [ ] Lighthouse CI の JS の転送量が、この ADR の前より 30 kB 以上減っている（数値を PR に貼る）
+- [x] Lighthouse CI の JS の転送量が、この ADR の前より 30 kB 以上減っている（数値を PR に貼る）（#85 の CI で 212,332 B → 171,124 B）
 - [x] 結合の各操作でパンくずが残り、ファイル名が含まれないことをユニットテストで確かめた（2026-10-01）
 - [x] 偽の Sentry の受け口で、エラーのイベントに結合の操作のパンくずが順番どおりに入ることを確かめた（2026-10-01）
 - [x] ADR 0007 に、決定 2 をこの ADR で置き換えたことを追記した（2026-10-01）
@@ -70,3 +70,5 @@ Replay だけが担っているのは「画面がどう見えていたか」だ�
 - `hooks/use-merge-workflow.ts` に `record(name, properties)` を置き、アナリティクスの `track` と `Sentry.addBreadcrumb`（カテゴリ `merge`、`message` にイベント名、`data` に値。`merge_failed` だけ `warning`）を同じ値で呼ぶ。フックの中の `track` の呼び出しをすべて `record` にした。フックのテストで、パンくずの名前と値がアナリティクスと一致し、ファイル名が入らないことを確かめる。
 - **大きさ**: `/` の First Load JS は 206 kB → 165 kB（−41 kB）、共通のチャンクは 175 kB → 134 kB。Replay のコード（rrweb）はビルドした JS から消えた。`rrweb` という文字は PostHog が遅れて読み込むチャンクに残るが、PostHog の互換のための名前で、最初には読み込まれない。
 - **偽の受け口での確認**: `develop` と同じ手順（PDF を 2 つ足す → PDF 以外をドロップ → 1 つ削除 → 通信が失敗する状態で「プレビュー」）で、エラーのイベントのパンくずが `files_added` → `files_rejected` → 削除のクリック → `file_removed` → 「プレビュー」のクリック → `merge_started` → `merge_failed`（`network_error`）の順に入った。ファイル名は含まれず、Replay のデータ（`replay_event` / `replay_recording`）は送られなかった。
+- #85 の CI の LCP は 2,273 ms（関門の内）で、前の PR の約 1,820 ms より大きく出た。同じ速さのマシン（benchmarkIndex 約 2,350）の 2 回で 1,668 ms と 2,273 ms に分かれており、LCP の要素（JS が動いてから出る注意事項のモーダルの見出し）のタイミングによる揺れと判断した。CI の回数と基準の端末は、次の ADR（基準の端末を決める）で扱う。
+

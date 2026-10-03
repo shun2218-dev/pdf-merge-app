@@ -42,11 +42,7 @@ export const SELECTORS = {
 	/** PdfPreview コンポーネントのルート <div> */
 	PDF_PREVIEW: "div.h-\\[800px\\].w-full.rounded-lg.border",
 
-	// --- Disclaimer Modal (disclaimer-modal.tsx) ---
-	/** モーダル（DialogContent） */
-	DISCLAIMER_MODAL: '[data-testid="header-dialog"]',
-	/** モーダルのチェックボックス */
-	DISCLAIMER_MODAL_CHECKBOX: "#disclaimer-checkbox",
-	/** モーダルの閉じるボタン */
-	DISCLAIMER_MODAL_CLOSE_BUTTON: 'button:has-text("理解して閉じる")',
+	// --- UploadNotice (from components/merge/upload-notice.tsx) ---
+	/** ドロップ領域の下の断り（ADR 0027） */
+	UPLOAD_NOTICE: '[data-testid="upload-notice"]',
 };

@@ -1,10 +1,10 @@
-import * as Sentry from "@sentry/nextjs";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMergeWorkflow } from "@/hooks/use-merge-workflow";
 import { track } from "@/lib/analytics";
+import { sentry } from "@/lib/sentry/browser";
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
+vi.mock("@/lib/sentry/browser", () => ({ sentry: { captureException: vi.fn(), addBreadcrumb: vi.fn() } }));
 vi.mock("@/lib/analytics", async (importOriginal) => ({
 	...(await importOriginal<typeof import("@/lib/analytics")>()),
 	track: vi.fn(),
@@ -79,7 +79,7 @@ describe("useMergeWorkflow", () => {
 			act(() => result.current.removeFile(result.current.items[0].id));
 
 			expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain("源泉徴収票");
-			expect(JSON.stringify(vi.mocked(Sentry.addBreadcrumb).mock.calls)).not.toContain("源泉徴収票");
+			expect(JSON.stringify(vi.mocked(sentry.addBreadcrumb).mock.calls)).not.toContain("源泉徴収票");
 		});
 
 		it("空の選択は何もしない", async () => {
@@ -184,7 +184,7 @@ describe("useMergeWorkflow", () => {
 			expect(result.current.error).toBe("merge_failed");
 			expect(track).toHaveBeenCalledWith("merge_failed", { reason });
 			expect(trackedNames()).not.toContain("preview_opened");
-			expect(Sentry.captureException).not.toHaveBeenCalled();
+			expect(sentry.captureException).not.toHaveBeenCalled();
 		});
 
 		it("通信に失敗したら、想定外のエラーとして Sentry に送る（ADR 0007 決定 4）", async () => {
@@ -196,7 +196,7 @@ describe("useMergeWorkflow", () => {
 
 			expect(result.current.error).toBe("merge_failed");
 			expect(track).toHaveBeenCalledWith("merge_failed", { reason: "network_error" });
-			expect(Sentry.captureException).toHaveBeenCalledWith(error);
+			expect(sentry.captureException).toHaveBeenCalledWith(error);
 		});
 
 		it("もう一度結合すると、前のエラーを消す", async () => {
@@ -308,7 +308,7 @@ describe("Sentry のパンくず（ADR 0024 決定 2）", () => {
 		await act(() => result.current.download());
 		click.mockRestore();
 
-		const crumbs = vi.mocked(Sentry.addBreadcrumb).mock.calls.map(([crumb]) => crumb);
+		const crumbs = vi.mocked(sentry.addBreadcrumb).mock.calls.map(([crumb]) => crumb);
 		expect(crumbs.map((c) => c.message)).toEqual([
 			"files_added",
 			"files_reordered",
@@ -330,7 +330,7 @@ describe("Sentry のパンくず（ADR 0024 決定 2）", () => {
 		const { result } = renderHook(() => useMergeWorkflow());
 		act(() => result.current.addFiles([txt("a.txt")], "drop"));
 
-		expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
+		expect(sentry.addBreadcrumb).toHaveBeenCalledWith(
 			expect.objectContaining({
 				category: "merge",
 				message: "files_rejected",

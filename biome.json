@@ -30,6 +30,33 @@
 			"tailwindDirectives": true
 		}
 	},
+	"overrides": [
+		{
+			"includes": [
+				"app/**",
+				"components/**",
+				"hooks/**",
+				"lib/**",
+				"instrumentation-client.ts",
+				"!lib/sentry/client.ts",
+				"!lib/sentry/options.ts"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"@sentry/nextjs": "ブラウザ側では @/lib/sentry/browser を使う。直接 import すると、Sentry の SDK が最初の読み込みに入る（ADR 0026 決定 4）"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	],
 	"assist": {
 		"enabled": true,
 		"actions": {

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { useMergeWorkflow } from "@/hooks/use-merge-workflow";
 import type { MergeError } from "@/lib/merge-workflow/reducer";
@@ -14,8 +15,9 @@ const ERROR_MESSAGES: Record<MergeError, string> = {
 	merge_failed: "PDFの結合中にエラーが発生しました",
 };
 
-// 結合の画面。useMergeWorkflow を持つ唯一のコンポーネントで、ほかは props だけで描く（ADR 0005 決定 5）
-export function MergeWorkspace() {
+// 結合の画面。useMergeWorkflow を持つ唯一のコンポーネントで、ほかは props だけで描く（ADR 0005 決定 5）。
+// notice はドロップ領域の下に出す断り。サーバーコンポーネントで描いたものを受け取る（ADR 0027 決定 3）
+export function MergeWorkspace({ notice }: { notice?: ReactNode }) {
 	const { items, phase, result, error, addFiles, removeFile, moveFile, reorderEnded, openPreview, download } =
 		useMergeWorkflow();
 
@@ -28,6 +30,7 @@ export function MergeWorkspace() {
 						<p className="text-sm text-muted-foreground">結合したいPDFファイルを選択してください</p>
 					</div>
 					<DropZone onFiles={addFiles} errorMessage={error === "not_pdf" ? ERROR_MESSAGES.not_pdf : null} />
+					{notice}
 				</div>
 			</Card>
 

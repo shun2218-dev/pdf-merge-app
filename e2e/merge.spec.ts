@@ -1,6 +1,5 @@
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { STORAGE_KEY } from "@/components/disclaimer-modal";
 import { SELECTORS } from "@/lib/tests/e2e/selectors";
 import { rootDir } from "@/tests/utils/dirname";
 
@@ -12,9 +11,6 @@ const txtFile = resolve(rootDir, "fixtures/dummy.txt");
 
 test.describe("PDF Merger E2E Test", () => {
 	test.beforeEach(async ({ page }) => {
-		await page.context().addInitScript((key) => {
-			sessionStorage.setItem(key, "true");
-		}, STORAGE_KEY);
 		// 各テストの前にトップページにアクセス
 		await page.goto("/");
 	});

@@ -1,17 +1,17 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { DOWNLOAD_FILE_NAME } from "@/constants";
 import { countBucket, durationBucket, sizeBucket, totalSize, track } from "@/lib/analytics";
 import type { EventName, EventProperties } from "@/lib/analytics/events";
 import { initialState, type MergeItem, mergeWorkflowReducer } from "@/lib/merge-workflow/reducer";
+import { sentry } from "@/lib/sentry/browser";
 
 // 操作をアナリティクス（ADR 0011）に送り、同じ名前・同じ値で Sentry のパンくずにも残す（ADR 0024 決定 2）。
 // エラーが起きたとき、その前の操作を順番どおりに読めるようにする。値は区間（バケット）だけで、ファイル名は入らない
 function record<N extends EventName>(name: N, properties: EventProperties<N>) {
 	track(name, properties);
-	Sentry.addBreadcrumb({
+	sentry.addBreadcrumb({
 		category: "merge",
 		message: name,
 		data: properties,
@@ -103,7 +103,7 @@ export function useMergeWorkflow() {
 		} catch (error: unknown) {
 			// 通信の失敗や想定外の例外は、コードの前提が崩れたものとして送る（ADR 0007 決定 4）
 			record("merge_failed", { reason: "network_error" });
-			Sentry.captureException(error);
+			sentry.captureException(error);
 			dispatch({ type: "merge_failure" });
 			return null;
 		}

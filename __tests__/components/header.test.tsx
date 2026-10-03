@@ -1,13 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
-import { STORAGE_KEY } from "@/components/disclaimer-modal";
+import { describe, expect, it } from "vitest";
 import { Header } from "@/components/header";
 
 describe("Header", () => {
-	beforeEach(() => {
-		sessionStorage.setItem(STORAGE_KEY, "true");
-	});
-
 	it("ヘッダーが正しくレンダリングされる", () => {
 		render(<Header />);
 
@@ -67,5 +62,11 @@ describe("Header", () => {
 
 		const flexContainer = container.querySelector(".flex.items-center.gap-3");
 		expect(flexContainer).toBeInTheDocument();
+	});
+
+	it("注意事項のモーダルを開くボタンを置かない（ADR 0027 決定 1）", () => {
+		render(<Header />);
+
+		expect(screen.queryByRole("button")).not.toBeInTheDocument();
 	});
 });
