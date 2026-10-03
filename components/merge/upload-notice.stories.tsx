@@ -16,7 +16,7 @@ export const Default: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 		await expect(canvas.getByText(UPLOAD_NOTICE.sending)).toBeVisible();
-		await expect(canvas.getByText(UPLOAD_NOTICE.confidential)).toHaveClass("text-destructive");
+		await expect(canvas.getByText(UPLOAD_NOTICE.confidential)).toHaveClass("text-destructive-foreground");
 		await expect(canvas.getByText(UPLOAD_NOTICE.liability)).toBeVisible();
 	},
 };

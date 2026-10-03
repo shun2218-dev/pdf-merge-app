@@ -87,6 +87,7 @@
 | I-1 | 中 | 文言がすべて日本語でコンポーネントに直書き。英語圏の利用者は使えない | 全コンポーネント | 0013 |
 | A-1 | 中 | ドロップ領域・並び替えがキーボードで操作できない（B-7）。追加・削除・並び替え・結合完了がスクリーンリーダーに伝わらない（ライブリージョンなし） | `components/file-uploader.tsx`、`components/file-list.tsx` | 0014 |
 | A-2 | 低 | 各ファイルの行に `aria-label="File List"`（英語・全行同じ）。削除ボタンの名前が「削除する」だけで、どのファイルか分からない | `components/file-list.tsx:51` | 0014 |
+| A-3 | 中 | 暗いテーマ（本番は常に `<html class="dark">`）で、赤い文字（`text-destructive`。#82181a）の背景とのコントラスト比が 1.97:1 しかなく、WCAG 2.2 AA（4.5:1）を満たさない。エラーの文言（ドロップ領域・結合の失敗）と、ADR 0027 の断りの「送らないでほしいファイル」の行。Storybook の a11y の検査は明るいテーマで描いていたので見逃していた。→ 暗いテーマで読める `text-destructive-foreground` に替え、Storybook を暗いテーマで描くようにした（2026-10-03） | 手元の Lighthouse（color-contrast）、暗いテーマにした Storybook の a11y の検査（2026-10-03） | 0014 |
 | S-1 | 中 | `openGraph.url` に `VERCEL_URL`（プロトコルなし・デプロイごとの URL）を入れている。`metadataBase` がないので OGP 画像の URL が正しく作られない可能性がある | `app/layout.tsx:17` | 0016 |
 | S-2 | 低 | `robots.txt`、`sitemap.xml`、canonical、構造化データがない | — | 0016 |
 | S-3 | 中 | 旧 URL `pdf-merge-app-nine.vercel.app` が 404（`DEPLOYMENT_NOT_FOUND`）。README のデモ URL と、よそに貼られたリンクが切れている。`www.pdf-merge.app` は 307（一時的なリダイレクト）で `pdf-merge.app` に転送されている | `curl` の結果（2026-09-27） | 0016 |
