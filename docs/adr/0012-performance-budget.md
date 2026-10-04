@@ -78,7 +78,7 @@
 - [x] Lighthouse CI が PR ごとに走り、予算を超えると失敗する
 - [x] バンドルアナライザを `pnpm analyze` で起動できる
 - [x] 結合の時間を計る Playwright のテストがあり、`docs/performance.md` に固定のファイルの組が書かれている
-- [ ] `docs/performance.md` にベースライン（Lighthouse・First Load JS・結合の時間・RUM の p75）と予算がある
+- [ ] `docs/performance.md` にベースライン（Lighthouse・First Load JS・結合の時間・RUM の p75）と予算がある（RUM の p75 は、ADR 0029 決定 3 の件数の基準を満たしてから書く）
 - [ ] ~~CI での Lighthouse の Performance を 10 回ほど集め、その最小値に予算を締めた~~（ADR 0023 決定 3 でやめた。0.90 のまま）
 - [ ] ロードマップの共通 DoD を満たした
 
