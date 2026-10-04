@@ -54,7 +54,7 @@
 
 - [x] （Phase 1）Storybook の `a11y.test` が `"error"` で、既存のストーリーの違反が 0 件
 - [ ] E2E に axe の検査があり、ADR 0009 の全状態・ライト / ダークで違反が 0 件
-- [ ] Lighthouse の Accessibility が 100
+- [x] Lighthouse の Accessibility が 100（2026-10-04。CI の関門（`categories:accessibility` の `minScore: 1`）で毎回確かめている。#92 で暗いテーマのコントラストを直したあと）
 - [ ] `docs/a11y.md` に手動の確認の一覧があり、直近のリリースで全項目にチェックが付いている
 - [ ] 削除・結合の完了のあとのフォーカスの移り先が、決定 4 のとおりであることを E2E で確かめた
 - [ ] 追加・削除・並び替え・結合の完了が `aria-live` の領域に出る（コンポーネントテスト）
