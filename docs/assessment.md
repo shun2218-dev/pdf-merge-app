@@ -20,6 +20,7 @@
 | B-8 | 低 | PDF の判定が `file.type` だけ。拡張子が `.pdf` でも MIME が空の環境（一部の Windows / Android）では弾かれる | `components/file-uploader.tsx:18` | 0009 |
 | B-9 | 高 | 本番で Web Vitals の送信（`POST /ingest/i/v0/e/`）が Next.js の 404 になり、PostHog に届いていない。Vercel は `vercel.json` の rewrites の `source` を末尾の `/` を区別して照合するので、`/ingest/:path*` が末尾が `/` のパスに当たらない（v1.2.0 で発生。2026-09-28 に発見） | `vercel.json`、本番の通信 | 0021 |
 | B-10 | 中 | Sentry にソースマップが送られていない。`next.config` に直接書いた組織名（`vercel-development`）とプロジェクト名（`pdf-merge-app`）が、実際のもの（Vercel の環境変数の `SENTRY_ORG` / `SENTRY_PROJECT`）と違い、アップロードが 403 で失敗していた。Issue のスタックトレースが圧縮後のファイル名のままで、どこで起きたかを読みにくい | `next.config.mjs`、PR #81 の Preview と本番で起こしたエラーの Issue（2026-09-30） | 0007 |
+| B-11 | 低 | 本番（Vercel）の Node.js が 22.x で、`package.json` の `volta`（24.11.0）と CI（24.11.0）と違う。本番だけテストしていない版で動いていた。`engines.node` がなく、Vercel のプロジェクトの設定（22.x）が使われていた → `engines.node` を `24.x` にした（2026-10-04） | Vercel のプロジェクトの設定（`nodeVersion: 22.x`。2026-10-04） | — |
 
 ## 2. プライバシー・セキュリティ
 
