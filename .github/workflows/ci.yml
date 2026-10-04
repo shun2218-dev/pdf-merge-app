@@ -161,6 +161,8 @@ jobs:
       script: ${{ steps.summary.outputs.script }}
       bci: ${{ steps.lhci.outputs.bci }}
       multiplier: ${{ steps.lhci.outputs.multiplier }}
+      cpu: ${{ steps.lhci.outputs.cpu }}
+      measuredbenchmark: ${{ steps.lhci.outputs.measuredbenchmark }}
     # 本番と同じく Sentry を有効にして測る。DSN は scripts/lighthouse-ci.ts が立てる受け口（127.0.0.1:3001）を指す。
     # 受け取って 200 を返すだけで、どこにも送らない（ADR 0025 の追記）
     env:
@@ -237,7 +239,7 @@ jobs:
 
             - **カバレッジ（Lines、unit）:** `${{ needs.unit.outputs.coverage || 'N/A' }}%`
 
-            **Lighthouse（モバイル・Sentry 有効、温める 2 回のあとの 3 回の中央値。関門は ADR 0023、基準の端末は ADR 0025）**
+            **Lighthouse（モバイル・Sentry 有効、温める 2 回のあとの 7 回の指標ごとの中央値。関門は ADR 0023、基準の端末は ADR 0025、回数は ADR 0028）**
 
             | 指標 | 値 | 関門 |
             |---|---|---|
@@ -248,5 +250,6 @@ jobs:
             | Performance | ${{ needs.lighthouse.outputs.performance || 'N/A' }} | 0.90 以上 |
 
             - **基準の端末への補正:** 温める回の benchmarkIndex（大きいほう）`${{ needs.lighthouse.outputs.bci || 'N/A' }}` ÷ 440 = CPU の倍率 `${{ needs.lighthouse.outputs.multiplier || 'N/A' }}`
+            - **マシン:** ${{ needs.lighthouse.outputs.cpu || 'N/A' }}（測った 7 回の benchmarkIndex の中央値 `${{ needs.lighthouse.outputs.measuredbenchmark || 'N/A' }}`）
 
             [レポート（Artifacts の vitest-coverage-report / playwright-report / lighthouse-report）](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)

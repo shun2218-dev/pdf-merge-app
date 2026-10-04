@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 実利用（RUM）の LCP / INP / CLS | `web-vitals` で測り、PostHog に `web_vital` として送る（ADR 0021） | 本番 | 自動。PostHog の Insight で p75 を見る |
 | 実利用（RUM）のまとめた点数 | Vercel Speed Insights（Hobby プランでは Real Experience Score だけが見られる） | 本番 | 自動。Vercel のダッシュボードで見る |
-| 合成（ラボ） | Lighthouse CI（モバイルの設定・Sentry 有効。温める 2 回を捨て、CPU の倍率を基準の端末（benchmarkIndex 440）に補正した 3 回の中央値。ADR 0025） | CI の `lighthouse` ジョブ（PR ごと） | `NEXT_PUBLIC_SENTRY_DSN=http://0123456789abcdef0123456789abcdef@127.0.0.1:3001/1 SENTRY_AUTH_TOKEN= pnpm build && pnpm lhci`（手元の値は、マシンが違うので関門の判定には使わない） |
+| 合成（ラボ） | Lighthouse CI（モバイルの設定・Sentry 有効。温める 2 回を捨て、CPU の倍率を基準の端末（benchmarkIndex 440）に補正した 7 回の指標ごとの中央値。ADR 0025 / 0028） | CI の `lighthouse` ジョブ（PR ごと） | `NEXT_PUBLIC_SENTRY_DSN=http://0123456789abcdef0123456789abcdef@127.0.0.1:3001/1 SENTRY_AUTH_TOKEN= pnpm build && pnpm lhci`（手元の値は、マシンが違うので関門の判定には使わない） |
 | バンドル | `next experimental-analyze`（Turbopack のアナライザ。ADR 0015） | ローカル | `pnpm analyze`（ブラウザで開く。`-o` でファイルに書くだけにもできる） |
 | 結合の時間 | Playwright（`perf/merge-timing.spec.ts`） | ローカル（時間がかかるので CI には入れない） | `pnpm build && pnpm test:perf` |
 

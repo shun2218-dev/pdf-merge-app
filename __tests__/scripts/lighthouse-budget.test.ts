@@ -20,15 +20,21 @@ describe("lighthouserc.json の関門（ADR 0023）", () => {
 		["cumulative-layout-shift", 0.1],
 		// 決定 2 の条件で、LCP の予算の中に JS を送りきれる量から逆算した上限（決定 4）
 		["resource-summary:script:size", 350000],
-	])("%s は %d 以下で、3 回の中央値で判定する", (audit, max) => {
+	])("%s は %d 以下で、指標ごとの中央値で判定する（ADR 0028）", (audit, max) => {
 		const [level, options] = assertions[audit];
 		expect(level).toBe("error");
 		expect(options.maxNumericValue).toBe(max);
-		expect(options.aggregationMethod).toBe("median-run");
+		expect(options.aggregationMethod).toBe("median");
 	});
 
 	it("Performance は 0.90 以上のまま（決定 3）", () => {
 		expect(assertions["categories:performance"][1].minScore).toBe(0.9);
+	});
+
+	it("すべての関門を、Performance の点数が中央の回ではなく、指標ごとの中央値で判定する（ADR 0028 決定 2）", () => {
+		for (const [, options] of Object.values(assertions)) {
+			expect(options.aggregationMethod).toBe("median");
+		}
 	});
 });
 
