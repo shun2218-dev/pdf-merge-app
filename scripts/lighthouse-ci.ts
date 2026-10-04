@@ -1,10 +1,11 @@
-// CI の Lighthouse（ADR 0023 / 0025）。`pnpm build` のあとに `pnpm lhci` で走らせる。
-// 1 つのサーバーを起動したまま、温める 2 回を捨て（決定 1）、その benchmarkIndex の大きいほうから CPU の倍率を補正して（決定 2・3）、
-// 3 回測って lighthouserc.json の関門で判定する。補正に使った値は GITHUB_OUTPUT にも書き、PR のコメントに出す（決定 4）
+// CI の Lighthouse（ADR 0023 / 0025 / 0028）。`pnpm build` のあとに `pnpm lhci` で走らせる。
+// 1 つのサーバーを起動したまま、温める 2 回を捨て（ADR 0025 決定 1）、その benchmarkIndex の大きいほうから CPU の倍率を補正して（決定 2・3）、
+// 7 回測って lighthouserc.json の関門で判定する（ADR 0028）。補正に使った値とマシンは GITHUB_OUTPUT にも書き、PR のコメントに出す
 
 import { execFileSync, spawn } from "node:child_process";
 import { appendFileSync, readdirSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
+import { cpus } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -33,6 +34,25 @@ export function readBenchmarkIndexes(dir: string): number[] {
 		.filter((name) => /^lhr-.*\.json$/.test(name))
 		.map((name) => JSON.parse(readFileSync(join(dir, name), "utf8")) as { environment: { benchmarkIndex: number } })
 		.map((lhr) => lhr.environment.benchmarkIndex);
+}
+
+function median(values: number[]): number {
+	const sorted = [...values].sort((a, b) => a - b);
+	const mid = Math.floor(sorted.length / 2);
+	return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+// 測った回の benchmarkIndex の中央値と、マシンの機種（ADR 0028 決定 4）。
+// 補正がかかりすぎた・足りなかった回を、あとから見分けるために PR のコメントに出す
+export function formatMachine({ cpu, benchmarkIndexes }: { cpu: string; benchmarkIndexes: number[] }): string[] {
+	const measured = benchmarkIndexes.length > 0 ? Math.round(median(benchmarkIndexes)).toLocaleString("en-US") : "N/A";
+	// GITHUB_OUTPUT の 1 行に収まるよう、改行や = を含まない形にする
+	const name =
+		cpu
+			.replace(/[\r\n=]/g, " ")
+			.replace(/\s+/g, " ")
+			.trim() || "N/A";
+	return [`cpu=${name}`, `measuredbenchmark=${measured}`];
 }
 
 // GITHUB_OUTPUT の形（key=value）。PR のコメントでそのまま読めるよう、桁区切りを付ける
@@ -86,6 +106,9 @@ async function main() {
 		if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join("\n")}\n`);
 
 		lhci("collect", `--settings.throttling.cpuSlowdownMultiplier=${calibration.multiplier}`);
+		const machine = formatMachine({ cpu: cpus()[0]?.model ?? "", benchmarkIndexes: readBenchmarkIndexes(RESULTS_DIR) });
+		console.log(`マシン（ADR 0028）: ${machine.join(" ")}`);
+		if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${machine.join("\n")}\n`);
 		// 関門を超えたときにもレポートを残すよう、判定の前に書き出す
 		lhci("upload");
 		lhci("assert");

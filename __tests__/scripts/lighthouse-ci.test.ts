@@ -6,6 +6,7 @@ import {
 	B_REF,
 	calibrate,
 	formatCalibration,
+	formatMachine,
 	readBenchmarkIndexes,
 	SENTRY_SINK_PORT,
 	startSentrySink,
@@ -51,6 +52,25 @@ describe("formatCalibration（決定 4）", () => {
 	});
 });
 
+describe("formatMachine（ADR 0028 決定 4）", () => {
+	it("機種と、測った回の benchmarkIndex の中央値を出す", () => {
+		expect(
+			formatMachine({
+				cpu: "AMD EPYC 9V45 96-Core Processor",
+				benchmarkIndexes: [4113, 4245, 4016, 4136, 4272, 4044, 4217],
+			}),
+		).toEqual(["cpu=AMD EPYC 9V45 96-Core Processor", "measuredbenchmark=4,136"]);
+	});
+
+	it("GITHUB_OUTPUT の 1 行を壊す文字（改行・=）を消し、値がなければ N/A にする", () => {
+		expect(formatMachine({ cpu: "Model=X\nY  ", benchmarkIndexes: [] })).toEqual([
+			"cpu=Model X Y",
+			"measuredbenchmark=N/A",
+		]);
+		expect(formatMachine({ cpu: "", benchmarkIndexes: [2400] })).toEqual(["cpu=N/A", "measuredbenchmark=2,400"]);
+	});
+});
+
 describe("CI の設定", () => {
 	const lighthouserc = JSON.parse(readFileSync(join(root, "lighthouserc.json"), "utf8")) as {
 		ci: { collect: Record<string, unknown> };
@@ -60,7 +80,7 @@ describe("CI の設定", () => {
 
 	it("サーバーは scripts/lighthouse-ci.ts が 1 つだけ起動する（温める回と測る回で同じサーバーを使う。決定 1）", () => {
 		expect(lighthouserc.ci.collect.startServerCommand).toBeUndefined();
-		expect(lighthouserc.ci.collect.numberOfRuns).toBe(3);
+		expect(lighthouserc.ci.collect.numberOfRuns).toBe(7);
 		const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { scripts: Record<string, string> };
 		expect(pkg.scripts.lhci).toBe("node scripts/lighthouse-ci.ts");
 	});
@@ -69,6 +89,13 @@ describe("CI の設定", () => {
 		expect(lighthouseJob).toMatch(
 			new RegExp(`NEXT_PUBLIC_SENTRY_DSN: "http://[0-9a-f]+@127\\.0\\.0\\.1:${SENTRY_SINK_PORT}/1"`),
 		);
+	});
+
+	it("マシンの機種と、測った回の benchmarkIndex の中央値を PR のコメントに出す（ADR 0028 決定 4）", () => {
+		expect(lighthouseJob).toMatch(/cpu: \$\{\{ steps\.lhci\.outputs\.cpu \}\}/);
+		expect(lighthouseJob).toMatch(/measuredbenchmark: \$\{\{ steps\.lhci\.outputs\.measuredbenchmark \}\}/);
+		expect(workflow).toContain("needs.lighthouse.outputs.cpu");
+		expect(workflow).toContain("needs.lighthouse.outputs.measuredbenchmark");
 	});
 
 	it("補正に使った値を PR のコメントに出す（決定 4）", () => {
