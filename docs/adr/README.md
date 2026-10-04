@@ -35,6 +35,14 @@
 | [0019](0019-posthog-auto-capture-features.md) | PostHog の自動の収集（ヒートマップ・Web Vitals・デッドクリックなど）を使うか | 採用 | 1（決定）/ 4（試し） |
 | [0020](0020-posthog-geoip-country-only.md) | PostHog の位置情報は国だけ残す | 採用 | 1 |
 | [0021](0021-web-vitals-to-posthog.md) | 実利用者の Web Vitals は自分で測って、自分のドメイン経由で PostHog に送る | 採用 | 1 |
+| [0022](0022-drop-sentry-tracing.md) | Sentry のトレースをやめ、Sentry はエラーの監視だけに使う | 採用 | 2 |
+| [0023](0023-performance-budget-from-user-experience.md) | パフォーマンスの予算を、利用者の体験の目標から決める | 採用 | 2 |
+| [0024](0024-replace-sentry-replay-with-breadcrumbs.md) | Sentry の Session Replay をやめ、操作のパンくずを自分で残す | 採用 | 2 |
+| [0025](0025-ci-lighthouse-reference-device.md) | CI の Lighthouse の基準の端末を固定し、温める回を捨てる | 採用 | 2 |
+| [0026](0026-defer-sentry-until-after-load.md) | ブラウザの Sentry を、ページの読み込みのあとに読み込む | 採用 | 2 |
+| [0027](0027-inline-disclaimer-before-client-merge.md) | 注意事項は、自動で開くモーダルをやめ、ドロップ領域の下に常に出す（ADR 0002 より前に） | 採用 | 2 |
+| [0028](0028-lighthouse-tbt-seven-run-median.md) | CI の Lighthouse の判定を 7 回の中央値にし、指標ごとの中央値で判定する | 採用 | 2 |
+| [0029](0029-rum-baseline-after-enough-samples.md) | 実利用（RUM）のベースラインは件数がたまってから取り、Phase 1 は計測の土台ができたことで閉じる | 採用 | 1 / 6 |
 
 ## テンプレート
 

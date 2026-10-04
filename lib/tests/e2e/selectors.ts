@@ -1,11 +1,11 @@
 export const SELECTORS = {
-	// --- FileUploader (from file-uploader.tsx) ---
+	// --- DropZone (from components/merge/drop-zone.tsx) ---
 	/** FileUploader のドラッグ＆ドロップ領域 */
 	FILE_UPLOADER_DROPZONE: '[data-testid="dropzone"]',
 	/** FileUploader の <input type="file"> (hidden) */
 	FILE_INPUT: '[data-testid="file-input"]',
 
-	// --- FileList (from file-list.tsx) ---
+	// --- FileList (from components/merge/file-list.tsx) ---
 	/** FileList 全体のコンテナ */
 	FILE_LIST_CONTAINER: '[data-testid="file-list"]',
 
@@ -33,7 +33,7 @@ export const SELECTORS = {
 	 */
 	dragHandle: (name: string) => `[data-testid="file-item-container-${name}"] >> [data-testid="drag-handle"]`,
 
-	// --- Buttons (from page.tsx) ---
+	// --- Buttons (from components/merge/merge-actions.tsx) ---
 	PREVIEW_BUTTON: 'button:has-text("プレビュー")',
 	DOWNLOAD_BUTTON: 'button:has-text("ダウンロード")',
 	PROCESSING_BUTTON: 'button:has-text("処理中...")',
@@ -42,11 +42,7 @@ export const SELECTORS = {
 	/** PdfPreview コンポーネントのルート <div> */
 	PDF_PREVIEW: "div.h-\\[800px\\].w-full.rounded-lg.border",
 
-	// --- Disclaimer Modal (disclaimer-modal.tsx) ---
-	/** モーダル（DialogContent） */
-	DISCLAIMER_MODAL: '[data-testid="header-dialog"]',
-	/** モーダルのチェックボックス */
-	DISCLAIMER_MODAL_CHECKBOX: "#disclaimer-checkbox",
-	/** モーダルの閉じるボタン */
-	DISCLAIMER_MODAL_CLOSE_BUTTON: 'button:has-text("理解して閉じる")',
+	// --- UploadNotice (from components/merge/upload-notice.tsx) ---
+	/** ドロップ領域の下の断り（ADR 0027） */
+	UPLOAD_NOTICE: '[data-testid="upload-notice"]',
 };

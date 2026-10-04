@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { Breadcrumb, ErrorEvent } from "@sentry/nextjs";
 import { describe, expect, it } from "vitest";
 import { sharedSentryOptions } from "@/lib/sentry/options";
@@ -70,10 +72,11 @@ describe("sharedSentryOptions", () => {
 		expect(options.environment).toBe("production");
 	});
 
-	it("PII を送らず、トレースは 10% にする", () => {
+	it("PII を送らず、トレースは使わない（ADR 0022）", () => {
 		const options = sharedSentryOptions({});
 		expect(options.sendDefaultPii).toBe(false);
-		expect(options.tracesSampleRate).toBe(0.1);
+		expect(options).not.toHaveProperty("tracesSampleRate");
+		expect(options).not.toHaveProperty("tracesSampler");
 	});
 
 	it("送る前のイベントとパンくずからファイル名を取り除く", () => {
@@ -84,5 +87,12 @@ describe("sharedSentryOptions", () => {
 
 		const breadcrumb = options.beforeBreadcrumb({ message: "secret.pdf" } as Breadcrumb);
 		expect(breadcrumb.message).toBe(FILE_PLACEHOLDER);
+	});
+});
+
+describe("ブラウザの Sentry の初期化（instrumentation-client.ts）", () => {
+	it("Session Replay を使わない（ADR 0024 決定 1）", () => {
+		const source = readFileSync(resolve(__dirname, "../../instrumentation-client.ts"), "utf8");
+		expect(source).not.toMatch(/replayIntegration|replaysSessionSampleRate|replaysOnErrorSampleRate/);
 	});
 });

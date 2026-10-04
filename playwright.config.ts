@@ -1,9 +1,9 @@
 import { resolve } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
-import { dirname } from "./utils";
+import { rootDir } from "./tests/utils/dirname";
 
-dotenv.config({ path: resolve(dirname, ".env") });
+dotenv.config({ path: resolve(rootDir, ".env") });
 
 /**
  * See https://playwright.dev/docs/test-configuration.

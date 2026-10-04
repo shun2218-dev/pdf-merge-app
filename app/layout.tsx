@@ -2,7 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import type React from "react";
-import "@/styles/globals.css";
+import "./globals.css";
 
 const title = "PDF Merge App - 複数のPDFファイルを簡単に結合";
 const description =

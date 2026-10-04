@@ -62,15 +62,17 @@ C は、ADR 0019 で退けた「PostHog の SDK の Web Vitals の自動収集�
 
 ## オーナーに確認したいこと
 
-1. **製品のイベント（PostHog の SDK）も `/ingest` 経由に変えるか。** 変えると広告ブロッカーの取りこぼしが減るが、上の決定 5 のとおり国の判定が狂うことがあり、ADR 0020 で残した国の情報（ADR 0013 で言語を足すかを決める材料）が不正確になる。いまは **SDK は直接送るまま**にしておく（国の正確さを優先）。国の分布は Vercel Web Analytics でも見られるので、SDK も `/ingest` 経由にしてよければそうする。
+1. ~~製品のイベント（PostHog の SDK）も `/ingest` 経由に変えるか~~ → **直接送るまま（オーナーの回答: 2026-09-28）。** 国の正確さを優先する。
+
+   以下は検討の材料として残す。**製品のイベント（PostHog の SDK）も `/ingest` 経由に変えるか。** 変えると広告ブロッカーの取りこぼしが減るが、上の決定 5 のとおり国の判定が狂うことがあり、ADR 0020 で残した国の情報（ADR 0013 で言語を足すかを決める材料）が不正確になる。いまは **SDK は直接送るまま**にしておく（国の正確さを優先）。国の分布は Vercel Web Analytics でも見られるので、SDK も `/ingest` 経由にしてよければそうする。
 
 ## 完了条件（DoD）
 
-- [ ] 本番で `web_vital` のイベントが `/ingest` 経由で PostHog に届く（ブラウザの開発者ツールの通信と、PostHog の Activity で確認）
+- [x] 本番で `web_vital` のイベントが `/ingest` 経由で PostHog に届く（ブラウザの開発者ツールの通信と、PostHog の Activity で確認）（2026-09-28。v1.2.1）
 - [x] 送るのが LCP / INP / CLS だけで、プロパティにファイル名が含まれないことをテストで確かめた
 - [x] 本番以外では送信されない
 - [ ] 同じページの読み込みの `web_vital` と製品のイベントの `distinct_id` が同じ
-- [ ] PostHog で、LCP / INP / CLS の p75 を端末（`device_class`）ごとに出す Insight を作った
+- [ ] PostHog で、LCP / INP / CLS の p75 を端末（`device_class`）ごとに出す Insight を作った（値を読むのは、ADR 0029 決定 3 の件数の基準を満たしてから）
 - [x] ADR 0012 の追記と `docs/performance.md` を、RUM の値を PostHog で見るように直した
 - [x] `docs/analytics.md` に `web_vital` のイベントを足した
 - [ ] ロードマップの共通 DoD を満たした
@@ -89,7 +91,7 @@ C は、ADR 0019 で退けた「PostHog の SDK の Web Vitals の自動収集�
 
 - 直したあとは 247,934 バイト（ベースラインから +3.4 KB）で、予算の範囲内。内訳は `web-vitals` が 3.0 KB、送信の処理などが 0.5 KB。Lighthouse の Performance は 0.97 のまま。`/` の First Load JS は 238 kB → 241 kB。
 - ローカルで `NEXT_PUBLIC_VERCEL_ENV=production` と偽のキーでビルドし、`/ingest/i/v0/e/` への送信が PostHog まで転送され（応答 200）、LCP / INP / CLS の 3 件が決定 3 のプロパティで送られることを確かめた。このときは `next.config` の rewrites で確かめた。`vercel.json` の rewrites は `next start` では効かないので、本番で確かめる（DoD の 1 つ目）。
-- Sentry の SDK も、トレースのために独自の Web Vitals のコードを持っている（`@sentry-internal/browser-utils`）。`web-vitals` と役割が重なるので、Sentry のブラウザのトレースを続けるかは、依存の整理（ADR 0004）のときに見直す。
+- Sentry の SDK も、トレースのために独自の Web Vitals のコードを持っている（`@sentry-internal/browser-utils`）。`web-vitals` と役割が重なるので、Sentry のブラウザのトレースを続けるかは、依存の整理（ADR 0004）のときに見直す。→ 2026-09-28 に ADR 0022 でトレースをやめた。
 
 ### 2026-09-28: 本番で `/ingest/i/v0/e/` が 404 だったのを直す（B-9）
 
@@ -99,3 +101,11 @@ v1.2.0 のリリース後の確認（DoD の 1 つ目）で、本番の `POST /i
 - 直し方: `source` を `/ingest/:path(.*)`、`destination` を `https://us.i.posthog.com/:path` にした（PostHog の Vercel 向けの案内と同じ形）。末尾の `/` も含めて転送される。決定 5 の「`vercel.json` の rewrites で転送する」は変えていない。
 - 再現テスト: `__tests__/lib/vercel-rewrites.test.ts`。`vercel.json` を読み、Vercel と同じ strict の照合で、`WEB_VITALS_ENDPOINT` が末尾の `/` を保って PostHog に転送されることを確かめる。直す前は失敗した。
 - 1 週間分のベースライン（ADR 0011 / 0012 の DoD）の RUM の値は、この修正が本番に出た日から数え直す。
+
+### 2026-09-28: v1.2.1 で本番に届いたことを確かめた
+
+- ブラウザで本番を開き、`POST /ingest/i/v0/e/` が 200 になることを確かめた（開発者ツールの通信）。
+- オーナーが PostHog の Activity で `web_vital` を 1 件確かめた（`metric: INP`、`value: 40`、`rating: good`、`device_class: desktop`、`navigation_type: navigate`、`$pathname: /`、`$process_person_profile: false`）。プロパティは決定 3 のとおりで、ファイル名などは含まれていない。
+- このとき国は JP と判定されていたが、Vercel の転送も東京（hnd1）を通るので、決定 5 の「国の判定が狂うことがある」が起きないかどうかは、この 1 件では分からない。
+- 確かめたブラウザのタブは読み込んだ時点で裏にあったので、`web-vitals` の仕様で LCP と CLS は測られなかった（ページが最初に描かれる前に隠れていると、LCP を報告しない）。実利用のタブでは起きない。
+- 残り: 同じページの読み込みの `web_vital` と `files_added` の `distinct_id` が同じか、端末ごとの p75 の Insight（DoD の 4 つ目と 5 つ目）。

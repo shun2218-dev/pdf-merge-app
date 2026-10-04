@@ -6,7 +6,7 @@
 
 ## 概要
 
-このプロジェクトは、Next.js 15 (App Router) と `pdf-lib` ライブラリを使用して構築したPDF結合ツールです。モダンなフロントエンド技術とサーバーレスアーキテクチャ（Vercel Edge Functions）の実践的な活用を目的として開発しました。
+このプロジェクトは、Next.js 16 (App Router) と `pdf-lib` ライブラリを使用して構築したPDF結合ツールです。モダンなフロントエンド技術とサーバーレスアーキテクチャ（Vercel Functions）の実践的な活用を目的として開発しました。
 
 ## 主な機能
 
@@ -16,22 +16,22 @@
 * **ファイルの並び替え:**
   * アップロードしたファイルをドラッグ＆ドロップで直感的に並び替え可能
 * **リアルタイムプレビュー:**
-  * 結合後のPDFをサーバーサイド（Edge）で生成し、`@react-pdf-viewer` を使ってクライアントでプレビュー表示
+  * 結合後のPDFをサーバーサイド（Vercel Functions）で生成し、`@react-pdf-viewer` を使ってクライアントでプレビュー表示
 * **ファイルのダウンロード:**
   * 結合されたPDFを `merged.pdf` としてダウンロード
 
 ## アーキテクチャと技術スタック
 
-### Edge Runtime によるPDF処理
+### サーバーでのPDF処理
 
-従来のサーバーレス（Node.js）ではなく、**Vercel Edge Runtime** 上でPDFの結合処理（`/api/merge-pdf`）を実行
+PDFの結合処理（`/api/merge-pdf`）は、Vercel Functions（Node.js のランタイム）で実行している。
 
-* **高速な API 応答:** ユーザーに近いエッジサーバーで動作するため、コールドブートがほぼ発生せず、高速なレスポンスを実現
-* **バイナリデータの取り扱い:** Edge Runtime 上で `pdf-lib` を動作させ、`File` オブジェクトの `arrayBuffer()` を処理し、結合後のPDFバイナリデータをストリーミングで返却
+* **バイナリデータの取り扱い:** `pdf-lib` で、アップロードされた `File` の `arrayBuffer()` を読み、結合したPDFのバイナリを返す
+* **制約:** Vercel Functions のリクエスト本文の上限により、合計でおよそ 4.5MB までしか結合できない。結合をブラウザ内に移して、ファイルを端末の外に送らないようにする予定（`docs/adr/0002-client-side-merge.md`）
 
 ### モダンなフロントエンド構成
 
-* **Next.js 15 (App Router):** `page.tsx` に `"use client"` を明記し、React Server Components (RSC) のアーキテクチャを意識したクライアントコンポーネントとして構築
+* **Next.js 16 (App Router):** `page.tsx` に `"use client"` を明記し、React Server Components (RSC) のアーキテクチャを意識したクライアントコンポーネントとして構築
 * **React 19:** 最新のReactの機能を採用
 * **TypeScript:** 型安全な開発を徹底
 * **Tailwind CSS & shadcn/ui:** モダンでレスポンシブなUIを効率的に構築
@@ -40,18 +40,18 @@
 
 * **Vitest:** `__tests__` ディレクトリで、コンポーネントのロジックやAPIルートのユニットテストを管理。`vi.mock` を活用し、`pdf-lib` や Sentry などの外部依存を分離したテストを実行
 * **Storybook:** `play` 関数を用いたインタラクションテスト（ドラッグ＆ドロップ、ファイル削除など）を実装し、UIコンポーネントの分離とカバレッジ向上を実現
-* **GitHub Actions:** プルリクエストごとにユニットテスト (`test:unit`) とE2Eテスト (`test:e2e`) を実行し、コードの品質を自動で担保
+* **GitHub Actions:** プルリクエストごとに lint・型チェック・ユニットテスト・Storybook のテスト・E2E テスト・Lighthouse CI を実行し、コードの品質を自動で担保（`docs/adr/0006-ci-quality-gates.md`）
 
 ### 使用技術一覧
 
-* **フレームワーク:** Next.js 15 (App Router)
+* **フレームワーク:** Next.js 16 (App Router)
 * **言語:** TypeScript
 * **スタイリング:** Tailwind CSS, shadcn/ui
 * **PDF処理:** `pdf-lib`
 * **テスト:** Vitest, Storybook (v10), Playwright, Testing Library
 * **リンター/フォーマッター:** Biome.js
-* **デプロイ:** Vercel (Edge Functions)
-* **パッケージ管理:** pnpm
+* **デプロイ:** Vercel (Functions)
+* **パッケージ管理:** pnpm（10 系）。依存の更新は Renovate
 
 ## ローカル開発環境セットアップ
 

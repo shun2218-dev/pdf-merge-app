@@ -54,7 +54,7 @@
 
 - [x] （Phase 1）Storybook の `a11y.test` が `"error"` で、既存のストーリーの違反が 0 件
 - [ ] E2E に axe の検査があり、ADR 0009 の全状態・ライト / ダークで違反が 0 件
-- [ ] Lighthouse の Accessibility が 100
+- [x] Lighthouse の Accessibility が 100（2026-10-04。CI の関門（`categories:accessibility` の `minScore: 1`）で毎回確かめている。#92 で暗いテーマのコントラストを直したあと）
 - [ ] `docs/a11y.md` に手動の確認の一覧があり、直近のリリースで全項目にチェックが付いている
 - [ ] 削除・結合の完了のあとのフォーカスの移り先が、決定 4 のとおりであることを E2E で確かめた
 - [ ] 追加・削除・並び替え・結合の完了が `aria-live` の領域に出る（コンポーネントテスト）
@@ -73,3 +73,8 @@
   - 追加・削除・並び替え・結合の完了が読み上げられない（A-1）
   - 各行の `aria-label="File List"`（全行同じ・英語）と、対象のファイル名を含まない削除ボタンの名前（A-2）
   - ストーリーがない状態（結合中・エラー・プレビュー）は検査されていない。ADR 0005 で presentational なコンポーネントに分けるときに、全状態のストーリーを置く
+
+### 2026-10-03: Storybook の a11y の検査を、本番と同じ暗いテーマで行う
+
+- 本番は常に暗いテーマ（`app/layout.tsx` の `<html className="dark">`）なのに、Storybook は明るいテーマで描いていたので、暗いテーマでのコントラスト不足（A-3）を検査が見逃していた。`.storybook/preview.ts` の `beforeEach` で `dark` を付け、利用者が見る色で検査するようにした。
+- 赤い文字は `text-destructive`（暗いテーマで #82181a。背景との比 1.97:1）をやめ、`text-destructive-foreground` にした。明るいテーマでは同じ色。

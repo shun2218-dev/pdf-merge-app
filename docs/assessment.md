@@ -19,6 +19,8 @@
 | B-7 | 中 | 並び替えが HTML5 の Drag and Drop だけなので、スマートフォン（タッチ）とキーボードでは並び替えられない。biome の抑止コメントは「キーボードの代替手段がある」と書いているが、実際にはない | `components/file-list.tsx:40` | 0010 |
 | B-8 | 低 | PDF の判定が `file.type` だけ。拡張子が `.pdf` でも MIME が空の環境（一部の Windows / Android）では弾かれる | `components/file-uploader.tsx:18` | 0009 |
 | B-9 | 高 | 本番で Web Vitals の送信（`POST /ingest/i/v0/e/`）が Next.js の 404 になり、PostHog に届いていない。Vercel は `vercel.json` の rewrites の `source` を末尾の `/` を区別して照合するので、`/ingest/:path*` が末尾が `/` のパスに当たらない（v1.2.0 で発生。2026-09-28 に発見） | `vercel.json`、本番の通信 | 0021 |
+| B-10 | 中 | Sentry にソースマップが送られていない。`next.config` に直接書いた組織名（`vercel-development`）とプロジェクト名（`pdf-merge-app`）が、実際のもの（Vercel の環境変数の `SENTRY_ORG` / `SENTRY_PROJECT`）と違い、アップロードが 403 で失敗していた。Issue のスタックトレースが圧縮後のファイル名のままで、どこで起きたかを読みにくい | `next.config.mjs`、PR #81 の Preview と本番で起こしたエラーの Issue（2026-09-30） | 0007 |
+| B-11 | 低 | 本番（Vercel）の Node.js が 22.x で、`package.json` の `volta`（24.11.0）と CI（24.11.0）と違う。本番だけテストしていない版で動いていた。`engines.node` がなく、Vercel のプロジェクトの設定（22.x）が使われていた → `engines.node` を `24.x` にした（2026-10-04） | Vercel のプロジェクトの設定（`nodeVersion: 22.x`。2026-10-04） | — |
 
 ## 2. プライバシー・セキュリティ
 
@@ -63,7 +65,7 @@
 | D-2 | 中 | shadcn の既定（無彩色の neutral）のままで、ブランドの色・ロゴがない。ヘッダーは「PDF Merger」、メタデータは「PDF Merge App」と名前が揺れている | `styles/globals.css`、`components/header.tsx` | 0008 |
 | D-3 | 中 | `--font-sans: "Geist"` を指定しているが、フォントを読み込んでいない（`next/font` なし）。環境ごとに違う書体で描かれる | `styles/globals.css`、`app/layout.tsx:44` | 0008 |
 | D-4 | 中 | 「ご利用上の注意」ボタンが `destructive`（赤）。削除や危険な操作の色を案内に使っている | `components/header.tsx:58` | 0008 |
-| U-1 | 中 | 開くたびに（タブごとに）注意事項のモーダルが出て、チェックを入れないと閉じられない。Esc でも閉じない。最初の操作までの手数が多い | `components/header.tsx`、`components/disclaimer-modal.tsx:34` | 0009 |
+| U-1 | 中 | 開くたびに（タブごとに）注意事項のモーダルが出て、チェックを入れないと閉じられない。Esc でも閉じない。最初の操作までの手数が多い | `components/header.tsx`、`components/disclaimer-modal.tsx:34` | 0009 / 0027 |
 | U-2 | 中 | エラーを `alert()` で出す。どのファイルが悪いのか、何をすればよいのかが分からない | `app/page.tsx:77`、`components/file-uploader.tsx:21` | 0009 |
 | U-3 | 中 | 結合の進み具合が「処理中...」の文字だけ。大きいファイルでは固まったように見える | `app/page.tsx` | 0009 |
 | U-4 | 低 | プレビューの高さが 800px 固定、ビューアは `theme="dark"` 固定。スマートフォンでは画面より高い | `components/pdf-preview.tsx:51,53` | 0003 |
@@ -77,6 +79,7 @@
 | M-1 | 中 | Vercel Web Analytics はページビューだけ。「アップロード → 結合 → ダウンロード」のどこで離脱しているか、失敗がどれだけあるかが分からない | `app/layout.tsx` | 0011 |
 | M-2 | 中 | Web Vitals（LCP / INP / CLS）を実利用者から取っていない。バンドルサイズや Lighthouse の値を追っていない | — | 0012 |
 | M-3 | 低 | Sentry の `tracesSampleRate: 1`（全件）。量が増えると無料枠をすぐ使い切る | `instrumentation-client.ts:14` | 0007 |
+| M-4 | 中 | ブラウザの Sentry の読み込みと初期化が、最初の表示の JS の処理の半分ほどを占め、ADR 0025 の基準の端末で TBT が関門（200 ms）を超える（223〜245 ms）。DSN のない CI では Sentry が無効なので、本番の利用者の体験より甘く測っている | `instrumentation-client.ts`、ADR 0026 の背景と追記の計測（2026-10-03） | 0026 / 0027 |
 
 ## 7. i18n・a11y・SEO
 
@@ -85,6 +88,7 @@
 | I-1 | 中 | 文言がすべて日本語でコンポーネントに直書き。英語圏の利用者は使えない | 全コンポーネント | 0013 |
 | A-1 | 中 | ドロップ領域・並び替えがキーボードで操作できない（B-7）。追加・削除・並び替え・結合完了がスクリーンリーダーに伝わらない（ライブリージョンなし） | `components/file-uploader.tsx`、`components/file-list.tsx` | 0014 |
 | A-2 | 低 | 各ファイルの行に `aria-label="File List"`（英語・全行同じ）。削除ボタンの名前が「削除する」だけで、どのファイルか分からない | `components/file-list.tsx:51` | 0014 |
+| A-3 | 中 | 暗いテーマ（本番は常に `<html class="dark">`）で、赤い文字（`text-destructive`。#82181a）の背景とのコントラスト比が 1.97:1 しかなく、WCAG 2.2 AA（4.5:1）を満たさない。エラーの文言（ドロップ領域・結合の失敗）と、ADR 0027 の断りの「送らないでほしいファイル」の行。Storybook の a11y の検査は明るいテーマで描いていたので見逃していた。→ 暗いテーマで読める `text-destructive-foreground` に替え、Storybook を暗いテーマで描くようにした（2026-10-03） | 手元の Lighthouse（color-contrast）、暗いテーマにした Storybook の a11y の検査（2026-10-03） | 0014 |
 | S-1 | 中 | `openGraph.url` に `VERCEL_URL`（プロトコルなし・デプロイごとの URL）を入れている。`metadataBase` がないので OGP 画像の URL が正しく作られない可能性がある | `app/layout.tsx:17` | 0016 |
 | S-2 | 低 | `robots.txt`、`sitemap.xml`、canonical、構造化データがない | — | 0016 |
 | S-3 | 中 | 旧 URL `pdf-merge-app-nine.vercel.app` が 404（`DEPLOYMENT_NOT_FOUND`）。README のデモ URL と、よそに貼られたリンクが切れている。`www.pdf-merge.app` は 307（一時的なリダイレクト）で `pdf-merge.app` に転送されている | `curl` の結果（2026-09-27） | 0016 |

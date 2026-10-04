@@ -1,20 +1,16 @@
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { STORAGE_KEY } from "@/components/disclaimer-modal";
 import { SELECTORS } from "@/lib/tests/e2e/selectors";
-import { dirname } from "@/utils";
+import { rootDir } from "@/tests/utils/dirname";
 
 // テスト用のダミーPDFファイルへのパス
 // プロジェクトのルートに `e2e/fixtures` フォルダを作成し、ダミーPDFを入れてください
-const pdfFile1 = resolve(dirname, "fixtures/dummy1.pdf");
-const pdfFile2 = resolve(dirname, "fixtures/dummy2.pdf");
-const txtFile = resolve(dirname, "fixtures/dummy.txt");
+const pdfFile1 = resolve(rootDir, "fixtures/dummy1.pdf");
+const pdfFile2 = resolve(rootDir, "fixtures/dummy2.pdf");
+const txtFile = resolve(rootDir, "fixtures/dummy.txt");
 
 test.describe("PDF Merger E2E Test", () => {
 	test.beforeEach(async ({ page }) => {
-		await page.context().addInitScript((key) => {
-			sessionStorage.setItem(key, "true");
-		}, STORAGE_KEY);
 		// 各テストの前にトップページにアクセス
 		await page.goto("/");
 	});
@@ -31,9 +27,11 @@ test.describe("PDF Merger E2E Test", () => {
 	});
 
 	test("ファイルをアップロード(TXTファイル)", async ({ page }) => {
+		// alert() は使わず、画面の中に文言を出す（ADR 0005 決定 7）
+		let dialogShown = false;
 		page.on("dialog", async (dialog) => {
-			expect(dialog.message()).toBe("PDFファイルのみ選択してください");
-			await dialog.accept();
+			dialogShown = true;
+			await dialog.dismiss();
 		});
 
 		const fileInput = page.locator(SELECTORS.FILE_INPUT);
@@ -41,8 +39,11 @@ test.describe("PDF Merger E2E Test", () => {
 		// 1. TXTをセット
 		await fileInput.setInputFiles([txtFile]);
 
-		// 2. FileList に .txt　ファイルが表示されていないことを確認
+		// 2. 文言が出て、FileList に .txt ファイルが表示されていないことを確認
+		// Next.js の route announcer も role="alert" を持つので、文言で絞る
+		await expect(page.getByRole("alert").filter({ hasText: "PDFファイルのみ選択してください" })).toBeVisible();
 		await expect(page.locator(SELECTORS.fileName("dummy.txt"))).not.toBeVisible();
+		expect(dialogShown).toBe(false);
 	});
 
 	test("ファイルの削除", async ({ page }) => {

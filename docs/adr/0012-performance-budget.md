@@ -78,8 +78,8 @@
 - [x] Lighthouse CI が PR ごとに走り、予算を超えると失敗する
 - [x] バンドルアナライザを `pnpm analyze` で起動できる
 - [x] 結合の時間を計る Playwright のテストがあり、`docs/performance.md` に固定のファイルの組が書かれている
-- [ ] `docs/performance.md` にベースライン（Lighthouse・First Load JS・結合の時間・RUM の p75）と予算がある
-- [ ] CI での Lighthouse の Performance を 10 回ほど集め、その最小値に予算を締めた
+- [ ] `docs/performance.md` にベースライン（Lighthouse・First Load JS・結合の時間・RUM の p75）と予算がある（RUM の p75 は、ADR 0029 決定 3 の件数の基準を満たしてから書く）
+- [ ] ~~CI での Lighthouse の Performance を 10 回ほど集め、その最小値に予算を締めた~~（ADR 0023 決定 3 でやめた。0.90 のまま）
 - [ ] ロードマップの共通 DoD を満たした
 
 ## 追記
@@ -111,3 +111,16 @@
 - v1.1.0 のリリース後、Vercel の Hobby プランでは Speed Insights の指標ごとの値（FCP / LCP / INP / CLS）が見られず、まとめた点数（Real Experience Score）だけが見られることが分かった。指標ごとの値は Speed Insights Plus（Pro プランが必要）で、オーナーの判断で選ばなかった。決定 1 は、Hobby で何が見られるかを確かめずに決めていた。
 - 実利用の LCP / INP / CLS は、ADR 0021 で `web-vitals` で測り、自分のドメイン経由で PostHog に送ることにした。決定 2 の RUM の予算（p75）は PostHog で見る。Speed Insights は、まとめた点数を見る用として残す。
 - ADR 0021 の実装で JS の転送量は 247,934 バイトになった（予算 250,000 バイトの範囲内）。
+
+### 2026-09-29: 決定 2 の予算を ADR 0023 で置き換えた
+
+- JS の転送量の 250,000 バイトは、決めたときの値（244,546 バイト）を丸めた見張りで、「`/` の First Load JS を 20% 減」には根拠がなかった。Next.js 16（ADR 0015）で JS が増えたときに、この 2 つでは利用者の体験への影響を判断できなかった。
+- ADR 0023 で、予算を利用者の体験の目標（実際の利用者の p75 の LCP / INP / CLS）から決め直した。CI の関門は LCP 2,500 ms・TBT 200 ms・CLS 0.1 以下（Lighthouse のモバイルの設定、3 回の中央値）。JS の転送量は、その条件から逆算した「超えたら必ず失敗する上限」の 350,000 バイト。
+- Performance を CI の値の最小値に締める予定（DoD の 1 つ）はやめた。0.90 のまま。
+- 決定 1（計測の種類）・決定 3（重いものは要るときに読み込む）・決定 4（結果を残す）は変えていない。
+
+### 2026-09-29: バンドルアナライザを Turbopack のものにした（ADR 0015）
+
+- Next.js 16 で Turbopack でビルドするようにしたので、webpack 専用の `@next/bundle-analyzer` を外し、`pnpm analyze` を `next experimental-analyze` にした（決定 1 の「Turbopack のアナライザが使えるならそちら」）。
+- Next.js 16 のビルドの出力には First Load JS が出なくなった。JS の大きさは Lighthouse CI の JS の転送量（ADR 0023 決定 4）で見る。
+

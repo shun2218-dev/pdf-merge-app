@@ -1,0 +1,19 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["config:recommended"],
+	"baseBranchPatterns": ["develop"],
+	"timezone": "Asia/Tokyo",
+	"schedule": ["before 9am on monday"],
+	"minimumReleaseAge": "7 days",
+	"internalChecksFilter": "strict",
+	"constraints": {
+		"pnpm": "10.x"
+	},
+	"packageRules": [
+		{
+			"description": "パッチとマイナーは 1 つの PR にまとめる（ADR 0004 決定 3）",
+			"matchUpdateTypes": ["patch", "minor"],
+			"groupName": "non-major dependencies"
+		}
+	]
+}
