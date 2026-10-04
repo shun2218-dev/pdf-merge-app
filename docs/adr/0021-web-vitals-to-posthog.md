@@ -72,7 +72,7 @@ C は、ADR 0019 で退けた「PostHog の SDK の Web Vitals の自動収集�
 - [x] 送るのが LCP / INP / CLS だけで、プロパティにファイル名が含まれないことをテストで確かめた
 - [x] 本番以外では送信されない
 - [ ] 同じページの読み込みの `web_vital` と製品のイベントの `distinct_id` が同じ
-- [ ] PostHog で、LCP / INP / CLS の p75 を端末（`device_class`）ごとに出す Insight を作った
+- [ ] PostHog で、LCP / INP / CLS の p75 を端末（`device_class`）ごとに出す Insight を作った（値を読むのは、ADR 0029 決定 3 の件数の基準を満たしてから）
 - [x] ADR 0012 の追記と `docs/performance.md` を、RUM の値を PostHog で見るように直した
 - [x] `docs/analytics.md` に `web_vital` のイベントを足した
 - [ ] ロードマップの共通 DoD を満たした
