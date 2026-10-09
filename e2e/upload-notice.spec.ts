@@ -9,8 +9,8 @@ test.describe("ファイルを送る前の断り", () => {
 
 		const notice = page.locator(SELECTORS.UPLOAD_NOTICE);
 		await expect(notice).toBeVisible();
-		await expect(notice).toContainText(UPLOAD_NOTICE.sending);
-		await expect(notice).toContainText(UPLOAD_NOTICE.confidential);
+		await expect(notice).toContainText(UPLOAD_NOTICE.local);
+		await expect(notice).not.toContainText("サーバー");
 
 		const dropzone = await page.locator(SELECTORS.FILE_UPLOADER_DROPZONE).boundingBox();
 		const noticeBox = await notice.boundingBox();
