@@ -85,14 +85,8 @@ test.describe("PDF Merger E2E Test", () => {
 		expect(orderedFileNames).toEqual(["dummy2.pdf", "dummy1.pdf"]);
 	});
 
-	test("プレビューとダウンロード(API疎通)", async ({ page }) => {
-		// サーバーがモックPDFを返すように設定 (このテストはローカルでのみ実行可能)
-		// このテストは、APIが本物のPDFを返すことを前提としています
-		if (process.env.CI) {
-			test.skip(true, "Skipping API test in CI for now. Requires real PDF handling.");
-			return;
-		}
-
+	// 結合はブラウザの中で行う（ADR 0002）ので、サーバーに頼らず CI でも走らせる
+	test("プレビューとダウンロード", async ({ page }) => {
 		const fileInput = page.locator(SELECTORS.FILE_INPUT);
 		await fileInput.setInputFiles([pdfFile1, pdfFile2]);
 

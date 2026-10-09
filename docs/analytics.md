@@ -33,27 +33,33 @@
 | イベント | いつ | プロパティ | 状態 |
 |---|---|---|---|
 | `files_added` | PDF を一覧に追加したとき | `source`（`picker` / `drop`）、`count_bucket`、`size_bucket` | 実装済み |
-| `files_rejected` | 追加できなかったとき | `reason`（いまは `not_pdf` だけ）、`count_bucket`（断ったファイルの数） | 実装済み |
+| `files_rejected` | 追加できなかったとき（`not_pdf`）と、結合のときに読めずに飛ばしたとき（`encrypted` / `corrupt`。理由ごとに 1 件。ADR 0030 決定 3） | `reason`（`not_pdf` / `encrypted` / `corrupt`）、`count_bucket`（断った・飛ばしたファイルの数） | 実装済み |
 | `file_removed` | 1 つ削除したとき | `remaining_bucket` | 実装済み |
 | `files_reordered` | ドラッグを終えて並びが変わっていたとき（1 回のドラッグで 1 回） | `method`（いまは `pointer` だけ） | 実装済み |
 | `merge_started` | 結合を始めたとき（プレビュー・ダウンロードのどちらからでも） | `count_bucket`、`size_bucket` | 実装済み |
 | `merge_succeeded` | 結合できたとき | `duration_bucket`、`count_bucket`、`size_bucket` | 実装済み |
-| `merge_failed` | 結合に失敗したとき | `reason`（`payload_too_large` / `server_error` / `network_error`） | 実装済み |
+| `merge_failed` | 結合に失敗したとき | `reason`（`worker_error` / `out_of_memory` / `no_valid_files` / `unknown`。ADR 0030 決定 3） | 実装済み |
 | `preview_opened` | 「プレビュー」を押して、プレビューが開いたとき | — | 実装済み |
 | `download_clicked` | ダウンロードしたとき | `renamed`（いまは常に `false`）、`previewed`（押した時点でプレビューを見ていたか） | 実装済み |
 | `web_vital` | LCP / INP / CLS が決まったとき（1 回のページの読み込みで最大 3 件） | `metric`、`value`（生の値）、`rating`、`navigation_type`、`device_class`（`mobile` / `desktop`） | 実装済み（ADR 0021） |
 | `files_cleared` | すべて削除したとき | `remaining_bucket` | 未実装（ADR 0009 で UI ができたら） |
-| `size_warning_shown` | 大きさの警告を出したとき | `size_bucket` | 未実装（ADR 0002 / 0009） |
+| `size_warning_shown` | 足したことで、合計 300MB または 100 ファイルを超えて警告を出したとき（超えたままなら送り直さない。ADR 0002 決定 5） | `size_bucket` | 実装済み |
 | `theme_changed` / `locale_changed` | 切り替えたとき | `value` | 未実装（ADR 0008 / 0013） |
 
 数え方の変更:
 
 - ADR 0005 の実装（2026-10-01 に `develop` へ。本番は次のリリースから）で、結合の結果があるときは「プレビュー」を押し直しても結合し直さなくなった。それまでは押すたびに結合し直し、`merge_started` / `merge_succeeded`（または `merge_failed`）を送っていた。この日の前後で `merge_started` の数を比べるときは、この違いを考える。`preview_opened` は押すたびに送る（変えていない）。
 
+- ADR 0002 の実装（2026-10-07 に `develop` へ。本番は次のリリースから）で、結合をブラウザの中に移した。`merge_failed` の `reason` は、サーバーとの通信の結果（`payload_too_large` / `server_error` / `network_error`）から、端末の中の結果（`worker_error` / `out_of_memory` / `no_valid_files` / `unknown`）に替わった。前の 3 つは、このリリースから送られない。
+  - `worker_error`: Worker の中の想定外の例外、Worker のスクリプトが動かなかった。Sentry にも送る
+  - `out_of_memory`: 端末のメモリが足りなかった。端末の限界なので Sentry には送らない
+  - `no_valid_files`: 読めるファイルが 1 つもなかった（パスワード付き・壊れたものだけ）。Sentry には送らない
+  - `unknown`: Worker の外の想定外の例外（ファイルを読めなかったなど）。Sentry にも送る
+- 同じ実装で、`files_rejected` を結合のときにも送るようになった（`encrypted` / `corrupt`）。拒否率（下の KPI）の分子に入るので、この日の前後で比べるときは考える。`merge_started` のあとに送る。
+- 結合のときに 1 つでも読めれば、残りで結合して `merge_succeeded` を送る（ADR 0030 決定 2）。`merge_succeeded` の `count_bucket` / `size_bucket` は、飛ばしたものも含めた、結合に渡したファイルの数と大きさ。
+
 今後の予定:
 
-- `files_rejected` の `reason` に `encrypted` / `corrupt` を足す（ADR 0002 でブラウザ内で PDF を読むようになったら）。
-- `merge_failed` の `reason` を `out_of_memory` / `worker_error` / `unknown` に置き換える（ADR 0002）。
 - `merge_started` などに `pages_bucket` を足す（ブラウザ内でページ数を数えるようになったら）。
 - `files_reordered` の `method` に `touch` / `keyboard` / `menu` / `sort_by_name` を足す（ADR 0010）。
 

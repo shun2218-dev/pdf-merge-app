@@ -11,11 +11,13 @@ const done: MergeState = {
 	phase: "done",
 	result: { url: "blob:merged" },
 	error: null,
+	progress: null,
+	skipped: [{ id: "c", reason: "encrypted" }],
 };
 
 describe("mergeWorkflowReducer", () => {
 	it("初期状態は空で、結合していない", () => {
-		expect(initialState).toEqual({ items: [], phase: "idle", result: null, error: null });
+		expect(initialState).toEqual({ items: [], phase: "idle", result: null, error: null, progress: null, skipped: [] });
 	});
 
 	describe("add", () => {
@@ -27,9 +29,9 @@ describe("mergeWorkflowReducer", () => {
 			expect(state.items.map((i) => i.id)).toEqual(["a", "b", "c"]);
 		});
 
-		it("結合の結果とエラーを捨てる（一覧が変わったので）", () => {
+		it("結合の結果・エラー・飛ばしたファイルを捨てる（一覧が変わったので）", () => {
 			const state = mergeWorkflowReducer({ ...done, error: "not_pdf" }, { type: "add", items: [item("d")] });
-			expect(state).toMatchObject({ phase: "idle", result: null, error: null });
+			expect(state).toMatchObject({ phase: "idle", result: null, error: null, skipped: [] });
 		});
 	});
 
@@ -77,16 +79,56 @@ describe("mergeWorkflowReducer", () => {
 			expect(state).toMatchObject({ phase: "merging", error: null, result: null });
 		});
 
-		it("merge_success で結果を持つ", () => {
-			const merging = mergeWorkflowReducer({ ...initialState, items: [item("a")] }, { type: "merge_start" });
-			const state = mergeWorkflowReducer(merging, { type: "merge_success", url: "blob:x" });
-			expect(state).toMatchObject({ phase: "done", result: { url: "blob:x" }, error: null });
+		it("merge_start で前に飛ばしたファイルを捨てる", () => {
+			const state = mergeWorkflowReducer(done, { type: "merge_start" });
+			expect(state).toMatchObject({ phase: "merging", skipped: [], progress: null });
+		});
+
+		it("merge_progress で進捗を持つ（ADR 0002 決定 2）", () => {
+			const merging = mergeWorkflowReducer({ ...initialState, items: [item("a"), item("b")] }, { type: "merge_start" });
+			const state = mergeWorkflowReducer(merging, { type: "merge_progress", progress: { done: 1, total: 2 } });
+			expect(state.progress).toEqual({ done: 1, total: 2 });
+		});
+
+		it("結合していないときの merge_progress は何も変えない（終わったあとに遅れて届いたもの）", () => {
+			expect(mergeWorkflowReducer(done, { type: "merge_progress", progress: { done: 1, total: 2 } })).toBe(done);
+		});
+
+		it("merge_success で結果と飛ばしたファイルを持ち、進捗を消す", () => {
+			const merging = mergeWorkflowReducer({ ...initialState, items: [item("a"), item("b")] }, { type: "merge_start" });
+			const progressed = mergeWorkflowReducer(merging, { type: "merge_progress", progress: { done: 2, total: 2 } });
+			const state = mergeWorkflowReducer(progressed, {
+				type: "merge_success",
+				url: "blob:x",
+				skipped: [{ id: "b", reason: "corrupt" }],
+			});
+			expect(state).toMatchObject({
+				phase: "done",
+				result: { url: "blob:x" },
+				error: null,
+				progress: null,
+				skipped: [{ id: "b", reason: "corrupt" }],
+			});
 		});
 
 		it("merge_failure でエラーになる", () => {
 			const merging = mergeWorkflowReducer({ ...initialState, items: [item("a")] }, { type: "merge_start" });
-			const state = mergeWorkflowReducer(merging, { type: "merge_failure" });
-			expect(state).toMatchObject({ phase: "error", result: null, error: "merge_failed" });
+			const state = mergeWorkflowReducer(merging, { type: "merge_failure", error: "merge_failed" });
+			expect(state).toMatchObject({ phase: "error", result: null, error: "merge_failed", skipped: [] });
+		});
+
+		it("読めるファイルがなかったときは no_valid_files にし、飛ばしたファイルを持つ（ADR 0030 決定 2）", () => {
+			const merging = mergeWorkflowReducer({ ...initialState, items: [item("a")] }, { type: "merge_start" });
+			const state = mergeWorkflowReducer(merging, {
+				type: "merge_failure",
+				error: "no_valid_files",
+				skipped: [{ id: "a", reason: "encrypted" }],
+			});
+			expect(state).toMatchObject({
+				phase: "error",
+				error: "no_valid_files",
+				skipped: [{ id: "a", reason: "encrypted" }],
+			});
 		});
 	});
 });

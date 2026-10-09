@@ -2,11 +2,16 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MergeWorkspace } from "@/components/merge/merge-workspace";
+import { MergeWorkerError, mergeInBrowser } from "@/lib/pdf/merge-in-browser";
 
 vi.mock("@/lib/sentry/browser", () => ({ sentry: { captureException: vi.fn(), addBreadcrumb: vi.fn() } }));
 vi.mock("@/lib/analytics", async (importOriginal) => ({
 	...(await importOriginal<typeof import("@/lib/analytics")>()),
 	track: vi.fn(),
+}));
+vi.mock("@/lib/pdf/merge-in-browser", async (importOriginal) => ({
+	...(await importOriginal<typeof import("@/lib/pdf/merge-in-browser")>()),
+	mergeInBrowser: vi.fn(),
 }));
 vi.mock("@/components/pdf-preview", () => ({
 	PdfPreview: ({ pdfUrl }: { pdfUrl: string }) => <div data-testid="pdf-preview">Preview: {pdfUrl}</div>,
@@ -15,10 +20,15 @@ vi.mock("@/components/pdf-preview", () => ({
 const pdf = (name: string) => new File(["%PDF"], name, { type: "application/pdf" });
 
 function mergeSucceeds() {
-	vi.mocked(fetch).mockResolvedValueOnce({
-		ok: true,
-		blob: async () => new Blob(["merged"], { type: "application/pdf" }),
-	} as Response);
+	vi.mocked(mergeInBrowser).mockResolvedValueOnce({ bytes: new Uint8Array([1]), skipped: [] });
+}
+
+// 渡されたファイルのうち、名前が skip に入っているものを飛ばしたことにする
+function mergeSkips(skip: Record<string, "encrypted" | "corrupt">, valid = true) {
+	vi.mocked(mergeInBrowser).mockImplementationOnce(async (files) => ({
+		bytes: valid ? new Uint8Array([1]) : null,
+		skipped: files.filter(({ file }) => file.name in skip).map(({ id, file }) => ({ id, reason: skip[file.name] })),
+	}));
 }
 
 async function upload(...files: File[]) {
@@ -27,7 +37,7 @@ async function upload(...files: File[]) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	global.fetch = vi.fn();
+	vi.mocked(mergeInBrowser).mockReset();
 	global.URL.createObjectURL = vi.fn(() => "blob:merged");
 	global.URL.revokeObjectURL = vi.fn();
 });
@@ -102,7 +112,7 @@ describe("MergeWorkspace", () => {
 		const alert = vi.spyOn(window, "alert").mockImplementation(() => {});
 		render(<MergeWorkspace />);
 		await upload(pdf("a.pdf"));
-		vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 500 } as Response);
+		vi.mocked(mergeInBrowser).mockRejectedValueOnce(new MergeWorkerError("worker_error", "x"));
 
 		await userEvent.click(screen.getByRole("button", { name: "プレビュー" }));
 
@@ -120,7 +130,66 @@ describe("MergeWorkspace", () => {
 		await userEvent.click(screen.getByRole("button", { name: "ダウンロード" }));
 
 		await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
-		expect(fetch).toHaveBeenCalledTimes(1);
+		expect(mergeInBrowser).toHaveBeenCalledTimes(1);
+	});
+
+	it("飛ばしたファイルの名前と理由を、結合の操作の近くに出す（ADR 0030 決定 2）", async () => {
+		render(<MergeWorkspace />);
+		await upload(pdf("ok.pdf"), pdf("locked.pdf"), pdf("broken.pdf"));
+		mergeSkips({ "locked.pdf": "encrypted", "broken.pdf": "corrupt" });
+
+		await userEvent.click(screen.getByRole("button", { name: "プレビュー" }));
+
+		const skipped = screen.getByTestId("skipped-files");
+		await waitFor(() => expect(skipped).toHaveTextContent("locked.pdf"));
+		expect(skipped).toHaveTextContent("locked.pdf（パスワード付きのため）");
+		expect(skipped).toHaveTextContent("broken.pdf（読み込めないため）");
+		expect(skipped).not.toHaveTextContent("ok.pdf");
+		expect(await screen.findByTestId("pdf-preview")).toBeInTheDocument();
+	});
+
+	it("読めるファイルが 1 つもなければ、失敗の文言と飛ばしたファイルを出す", async () => {
+		render(<MergeWorkspace />);
+		await upload(pdf("locked.pdf"));
+		mergeSkips({ "locked.pdf": "encrypted" }, false);
+
+		await userEvent.click(screen.getByRole("button", { name: "プレビュー" }));
+
+		expect(await screen.findByRole("alert")).toHaveTextContent("結合できる PDF がありませんでした");
+		expect(screen.getByTestId("skipped-files")).toHaveTextContent("locked.pdf（パスワード付きのため）");
+		expect(screen.queryByTestId("pdf-preview")).not.toBeInTheDocument();
+	});
+
+	it("一覧を変えると、飛ばしたファイルの表示を消す", async () => {
+		render(<MergeWorkspace />);
+		await upload(pdf("ok.pdf"), pdf("locked.pdf"));
+		mergeSkips({ "locked.pdf": "encrypted" });
+		await userEvent.click(screen.getByRole("button", { name: "プレビュー" }));
+		await waitFor(() => expect(screen.getByTestId("skipped-files")).toHaveTextContent("locked.pdf"));
+
+		await upload(pdf("more.pdf"));
+
+		expect(screen.getByTestId("skipped-files")).toBeEmptyDOMElement();
+	});
+
+	it("100 ファイルを超えたら、時間がかかるか失敗しうると警告する。結合は止めない（ADR 0002 決定 5）", async () => {
+		render(<MergeWorkspace />);
+		await upload(...Array.from({ length: 100 }, (_, i) => pdf(`${i}.pdf`)));
+		expect(screen.queryByText(/端末によっては時間がかかる/)).not.toBeInTheDocument();
+
+		await upload(pdf("101.pdf"));
+
+		expect(screen.getByText(/端末によっては時間がかかる/)).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "プレビュー" })).toBeEnabled();
+	});
+
+	it("合計が 300MB を超えたら警告する", async () => {
+		render(<MergeWorkspace />);
+		const large = pdf("large.pdf");
+		Object.defineProperty(large, "size", { value: 300 * 1024 * 1024 + 1 });
+		await upload(large);
+
+		expect(screen.getByText(/端末によっては時間がかかる/)).toBeInTheDocument();
 	});
 
 	it("受け取った断りを、ドロップ領域のすぐ下に出す（ADR 0027 決定 2・3）", () => {
