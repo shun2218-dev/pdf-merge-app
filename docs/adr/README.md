@@ -44,6 +44,7 @@
 | [0028](0028-lighthouse-tbt-seven-run-median.md) | CI の Lighthouse の判定を 7 回の中央値にし、指標ごとの中央値で判定する | 採用 | 2 |
 | [0029](0029-rum-baseline-after-enough-samples.md) | 実利用（RUM）のベースラインは件数がたまってから取り、Phase 1 は計測の土台ができたことで閉じる | 採用 | 1 / 6 |
 | [0030](0030-client-side-merge-premises.md) | ブラウザでの結合（ADR 0002）を実装する前に、変わった前提を決め直す | 採用 | 3 |
+| [0031](0031-output-file-name.md) | 結合した PDF のファイル名を利用者が入力できるようにし、既定は「merged_ + ダウンロードした日時」にする（ADR 0009 より前に） | 提案 | 3（ADR 0009 から前倒し） |
 
 ## テンプレート
 
