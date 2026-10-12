@@ -313,7 +313,7 @@ describe("useMergeWorkflow", () => {
 			return click;
 		}
 
-		it("プレビューせずに押すと、結合してから merged.pdf をダウンロードする（B-1）", async () => {
+		it("プレビューせずに押すと、結合してから既定の名前でダウンロードする（B-1・ADR 0031 決定 2）", async () => {
 			const click = spyOnLinkClick();
 			const { result } = await setupWithFiles(pdf("a.pdf"));
 			mergeSucceeds();
@@ -323,7 +323,7 @@ describe("useMergeWorkflow", () => {
 			expect(mergeInBrowser).toHaveBeenCalledTimes(1);
 			expect(click).toHaveBeenCalledTimes(1);
 			const link = click.mock.contexts[0] as HTMLAnchorElement;
-			expect(link.download).toBe("merged.pdf");
+			expect(link.download).toMatch(/^merged_\d{14}\.pdf$/);
 			expect(link.href).toBe("blob:merged-1");
 			expect(track).toHaveBeenCalledWith("download_clicked", { renamed: false, previewed: false });
 			expect(trackedNames()).not.toContain("preview_opened");
@@ -340,6 +340,68 @@ describe("useMergeWorkflow", () => {
 			expect(mergeInBrowser).toHaveBeenCalledTimes(1);
 			expect(click).toHaveBeenCalledTimes(1);
 			expect(track).toHaveBeenCalledWith("download_clicked", { renamed: false, previewed: true });
+		});
+
+		it("既定の名前の時刻は、ダウンロードを押したときのもの（ADR 0031 決定 2）", async () => {
+			const click = spyOnLinkClick();
+			const { result } = await setupWithFiles(pdf("a.pdf"));
+			mergeSucceeds();
+			await act(() => result.current.openPreview());
+			vi.useFakeTimers({ toFake: ["Date"] });
+			vi.setSystemTime(new Date(2026, 9, 12, 15, 30, 5));
+
+			await act(() => result.current.download());
+			vi.useRealTimers();
+
+			expect((click.mock.contexts[0] as HTMLAnchorElement).download).toBe("merged_20261012153005.pdf");
+		});
+
+		it("入力したファイル名でダウンロードし、名前は送らずに renamed: true だけを送る（ADR 0031 決定 6）", async () => {
+			const click = spyOnLinkClick();
+			const SECRET = "2026_源泉徴収票_山田";
+			const { result } = await setupWithFiles(pdf("a.pdf"));
+			act(() => result.current.setFileName(SECRET));
+			mergeSucceeds();
+
+			await act(() => result.current.download());
+
+			expect((click.mock.contexts[0] as HTMLAnchorElement).download).toBe(`${SECRET}.pdf`);
+			expect(track).toHaveBeenCalledWith("download_clicked", { renamed: true, previewed: false });
+			expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain("源泉徴収票");
+			expect(JSON.stringify(vi.mocked(sentry.addBreadcrumb).mock.calls)).not.toContain("源泉徴収票");
+		});
+
+		it("空白だけを入れたときは、名前を変えていない扱いにする", async () => {
+			spyOnLinkClick();
+			const { result } = await setupWithFiles(pdf("a.pdf"));
+			act(() => result.current.setFileName("   "));
+			mergeSucceeds();
+
+			await act(() => result.current.download());
+
+			expect(track).toHaveBeenCalledWith("download_clicked", { renamed: false, previewed: false });
+		});
+
+		it("名前を変えても結合し直さない（ADR 0031 決定 6）", async () => {
+			spyOnLinkClick();
+			const { result } = await setupWithFiles(pdf("a.pdf"));
+			mergeSucceeds();
+			await act(() => result.current.openPreview());
+
+			act(() => result.current.setFileName("新しい名前"));
+			await act(() => result.current.download());
+
+			expect(mergeInBrowser).toHaveBeenCalledTimes(1);
+			expect(result.current.result).toEqual({ url: "blob:merged-1" });
+		});
+
+		it("一覧を変えても、入力した名前は残す", async () => {
+			const { result } = await setupWithFiles(pdf("a.pdf"));
+			act(() => result.current.setFileName("契約書"));
+			act(() => result.current.addFiles([pdf("b.pdf")], "picker"));
+
+			expect(result.current.fileName).toBe("契約書");
+			expect(result.current.getDownloadFileName()).toBe("契約書.pdf");
 		});
 
 		it("結合に失敗したらダウンロードしない", async () => {

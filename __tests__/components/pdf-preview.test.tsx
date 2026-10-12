@@ -52,6 +52,25 @@ describe("PdfPreview", () => {
 		expect(params).toEqual({ url: mockPdfUrl, withCredentials: false, isEvalSupported: false });
 	});
 
+	it("ツールバーのダウンロードには、渡した名前を押したときに使う（ADR 0031 決定 5）", async () => {
+		const { defaultLayoutPlugin } = await import("@react-pdf-viewer/default-layout");
+		const getFileName = vi.fn(() => "契約書.pdf");
+		render(<PdfPreview pdfUrl={mockPdfUrl} getFileName={getFileName} />);
+
+		const options = vi.mocked(defaultLayoutPlugin).mock.lastCall?.[0];
+		const generate = options?.toolbarPlugin?.getFilePlugin?.fileNameGenerator;
+		expect(getFileName).not.toHaveBeenCalled();
+		expect(generate?.({ name: "x", data: new Uint8Array() })).toBe("契約書.pdf");
+	});
+
+	it("名前を渡さなければ、ツールバーのダウンロードは既定の名前（merged_ + 時刻）", async () => {
+		const { defaultLayoutPlugin } = await import("@react-pdf-viewer/default-layout");
+		render(<PdfPreview pdfUrl={mockPdfUrl} />);
+
+		const generate = vi.mocked(defaultLayoutPlugin).mock.lastCall?.[0]?.toolbarPlugin?.getFilePlugin?.fileNameGenerator;
+		expect(generate?.({ name: "x", data: new Uint8Array() })).toMatch(/^merged_\d{14}\.pdf$/);
+	});
+
 	it("PDFビューアーが正しくレンダリングされる", () => {
 		render(<PdfPreview pdfUrl={mockPdfUrl} />);
 
