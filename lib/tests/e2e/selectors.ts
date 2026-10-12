@@ -38,6 +38,10 @@ export const SELECTORS = {
 	DOWNLOAD_BUTTON: 'button:has-text("ダウンロード")',
 	PROCESSING_BUTTON: 'button:has-text("処理中...")',
 
+	// --- SkippedFiles (from components/merge/skipped-files.tsx) ---
+	/** 結合のときに飛ばしたファイルの名前と理由（ADR 0030 決定 2） */
+	SKIPPED_FILES: '[data-testid="skipped-files"]',
+
 	// --- Preview (from pdf-preview.tsx) ---
 	/** PdfPreview コンポーネントのルート <div> */
 	PDF_PREVIEW: "div.h-\\[800px\\].w-full.rounded-lg.border",

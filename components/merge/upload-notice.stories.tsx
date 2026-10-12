@@ -11,12 +11,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// サーバーへ送っている間の断り（ADR 0027 決定 2・4）
+// 端末の外へ送らないことの断り（ADR 0009 決定 1・ADR 0030 決定 6）と免責（ADR 0027 決定 4）
 export const Default: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		await expect(canvas.getByText(UPLOAD_NOTICE.sending)).toBeVisible();
-		await expect(canvas.getByText(UPLOAD_NOTICE.confidential)).toHaveClass("text-destructive-foreground");
+		await expect(canvas.getByText(UPLOAD_NOTICE.local)).toBeVisible();
 		await expect(canvas.getByText(UPLOAD_NOTICE.liability)).toBeVisible();
 	},
 };

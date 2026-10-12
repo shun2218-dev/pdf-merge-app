@@ -23,6 +23,21 @@ describe("MergeActions", () => {
 		expect(screen.getByRole("button", { name: "ダウンロード" })).toBeDisabled();
 	});
 
+	it("進捗があれば、終えたファイルの数を出す（ADR 0002 決定 2）", () => {
+		render(<MergeActions isMerging progress={{ done: 2, total: 5 }} onPreview={vi.fn()} onDownload={vi.fn()} />);
+
+		expect(screen.getByRole("button", { name: "処理中... 2 / 5" })).toBeDisabled();
+	});
+
+	it("警告の文言を出しても、ボタンは押せる（ADR 0002 決定 5）", () => {
+		render(
+			<MergeActions isMerging={false} onPreview={vi.fn()} onDownload={vi.fn()} warningMessage="時間がかかります" />,
+		);
+
+		expect(screen.getByText("時間がかかります")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "プレビュー" })).toBeEnabled();
+	});
+
 	it("エラーの文言を role=alert で出す（ADR 0005 決定 7）", () => {
 		render(
 			<MergeActions

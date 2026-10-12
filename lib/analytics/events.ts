@@ -13,9 +13,9 @@ export type AnalyticsEvent =
 			properties: { source: "picker" | "drop"; count_bucket: CountBucket; size_bucket: SizeBucket };
 	  }
 	| {
-			// encrypted / corrupt は、ブラウザ内で PDF を読むようになってから足す（ADR 0002）
+			// not_pdf は追加のとき、encrypted / corrupt は結合のときに飛ばしたファイル（ADR 0030 決定 3）
 			name: "files_rejected";
-			properties: { reason: "not_pdf"; count_bucket: CountBucket };
+			properties: { reason: "not_pdf" | "encrypted" | "corrupt"; count_bucket: CountBucket };
 	  }
 	| { name: "file_removed"; properties: { remaining_bucket: CountBucket } }
 	| {
@@ -29,11 +29,13 @@ export type AnalyticsEvent =
 			properties: { duration_bucket: DurationBucket; count_bucket: CountBucket; size_bucket: SizeBucket };
 	  }
 	| {
-			// いまはサーバーで結合しているので、失敗の理由はサーバーとの通信の結果で分ける。
-			// ブラウザ内の結合（ADR 0002）に移したら out_of_memory / worker_error / unknown に置き換える
+			// ブラウザ内で結合する（ADR 0002）ので、失敗の理由は端末の中のもの（ADR 0030 決定 3）。
+			// no_valid_files は、読めるファイルが 1 つもなかったとき
 			name: "merge_failed";
-			properties: { reason: "payload_too_large" | "server_error" | "network_error" };
+			properties: { reason: "worker_error" | "out_of_memory" | "no_valid_files" | "unknown" };
 	  }
+	// 足したことで、合計 300MB または 100 ファイルを超えたとき（ADR 0002 決定 5）。超えたままなら送り直さない
+	| { name: "size_warning_shown"; properties: { size_bucket: SizeBucket } }
 	| { name: "preview_opened"; properties: Record<string, never> }
 	| { name: "download_clicked"; properties: { renamed: boolean; previewed: boolean } };
 

@@ -3,20 +3,19 @@ import { describe, expect, it } from "vitest";
 import { UPLOAD_NOTICE, UploadNotice } from "@/components/merge/upload-notice";
 
 describe("UploadNotice（ADR 0027）", () => {
-	it("サーバーへ送ること・保存しないことを伝える（決定 2）", () => {
+	it("ファイルを端末の外へ送らないことを伝える（ADR 0009 決定 1・ADR 0030 決定 6）", () => {
 		render(<UploadNotice />);
 
-		const sending = screen.getByText(UPLOAD_NOTICE.sending);
-		expect(sending.textContent).toContain("サーバーへ送信します");
-		expect(sending.textContent).toContain("保存せず");
+		const local = screen.getByText(UPLOAD_NOTICE.local);
+		expect(local.textContent).toContain("この端末の中だけで処理され");
+		expect(local.textContent).toContain("外部へ送信されません");
 	});
 
-	it("送らないでほしいファイルを、目立つ色で伝える（決定 2）", () => {
-		render(<UploadNotice />);
+	it("サーバーへ送る前提の断り（社外秘のファイルを避けてほしい）はもう出さない", () => {
+		const { container } = render(<UploadNotice />);
 
-		const confidential = screen.getByText(UPLOAD_NOTICE.confidential);
-		expect(confidential.textContent).toContain("社外秘の文書や個人情報");
-		expect(confidential).toHaveClass("text-destructive-foreground");
+		expect(container.textContent).not.toContain("サーバー");
+		expect(container.textContent).not.toContain("社外秘");
 	});
 
 	it("免責を小さく出す（決定 4）", () => {
