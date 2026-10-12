@@ -40,7 +40,7 @@
 | `merge_succeeded` | 結合できたとき | `duration_bucket`、`count_bucket`、`size_bucket` | 実装済み |
 | `merge_failed` | 結合に失敗したとき | `reason`（`worker_error` / `out_of_memory` / `no_valid_files` / `unknown`。ADR 0030 決定 3） | 実装済み |
 | `preview_opened` | 「プレビュー」を押して、プレビューが開いたとき | — | 実装済み |
-| `download_clicked` | ダウンロードしたとき | `renamed`（いまは常に `false`）、`previewed`（押した時点でプレビューを見ていたか） | 実装済み |
+| `download_clicked` | ダウンロードしたとき | `renamed`（ファイル名の入力欄に空白以外を入れてダウンロードしたか。名前そのものは送らない。ADR 0031 決定 6）、`previewed`（押した時点でプレビューを見ていたか） | 実装済み |
 | `web_vital` | LCP / INP / CLS が決まったとき（1 回のページの読み込みで最大 3 件） | `metric`、`value`（生の値）、`rating`、`navigation_type`、`device_class`（`mobile` / `desktop`） | 実装済み（ADR 0021） |
 | `files_cleared` | すべて削除したとき | `remaining_bucket` | 未実装（ADR 0009 で UI ができたら） |
 | `size_warning_shown` | 足したことで、合計 300MB または 100 ファイルを超えて警告を出したとき（超えたままなら送り直さない。ADR 0002 決定 5） | `size_bucket` | 実装済み |
@@ -57,6 +57,8 @@
   - `unknown`: Worker の外の想定外の例外（ファイルを読めなかったなど）。Sentry にも送る
 - 同じ実装で、`files_rejected` を結合のときにも送るようになった（`encrypted` / `corrupt`）。拒否率（下の KPI）の分子に入るので、この日の前後で比べるときは考える。`merge_started` のあとに送る。
 - 結合のときに 1 つでも読めれば、残りで結合して `merge_succeeded` を送る（ADR 0030 決定 2）。`merge_succeeded` の `count_bucket` / `size_bucket` は、飛ばしたものも含めた、結合に渡したファイルの数と大きさ。
+
+- ADR 0031 の実装（2026-10-12 に `develop` へ。本番は v1.5.0 から）で、`download_clicked` の `renamed` が `true` になりうるようになった。それまでは常に `false`。
 
 今後の予定:
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef } from "react";
-import { DOWNLOAD_FILE_NAME } from "@/constants";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { countBucket, durationBucket, sizeBucket, totalSize, track } from "@/lib/analytics";
 import type { EventName, EventProperties } from "@/lib/analytics/events";
+import { toDownloadFileName } from "@/lib/merge-workflow/file-name";
 import { isLargeMerge } from "@/lib/merge-workflow/large-merge";
 import { initialState, type MergeItem, mergeWorkflowReducer } from "@/lib/merge-workflow/reducer";
 import type { SkippedFile, SkipReason } from "@/lib/pdf/merge";
@@ -39,6 +39,14 @@ export function useMergeWorkflow() {
 	// 非同期の操作の途中でも、最新の状態を読む（setState の直後の state は古いレンダーの値のため。B-1）
 	const stateRef = useRef(state);
 	stateRef.current = state;
+
+	// 出力のファイル名の入力欄の値（ADR 0031 決定 6）。結合の状態とは別に持ち、変えても結合し直さない
+	const [fileName, setFileName] = useState("");
+	const fileNameRef = useRef(fileName);
+	fileNameRef.current = fileName;
+
+	// ダウンロードの名前。空なら、呼んだときの時刻で既定の名前を作る（決定 2）
+	const getDownloadFileName = useCallback(() => toDownloadFileName(fileNameRef.current, new Date()), []);
 
 	// 結果が捨てられたとき（一覧の変更・次の結合）とアンマウントのときに、前の URL を解放する（決定 3・B-5）
 	const resultUrl = state.result?.url;
@@ -140,12 +148,13 @@ export function useMergeWorkflow() {
 		const url = await merge();
 		if (!url) return;
 
-		record("download_clicked", { renamed: false, previewed });
+		// 名前は送らず、入力欄に何か入れたかだけを送る（ADR 0031 決定 6）
+		record("download_clicked", { renamed: fileNameRef.current.trim() !== "", previewed });
 		const link = document.createElement("a");
 		link.href = url;
-		link.download = DOWNLOAD_FILE_NAME;
+		link.download = getDownloadFileName();
 		link.click();
-	}, [merge]);
+	}, [merge, getDownloadFileName]);
 
 	return {
 		items: state.items,
@@ -154,6 +163,9 @@ export function useMergeWorkflow() {
 		error: state.error,
 		progress: state.progress,
 		skipped: state.skipped,
+		fileName,
+		setFileName,
+		getDownloadFileName,
 		addFiles,
 		removeFile,
 		moveFile,

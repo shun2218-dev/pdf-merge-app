@@ -105,7 +105,20 @@ test.describe("PDF Merger E2E Test", () => {
 		const download = await downloadPromise;
 
 		// 5. ダウンロードが開始されたことを確認
-		expect(download.suggestedFilename()).toBe("merged.pdf");
+		// 既定の名前は merged_ + ダウンロードした時刻（ADR 0031 決定 2）
+		expect(download.suggestedFilename()).toMatch(/^merged_\d{14}\.pdf$/);
+	});
+
+	test("ファイル名を入れると、その名前でダウンロードされる（ADR 0031）", async ({ page }) => {
+		await page.locator(SELECTORS.FILE_INPUT).setInputFiles([pdfFile1, pdfFile2]);
+		await page.getByRole("textbox", { name: "ファイル名" }).fill("2026年度 契約書/控え");
+
+		const downloadPromise = page.waitForEvent("download", { timeout: 15000 });
+		await page.locator(SELECTORS.DOWNLOAD_BUTTON).click();
+		const download = await downloadPromise;
+
+		// 使えない文字（/）は _ に置き換え、.pdf を付ける（決定 3・4）
+		expect(download.suggestedFilename()).toBe("2026年度 契約書_控え.pdf");
 	});
 
 	test("プレビューせずにダウンロードを1回クリックするとダウンロードされる", async ({ page }) => {
@@ -116,6 +129,7 @@ test.describe("PDF Merger E2E Test", () => {
 		await page.locator(SELECTORS.DOWNLOAD_BUTTON).click();
 		const download = await downloadPromise;
 
-		expect(download.suggestedFilename()).toBe("merged.pdf");
+		// 既定の名前は merged_ + ダウンロードした時刻（ADR 0031 決定 2）
+		expect(download.suggestedFilename()).toMatch(/^merged_\d{14}\.pdf$/);
 	});
 });

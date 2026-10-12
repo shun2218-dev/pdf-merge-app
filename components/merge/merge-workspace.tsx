@@ -8,6 +8,7 @@ import type { MergeError, MergeItem } from "@/lib/merge-workflow/reducer";
 import type { SkippedFile } from "@/lib/pdf/merge";
 import { DropZone } from "./drop-zone";
 import { FileList } from "./file-list";
+import { FileNameInput } from "./file-name-input";
 import { MergeActions } from "./merge-actions";
 import { MergePreview } from "./merge-preview";
 import { SkippedFiles } from "./skipped-files";
@@ -40,6 +41,9 @@ export function MergeWorkspace({ notice }: { notice?: ReactNode }) {
 		error,
 		progress,
 		skipped,
+		fileName,
+		setFileName,
+		getDownloadFileName,
 		addFiles,
 		removeFile,
 		moveFile,
@@ -80,6 +84,7 @@ export function MergeWorkspace({ notice }: { notice?: ReactNode }) {
 								<h2 className="text-lg font-semibold text-foreground">ステップ 3: プレビューとダウンロード</h2>
 								<p className="text-sm text-muted-foreground">結合されたPDFを確認してダウンロードします</p>
 							</div>
+							<FileNameInput value={fileName} onChange={setFileName} />
 							<MergeActions
 								isMerging={phase === "merging"}
 								progress={progress}
@@ -96,7 +101,7 @@ export function MergeWorkspace({ notice }: { notice?: ReactNode }) {
 						<Card className="p-6">
 							<div className="space-y-4">
 								<h2 className="text-lg font-semibold text-foreground">プレビュー</h2>
-								<MergePreview url={result.url} />
+								<MergePreview url={result.url} getFileName={getDownloadFileName} />
 							</div>
 						</Card>
 					)}

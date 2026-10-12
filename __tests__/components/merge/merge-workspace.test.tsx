@@ -192,6 +192,24 @@ describe("MergeWorkspace", () => {
 		expect(screen.getByText(/端末によっては時間がかかる/)).toBeInTheDocument();
 	});
 
+	it("ファイル名を入れてダウンロードすると、その名前でダウンロードする（ADR 0031）", async () => {
+		const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+		render(<MergeWorkspace />);
+		await upload(pdf("a.pdf"));
+		mergeSucceeds();
+
+		await userEvent.type(screen.getByRole("textbox", { name: "ファイル名" }), "2026年度_契約書");
+		await userEvent.click(screen.getByRole("button", { name: "ダウンロード" }));
+
+		await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
+		expect((click.mock.contexts[0] as HTMLAnchorElement).download).toBe("2026年度_契約書.pdf");
+	});
+
+	it("ファイルを足すまでは、ファイル名の入力欄を出さない", () => {
+		render(<MergeWorkspace />);
+		expect(screen.queryByRole("textbox", { name: "ファイル名" })).not.toBeInTheDocument();
+	});
+
 	it("受け取った断りを、ドロップ領域のすぐ下に出す（ADR 0027 決定 2・3）", () => {
 		render(<MergeWorkspace notice={<p data-testid="notice">断り</p>} />);
 
