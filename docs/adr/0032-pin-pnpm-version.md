@@ -1,7 +1,7 @@
 # 0032. pnpm の版を package.json の packageManager で 1 つに固定し、CI・Vercel・手元でそろえる
 
-- 状態: 提案
-- オーナーの確認: 未
+- 状態: 採用
+- オーナーの確認: 2026-10-13
 - 日付: 2026-10-13
 - 関連: ADR 0004 / 0006 / 0015、CLAUDE.md の「開発の注意」
 
@@ -66,6 +66,8 @@
 
 1. 案 B（`package.json` の `packageManager` を正本にし、CI もそれを読む）でよいか。
 2. Vercel が `packageManager` を読まなかった場合に、Vercel のプロジェクトに環境変数 `ENABLE_EXPERIMENTAL_COREPACK=1` を足すか（決定 3。足すときはオーナーが Vercel の画面で行う）。
+
+**オーナーの回答（2026-10-13）**: 案 B でよい。環境変数は、必要なら足す。pnpm の系は、上の比べた結果のとおり 10 系のままにする。
 
 ## 完了条件（DoD）
 

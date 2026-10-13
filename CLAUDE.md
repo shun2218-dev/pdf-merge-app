@@ -46,7 +46,7 @@ pnpm storybook        # Storybook
 
 ## 開発の注意（これまでにはまったこと）
 
-- **pnpm は 10 系を使う**（CI は `pnpm/action-setup` の version 10）。ローカルに pnpm 12 などが入っていると、`node_modules` の置き場所が食い違ったり、`pnpm-workspace.yaml` が勝手に作られたりする。迷ったら `npx -y pnpm@10 <コマンド>` を使い、`pnpm-workspace.yaml` ができたら消す。
+- **pnpm の版は `package.json` の `packageManager` で決まる**（いまは 10 系。ADR 0032）。手元の `pnpm` は corepack 経由なら自動でその版に切り替わり、CI（`pnpm/action-setup`）と Vercel も同じ版を使う。`npx -y pnpm@10` は 10 系の最新（公開した直後のものも）を使ってしまうので使わない。`pnpm --version` が `packageManager` と違うときは `corepack enable` する。`pnpm-workspace.yaml` ができたら消す（10 系では使わない）。
 - **依存を足すときは、公開から 1 週間以上たった版にする**（pnpm の `minimumReleaseAge` の考え方。サプライチェーン対策）。
 - ファイルを動かしたり import を変えたりしたら、最後に必ず `biome ci .` と `pnpm typecheck` をかけ直す。
 - 本番の確認で `curl` を使うときは、ブラウザの User-Agent を付ける（Cloudflare の WAF が `curl` を止める。ADR 0018）。Cloudflare が HTML にスクリプトを差し込むかを見るときは `Accept: text/html` も付けるか、ブラウザで確かめる（付けないと差し込まれない応答が返る。ADR 0018 の追記）。
