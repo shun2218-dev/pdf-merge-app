@@ -28,6 +28,18 @@
 
 作業用のフォルダで、`package.json` に `"packageManager": "pnpm@10.34.6"` を書いて手元の `pnpm`（corepack 経由の 12.6.0）を動かすと、corepack が 10.34.6 を取ってきて、その版で動いた。
 
+### どの系にするか（2026-10-13 に調べた）
+
+10 系は、前のメンテナーの設定を引き継いだもので、選び直したことはなかった。
+
+| 系 | 出た時期 | いまの状況 | Vercel | このプロジェクトで要る変更 |
+|---|---|---|---|---|
+| 10 | 2025-01 | 修正が続いている（10.34.7 が 2026-10-12） | ドキュメントで対応（6〜10）。`lockfileVersion: 9.0` から自動で 10 を選ぶ | なし |
+| 11 | 2026-04 | 11.28.x で落ち着いている | ドキュメントの対応表にない（2026-08-11 の更新）。ビルドのログには「9.x・10.x・11.x のどれかが作った lockfile」と出る | `.npmrc` の pnpm の設定（`optional-dependencies=false`）を `pnpm-workspace.yaml` に移す（CLAUDE.md の「`pnpm-workspace.yaml` ができたら消す」も逆になる）。ビルドのスクリプトの許可を `allowBuilds` に書き直す。Node 22 以上（いまは 24 なので満たす） |
+| 12 | 2026-08 | Rust で書き直した。10 月も数日おきに出ていて、実験的な機能が続いている | ドキュメントの対応表にない | `--frozen-lockfile false` の書き方などの変更。挙動の差は試さないと分からない |
+
+11 系には、公開から 1 日たっていない依存を入れない設定（`minimumReleaseAge`）が既定で入るなどの良い点がある。ただ、Vercel が公式に対応しているのは 10 系までで、11 系に上げると設定ファイルの置き場所も変わる。**この ADR では 10 系のまま版を固定し、11 系に上げるかは、Vercel が 11 系を対応表に載せたときか、10 系の修正が止まったときに、別の ADR で決める。** 版を `packageManager` の 1 か所で決めておけば、上げるときも 1 行の変更を CI と Preview で確かめるだけで済む。
+
 ## 検討した選択肢
 
 | 案 | 良い点 | 悪い点 |
@@ -41,7 +53,7 @@
 1. **`package.json` に `packageManager` を書き、pnpm の版の正本にする。** 値は、公開から 1 週間以上たった 10 系の最新（いまは `10.34.6`、2026-09-28 公開）に、npm のレジストリの `sha512` のハッシュを付けたもの（`pnpm@10.34.6+sha512.…`）。
 2. **CI は `packageManager` を読む。** `ci.yml` の `pnpm/action-setup@v4` から `version` を外し、`PNPM_VERSION` を消す（両方あると action が版の食い違いで止まるため）。
 3. **Vercel でも同じ版を使うかを、Preview のビルドのログで確かめる。** ログに `pnpm v10.34.6` と出れば終わり。出なければ、Vercel のプロジェクトの環境変数 `ENABLE_EXPERIMENTAL_COREPACK=1` を足すかをオーナーに相談する（環境変数の設定はオーナーが行う。足さない場合は、Vercel だけ別の版になることを、この ADR の追記に残す）。
-4. **版を上げるのは Renovate に任せる。** `packageManager` は Renovate が上げる対象で、`minimumReleaseAge: "7 days"` がそのままかかる。10 系の中の更新は、ほかのパッチ・マイナーと同じ PR にまとまる。11 系以上へのメジャーの PR が来たら、別の判断にする（いまの `constraints.pnpm: "10.x"` のとおり、lockfile は 10 系で作る）。
+4. **10 系のまま、版を上げるのは Renovate に任せる。** `packageManager` は Renovate が上げる対象で、`minimumReleaseAge: "7 days"` がそのままかかる。10 系の中の更新は、ほかのパッチ・マイナーと同じ PR にまとまる。11 系以上へのメジャーの PR が来たら、別の判断にする（いまの `constraints.pnpm: "10.x"` のとおり、lockfile は 10 系で作る）。
 5. **CLAUDE.md の「開発の注意」を直す。** 「pnpm は 10 系を使う。迷ったら `npx -y pnpm@10`」を、「`pnpm` は `packageManager` の版で動く（corepack）。`npx -y pnpm@10` は 10 系の最新を使ってしまうので使わない」に改める。
 
 ## 結果
