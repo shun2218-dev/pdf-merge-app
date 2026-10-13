@@ -45,6 +45,7 @@
 | [0029](0029-rum-baseline-after-enough-samples.md) | 実利用（RUM）のベースラインは件数がたまってから取り、Phase 1 は計測の土台ができたことで閉じる | 採用 | 1 / 6 |
 | [0030](0030-client-side-merge-premises.md) | ブラウザでの結合（ADR 0002）を実装する前に、変わった前提を決め直す | 採用 | 3 |
 | [0031](0031-output-file-name.md) | 結合した PDF のファイル名を利用者が入力できるようにし、既定は「merged_ + ダウンロードした日時」にする（ADR 0009 より前に） | 採用 | 3（ADR 0009 から前倒し） |
+| [0032](0032-pin-pnpm-version.md) | pnpm の版を package.json の packageManager で 1 つに固定し、CI・Vercel・手元でそろえる | 提案 | 3（運用） |
 
 ## テンプレート
 
