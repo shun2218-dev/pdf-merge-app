@@ -4,7 +4,7 @@ import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { useEffect, useState } from "react";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import { DOWNLOAD_FILE_NAME } from "@/constants";
+import { defaultFileName } from "@/lib/merge-workflow/file-name";
 
 // CVE-2024-4367（pdfjs-dist 4.1.392 以前）の公開されている回避策。細工した PDF のフォントから任意の JavaScript を
 // 実行されるのを防ぐため、PDF.js にフォントの描画で eval（new Function）を使わせない（ADR 0003 決定 1）。
@@ -15,9 +15,13 @@ const disableEval = (params: PdfJs.GetDocumentParams): PdfJs.GetDocumentParams =
 
 interface PdfPreviewProps {
 	pdfUrl: string;
+	/** ツールバーのダウンロードの名前。押したときに呼ぶ（ADR 0031 決定 5） */
+	getFileName?: () => string;
 }
 
-export function PdfPreview({ pdfUrl }: PdfPreviewProps) {
+const getDefaultFileName = () => defaultFileName(new Date());
+
+export function PdfPreview({ pdfUrl, getFileName = getDefaultFileName }: PdfPreviewProps) {
 	const [initialZoom, setInitialZoom] = useState(1);
 
 	useEffect(() => {
@@ -49,7 +53,7 @@ export function PdfPreview({ pdfUrl }: PdfPreviewProps) {
 				},
 			},
 			getFilePlugin: {
-				fileNameGenerator: () => DOWNLOAD_FILE_NAME,
+				fileNameGenerator: () => getFileName(),
 			},
 		},
 	});

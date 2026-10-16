@@ -14,9 +14,11 @@ const PdfPreview = dynamic(() => import("@/components/pdf-preview").then((mod) =
 
 interface MergePreviewProps {
 	url: string;
+	/** ツールバーのダウンロードの名前。ダウンロードのボタンと同じ名前にする（ADR 0031 決定 5） */
+	getFileName: () => string;
 }
 
 // 結合した PDF のプレビュー。props だけで描く（ADR 0005 決定 5）。ビューアの置き換えは ADR 0003
-export function MergePreview({ url }: MergePreviewProps) {
-	return <PdfPreview pdfUrl={url} />;
+export function MergePreview({ url, getFileName }: MergePreviewProps) {
+	return <PdfPreview pdfUrl={url} getFileName={getFileName} />;
 }

@@ -44,7 +44,7 @@ async function downloadMerged(page: Page) {
 	const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
 	await page.locator(SELECTORS.DOWNLOAD_BUTTON).click();
 	const download = await downloadPromise;
-	expect(download.suggestedFilename()).toBe("merged.pdf");
+	expect(download.suggestedFilename()).toMatch(/^merged_\d{14}\.pdf$/);
 	const pdf = await PDFDocument.load(readFileSync(await download.path()));
 	return pdf.getPages().map((page) => page.getWidth());
 }
