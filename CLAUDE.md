@@ -49,7 +49,7 @@ pnpm storybook        # Storybook
 - **pnpm の版は `package.json` の `packageManager` で決まる**（いまは 10 系。ADR 0032）。手元の `pnpm` は corepack 経由なら自動でその版に切り替わり、CI（`pnpm/action-setup`）と Vercel も同じ版を使う。`npx -y pnpm@10` は 10 系の最新（公開した直後のものも）を使ってしまうので使わない。`pnpm --version` が `packageManager` と違うときは `corepack enable` する。`pnpm-workspace.yaml` ができたら消す（10 系では使わない）。
 - **依存を足すときは、公開から 1 週間以上たった版にする**（pnpm の `minimumReleaseAge` の考え方。サプライチェーン対策）。
 - ファイルを動かしたり import を変えたりしたら、最後に必ず `biome ci .` と `pnpm typecheck` をかけ直す。
-- 本番の確認で `curl` を使うときは、ブラウザの User-Agent を付ける（Cloudflare の WAF が `curl` を止める。ADR 0018）。Cloudflare が HTML にスクリプトを差し込むかを見るときは `Accept: text/html` も付けるか、ブラウザで確かめる（付けないと差し込まれない応答が返る。ADR 0018 の追記）。
+- 本番の確認で `curl` を使うときは、ブラウザの User-Agent を付ける（Cloudflare の WAF が `curl` を止める。ADR 0018）。Cloudflare が HTML にスクリプトを差し込むかを見るときは `Accept: text/html` も付けるか、ブラウザで確かめる（付けないと差し込まれない応答が返る。ADR 0018 の追記）。本番のページが読み込む JS は `/_next/static/immutable/chunks/` にある（手元の `next start` は `/_next/static/chunks/`）。JS の中身を確かめるときは、ファイルに落として `grep` し、何ファイルを調べたかも出す（場所を取り違えると 0 件で空振りする）。
 - `vercel.json` の rewrites の `source` は、Vercel では末尾の `/` を区別して照合される（`next.config` の rewrites とは違う）。`:path*` は末尾が `/` のパスに当たらない（B-9）。変えたら `__tests__/lib/vercel-rewrites.test.ts` に足す。
 - ローカルの E2E: ポート 3000 をほかのプロジェクトが使っていると、Playwright はそのサーバーを使ってしまう（`reuseExistingServer`）。また、ローカルの既定の reporter（`html`）は失敗するとレポートのサーバーを開いて待ち続ける。別のポートと `--reporter=line` の設定を、リポジトリの外（scratchpad など。`{"type":"module"}` の `package.json` を横に置く）に作って走らせる。
 - 依存の一部だけを別の版にするときに `pnpm update --depth Infinity` を使わない（関係のない依存まで解決し直される）。新しく足す依存に 1 週間の条件をかけるなら `pnpm install --config.minimum-release-age=10080`（ADR 0004 の追記）。
