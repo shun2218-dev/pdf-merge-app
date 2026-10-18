@@ -21,6 +21,7 @@
 | B-9 | 高 | 本番で Web Vitals の送信（`POST /ingest/i/v0/e/`）が Next.js の 404 になり、PostHog に届いていない。Vercel は `vercel.json` の rewrites の `source` を末尾の `/` を区別して照合するので、`/ingest/:path*` が末尾が `/` のパスに当たらない（v1.2.0 で発生。2026-09-28 に発見） | `vercel.json`、本番の通信 | 0021 |
 | B-10 | 中 | Sentry にソースマップが送られていない。`next.config` に直接書いた組織名（`vercel-development`）とプロジェクト名（`pdf-merge-app`）が、実際のもの（Vercel の環境変数の `SENTRY_ORG` / `SENTRY_PROJECT`）と違い、アップロードが 403 で失敗していた。Issue のスタックトレースが圧縮後のファイル名のままで、どこで起きたかを読みにくい | `next.config.mjs`、PR #81 の Preview と本番で起こしたエラーの Issue（2026-09-30） | 0007 |
 | B-11 | 低 | 本番（Vercel）の Node.js が 22.x で、`package.json` の `volta`（24.11.0）と CI（24.11.0）と違う。本番だけテストしていない版で動いていた。`engines.node` がなく、Vercel のプロジェクトの設定（22.x）が使われていた → `engines.node` を `24.x` にした（2026-10-04） | Vercel のプロジェクトの設定（`nodeVersion: 22.x`。2026-10-04） | — |
+| B-12 | 低 | 本番で `crypto.randomUUID is not a function` が出て、Web Vitals の送信が落ちた（2026-10-16、v1.5.0、Windows の Chrome 138 で 2 回。Sentry の SENTRY-PDF-MERGE-APP-6）。https の Chrome 138 には本来あるので、自動化ツールや拡張機能で変えられた環境とみられる（推測）。同じ関数でファイルに ID を振っているので、その環境ではファイルを足せない → `crypto.randomUUID` がなければ `crypto.getRandomValues` で作る `lib/random-id.ts` に替えた（2026-10-19） | `lib/analytics/page-view-id.ts:8`、`hooks/use-merge-workflow.ts:74` | — |
 
 ## 2. プライバシー・セキュリティ
 
