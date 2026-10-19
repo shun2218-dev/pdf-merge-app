@@ -73,3 +73,7 @@ ADR 0002（ブラウザ内の結合）・0009（ファイルごとのエラー�
 - 移した `drop-zone` / `file-list` に、もとからあった `biome-ignore`（a11y のルール。ADR 0014 の「抑止しない」より前のもの）が残っている。キーボードでの操作を作る ADR 0010 / 0014 で消す。
 - E2E の「PDF 以外を選んだとき」は、ダイアログではなく画面の文言を確かめる形にした。Next.js の route announcer も `role="alert"` を持つので、文言で絞る。
 - 大きさ: `/` の First Load JS は 205 kB → 206 kB（ページの部分が +0.7 kB）。
+
+### 2026-10-19: `crypto.randomUUID` がない環境（B-12）
+
+- ファイルの `id` は `crypto.randomUUID()` を直に呼ばず、`lib/random-id.ts` の `randomId()` で振る。`randomUUID` がない環境でファイルを足せなかったため（B-12）。形は同じ UUID v4。
