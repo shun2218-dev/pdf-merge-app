@@ -8,6 +8,7 @@ import { isLargeMerge } from "@/lib/merge-workflow/large-merge";
 import { initialState, type MergeItem, mergeWorkflowReducer } from "@/lib/merge-workflow/reducer";
 import type { SkippedFile, SkipReason } from "@/lib/pdf/merge";
 import { MergeWorkerError, mergeInBrowser } from "@/lib/pdf/merge-in-browser";
+import { randomId } from "@/lib/random-id";
 import { sentry } from "@/lib/sentry/browser";
 
 // 操作をアナリティクス（ADR 0011）に送り、同じ名前・同じ値で Sentry のパンくずにも残す（ADR 0024 決定 2）。
@@ -71,7 +72,7 @@ export function useMergeWorkflow() {
 			count_bucket: countBucket(files.length),
 			size_bucket: sizeBucket(totalSize(files)),
 		});
-		const items: MergeItem[] = files.map((file) => ({ id: crypto.randomUUID(), file }));
+		const items: MergeItem[] = files.map((file) => ({ id: randomId(), file }));
 		// 足したことで、時間がかかるか失敗しうる大きさを超えたら、警告を出したことを送る（ADR 0002 決定 5）
 		const before = stateRef.current.items.map((item) => item.file);
 		const after = [...before, ...files];

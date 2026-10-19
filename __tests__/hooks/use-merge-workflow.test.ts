@@ -68,6 +68,18 @@ describe("useMergeWorkflow", () => {
 			expect(first.id).not.toBe(second.id);
 		});
 
+		it("crypto.randomUUID がない環境でもファイルを足せる（B-12）", async () => {
+			vi.stubGlobal("crypto", { getRandomValues: crypto.getRandomValues.bind(crypto) });
+			try {
+				const { result } = await setupWithFiles(pdf("a.pdf"), pdf("b.pdf"));
+
+				const [first, second] = result.current.items;
+				expect(first.id).not.toBe(second.id);
+			} finally {
+				vi.unstubAllGlobals();
+			}
+		});
+
 		it("PDF 以外が混ざったら全部を受け付けず、not_pdf のエラーにして files_rejected を送る", async () => {
 			const { result } = renderHook(() => useMergeWorkflow());
 			act(() => result.current.addFiles([pdf("a.pdf"), txt("b.txt")], "drop"));
