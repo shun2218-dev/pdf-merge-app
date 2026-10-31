@@ -3,17 +3,18 @@
 本番公開中のアプリを、全体にわたって改善するための計画。
 問題の一覧は [`docs/assessment.md`](assessment.md)、判断は [`docs/adr/`](adr/README.md)、ここは「どの順で・何をもって終わりとするか」を書く（ADR 0001 決定 5）。
 
-## 今の状況（2026-10-19 の時点。セッションの引き継ぎ用）
+## 今の状況（2026-10-20 の時点。セッションの引き継ぎ用）
 
-- **Phase 3 を進めている。v1.4.0（ADR 0002）と v1.5.0（ADR 0031）を本番に出した。**
+- **Phase 3 を進めている。v1.4.0（ADR 0002）・v1.5.0（ADR 0031）・v1.6.0（B-12 と API の削除）を本番に出した。**
   - **v1.4.0（2026-10-12。#105、タグ `v1.4.0`、`develop` への戻しは #107）**: PDF をサーバーへ送らず、ブラウザの Web Worker で結合する（#104）。読めないファイル（パスワード付き・壊れたもの）は飛ばして名前と理由を出し、1 ファイルごとに進捗を出す。`pdf-lib` は Worker の中でだけ読み込む。手元で合計 100MB の結合は 0.3〜0.5 秒、結合中に 50ms 以上の Long Task なし（`docs/performance.md`）。100MB の組の予算と `pdf-lib` の先読みは、いまは決めない・入れない（オーナーの判断 2026-10-09）
   - **v1.5.0（2026-10-16。#108、タグ `v1.5.0`、`develop` への戻しは #110）**: 結合した PDF のファイル名を入力できる（#106、ADR 0031）。空のままなら `merged_年月日時分秒.pdf`
   - 本番の確認（2026-10-16、ブラウザの User-Agent を付けた `curl`）: ページに新しい断りの文言が出る。最初の読み込みの JS（11 ファイル、gzip で 195,858 B）に `pdf-lib` は入っておらず、ファイル名の入力欄のコードは入っている。v1.4.0 のときの同じ確認は、本番の JS の場所（`/_next/static/immutable/chunks/`）を取り違えて空振りしていたので、このときに確かめ直した
-  - 戻し先: v1.4.0 のデプロイ（`5508e47`、https://pdf-merge-h4s80nhyo-free-account.vercel.app）。v1.3.0 は `368b43c`（https://pdf-merge-op0fma4od-free-account.vercel.app）。Vercel の Instant Rollback で戻す
+  - **v1.6.0（2026-10-20。#114、`main` の `847cd11`、タグ `v1.6.0`、`develop` への戻しは #115）**: `crypto.randomUUID` がない環境で落ちていたのを直した（#112、B-12）。サーバーで結合する `/api/merge-pdf` を消した（#113、ADR 0002 決定 6）。画面は変わらない
+  - 本番の確認（2026-10-20、ブラウザの User-Agent を付けた `curl`）: `/api/merge-pdf` は GET・POST とも 404。最初の読み込みの JS（`/_next/static/immutable/chunks/` の 11 ファイル）のうち 1 ファイルに、`randomUUID` がなければ `getRandomValues` で作るコードが入っている
+  - 戻し先: v1.5.0 のデプロイ（`3d300be`、pdf-merge-pn2s1abp8。`/api/merge-pdf` が残っている）。v1.4.0 は `5508e47`（https://pdf-merge-h4s80nhyo-free-account.vercel.app）。v1.3.0 は `368b43c`（https://pdf-merge-op0fma4od-free-account.vercel.app）。Vercel の Instant Rollback で戻す
   - pnpm の版を `package.json` の `packageManager`（10.34.6）で固定し、CI・Vercel・手元をそろえた（#109、ADR 0032）
-  - Sentry の確認（2026-10-19）: v1.4.0 のあと 1 週間、結合の想定外のエラーはなかった。出ていたのは `crypto.randomUUID is not a function` の 1 件（B-12、Web Vitals の送信で落ちた）だけで、別の PR（`bugfix/random-uuid-fallback`）で直す
-  - `app/api/merge-pdf/` を `develop` で消した（ADR 0002 決定 6。`feature/remove-merge-api`）。B-12 の修正といっしょに次のリリース（v1.5.1 か v1.6.0）で本番に出す
-  - 次にやること: リリース後の確認（本番での結合・20MB 以上の結合・ファイル名の入力・PostHog のイベントはオーナー）→ 次のリリース → ADR 0003（プレビュー）・ADR 0017（ヘッダ・CSP）
+  - Sentry の確認（2026-10-19）: v1.4.0 のあと 1 週間、結合の想定外のエラーはなかった。出ていたのは `crypto.randomUUID is not a function` の 1 件（B-12、Web Vitals の送信で落ちた）だけで、v1.6.0 で直した
+  - 次にやること: リリース後の確認（本番での結合・ダウンロードはオーナー。v1.6.0 の Sentry に `crypto.randomUUID` のエラーが出ないか）→ ADR 0003（プレビュー）・ADR 0017（ヘッダ・CSP）
 - **Phase 0・1・2 は完了（2026-10-04）。** Phase 2 は、ADR 0015 の「上げる前より悪化していない」（JS +21%・ラボの LCP 約 +150 ms）を認めて、オーナーの判断で閉じた。
 - **Phase 1 の DoD の外で残っていること**
   - ADR 0021 の DoD の残り: `web_vital` と `files_added` の `distinct_id` が同じか確かめる。PostHog で LCP / INP / CLS の p75 を端末ごとに出す Insight を作る（どちらもオーナーの PostHog の画面での操作）。`/ingest` への POST が 200 で、`web_vital` が届くことは確かめた（2026-09-28）
@@ -176,7 +177,7 @@ Phase 6  効果の検証と次の計画
 - [ ] 結合の操作で、PDF の中身を含むリクエストが 0 件（E2E）
 - [ ] 20MB 以上の結合が本番でできる
 - [x] リリース後 1 週間、Sentry に結合の想定外のエラー（`worker_error` / `unknown` にあたるもの）が新たに出ていない（2026-10-19。10/12 以降のイシューは結合と関係のない B-12 の 1 件だけ。本番の閲覧は 9 回で、件数は少ない。`merge_failed` の率の比較は件数がたまってから）。ADR 0029 の件数の基準を満たしたら、`merge_failed` の率を比べる（ADR 0030 決定 5 で置き換えた。もとは「`merge_failed` の率がベースラインより悪化していない」）
-- [ ] 次のリリースで `app/api/merge-pdf/` を削除した（2026-10-19 に `develop` で消した。本番に出たらチェックを付ける）
+- [x] 次のリリースで `app/api/merge-pdf/` を削除した（2026-10-20。v1.6.0。本番で 404 になることを確かめた）
 
 ---
 
